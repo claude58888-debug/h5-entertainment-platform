@@ -1,0 +1,17 @@
+{
+  "name": "H5 Entertainment Platform",
+  "short_name": "H5 Play",
+  "description": "Mobile-first H5 entertainment platform",
+  "start_url": "/#/home",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
