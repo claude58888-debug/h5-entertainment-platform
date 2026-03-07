@@ -49,28 +49,18 @@
         <SectionHeader title="体育竞猜" icon="⚽" more="/games/sports" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in sportsProviders" :key="p.id" :provider="p" category="sports" />
-          <ComingSoonCard />
         </div>
 
         <!-- Chess -->
         <SectionHeader title="棋牌游戏" icon="♟️" more="/games/chess" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in chessProviders" :key="p.id" :provider="p" category="chess" />
-          <ComingSoonCard />
         </div>
 
         <!-- Video -->
         <SectionHeader title="人人影视" icon="🎬" />
         <div class="scroll-row hide-scrollbar">
-          <div class="video-card adult" @click="$router.push('/video')">
-            <span class="video-label">成人</span>
-          </div>
-          <div class="video-card movie" @click="$router.push('/video')">
-            <span class="video-label">电影</span>
-          </div>
-          <div class="video-card coming">
-            <span class="video-label">即将推出</span>
-          </div>
+          <ProviderCard v-for="p in videoProviders" :key="p.id" :provider="p" category="video" />
         </div>
 
         <!-- Crypto Section -->
@@ -151,7 +141,6 @@ import GameCategoryTabs from '@/components/home/GameCategoryTabs.vue'
 import SectionHeader from '@/components/home/SectionHeader.vue'
 import GameCard from '@/components/home/GameCard.vue'
 import ProviderCard from '@/components/home/ProviderCard.vue'
-import ComingSoonCard from '@/components/home/ComingSoonCard.vue'
 
 const appStore = useAppStore()
 const gameStore = useGameStore()
@@ -167,6 +156,7 @@ const fishingProviders = computed(() => gameStore.getProvidersByCategory('fishin
 const lotteryProviders = computed(() => gameStore.getProvidersByCategory('lottery'))
 const sportsProviders = computed(() => gameStore.getProvidersByCategory('sports'))
 const chessProviders = computed(() => gameStore.getProvidersByCategory('chess'))
+const videoProviders = computed(() => gameStore.getProvidersByCategory('video'))
 
 const categoryGames = computed(() => gameStore.getGamesByCategory(activeCategory.value))
 
@@ -218,36 +208,6 @@ onMounted(() => {
   p { margin-top: 12px; }
 }
 
-.video-card {
-  width: 140px;
-  height: 90px;
-  flex-shrink: 0;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-
-  &.adult {
-    background: linear-gradient(135deg, #e84393, #d63031);
-  }
-  &.movie {
-    background: linear-gradient(135deg, #0984e3, #6c5ce7);
-  }
-  &.coming {
-    background: rgba(255,255,255,0.04);
-    border: 1px dashed rgba(255,255,255,0.1);
-    cursor: default;
-  }
-}
-
-.video-label {
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-}
 
 .crypto-header {
   display: flex;

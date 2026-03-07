@@ -103,40 +103,45 @@ export const mockGames = [
 
 export const mockProviders = {
   slots: [
-    { id: 'PG', name: 'PG电子', gameCount: 58, gradient: 'linear-gradient(135deg, #1a237e, #4a148c)', label: 'PGSOFT', image: '/img/providers/provider_pg.png' },
-    { id: 'PP', name: 'PP电子', gameCount: 120, gradient: 'linear-gradient(135deg, #004d40, #00695c)', label: 'PRAGMATIC PLAY', image: '/img/providers/provider_pp.png' },
-    { id: 'CQ9', name: 'CQ9电子', gameCount: 85, gradient: 'linear-gradient(135deg, #b71c1c, #880e4f)', label: 'CQ9', image: '/img/providers/provider_gfg.png' },
-    { id: 'JILI', name: 'JILI电子', gameCount: 65, gradient: 'linear-gradient(135deg, #e65100, #ef6c00)', label: 'JILI', image: '/img/providers/provider_gfg.png' },
-    { id: 'JDB', name: 'JDB电子', gameCount: 45, gradient: 'linear-gradient(135deg, #01579b, #0277bd)', label: 'JDB', image: '/img/providers/provider_gfg.png' },
-    { id: 'FC', name: 'FC电子', gameCount: 38, gradient: 'linear-gradient(135deg, #1b5e20, #2e7d32)', label: 'FC GAMING', image: '/img/providers/provider_gfg.png' }
+    { id: 'PG', name: 'PG电子', gameCount: 58, gradient: 'linear-gradient(135deg, #1a237e, #4a148c)', label: 'PGSOFT', image: '/img/providers/provider_pg.png', backgroundImage: '/img/ztb/ztb-pg4.webp' },
+    { id: 'PP', name: 'PP电子', gameCount: 120, gradient: 'linear-gradient(135deg, #004d40, #00695c)', label: 'PRAGMATIC PLAY', image: '/img/providers/provider_pp.png', backgroundImage: '/img/ztb/ztb-pp4.webp' },
+    { id: 'CQ9', name: 'CQ9电子', gameCount: 85, gradient: 'linear-gradient(135deg, #b71c1c, #880e4f)', label: 'CQ9', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-cq9dz4.webp' },
+    { id: 'FC', name: 'FC电子', gameCount: 38, gradient: 'linear-gradient(135deg, #1b5e20, #2e7d32)', label: 'FC GAMING', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-fcdz4.webp' },
+    { id: 'JILI', name: 'JILI电子', gameCount: 65, gradient: 'linear-gradient(135deg, #e65100, #ef6c00)', label: 'JILI', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-jldz3.webp' },
+    { id: 'JDB', name: 'JDB电子', gameCount: 45, gradient: 'linear-gradient(135deg, #01579b, #0277bd)', label: 'JDB', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-jdb3.webp' },
+    { id: 'COMING', name: '即将推出', gameCount: 0, gradient: 'linear-gradient(135deg, #333, #555)', label: '', image: '', backgroundImage: '/img/ztb/ztb-jqqd3.webp' }
   ],
   live: [
-    { id: 'EVO', name: 'EVO真人', gameCount: 32, gradient: 'linear-gradient(135deg, #0d47a1, #1565c0)', label: 'EVOLUTION', image: '/img/providers/provider_evo.png' },
-    { id: 'AG', name: 'AG真人', gameCount: 28, gradient: 'linear-gradient(135deg, #e65100, #bf360c)', label: 'ASIA GAMING', image: '/img/providers/provider_gfg.png' },
-    { id: 'PP', name: 'PP真人', gameCount: 45, gradient: 'linear-gradient(135deg, #311b92, #4527a0)', label: 'PRAGMATIC PLAY', image: '/img/providers/provider_pp.png' },
-    { id: 'WM', name: 'WM真人', gameCount: 20, gradient: 'linear-gradient(135deg, #880e4f, #ad1457)', label: 'WM CASINO', image: '/img/providers/provider_wm.png' }
+    { id: 'PP', name: 'PP真人', gameCount: 45, gradient: 'linear-gradient(135deg, #311b92, #4527a0)', label: 'PRAGMATIC PLAY', image: '/img/providers/provider_pp.png', backgroundImage: '/img/ztb/ztb-pplive4.webp' },
+    { id: 'EVO', name: 'EVO真人', gameCount: 32, gradient: 'linear-gradient(135deg, #0d47a1, #1565c0)', label: 'EVOLUTION', image: '/img/providers/provider_evo.png', backgroundImage: '/img/ztb/ztb-db4.webp' },
+    { id: 'COMING', name: '即将推出', gameCount: 0, gradient: 'linear-gradient(135deg, #333, #555)', label: '', image: '', backgroundImage: '/img/ztb/ztb-jqqd3.webp' }
   ],
   fishing: [
-    { id: 'JDB', name: 'JDB捕鱼', gameCount: 15, gradient: 'linear-gradient(135deg, #01579b, #0277bd)', label: 'JDB', image: '/img/providers/provider_gfg.png' },
-    { id: 'JILI', name: 'JILI捕鱼', gameCount: 20, gradient: 'linear-gradient(135deg, #f57f17, #f9a825)', label: 'JILI', image: '/img/providers/provider_gfg.png' },
-    { id: 'FC', name: 'FC捕鱼', gameCount: 12, gradient: 'linear-gradient(135deg, #1b5e20, #2e7d32)', label: 'FC GAMING', image: '/img/providers/provider_gfg.png' },
-    { id: 'CQ9', name: 'CQ9捕鱼', gameCount: 10, gradient: 'linear-gradient(135deg, #b71c1c, #c62828)', label: 'CQ9', image: '/img/providers/provider_gfg.png' }
+    { id: 'JDB', name: 'JDB捕鱼', gameCount: 15, gradient: 'linear-gradient(135deg, #01579b, #0277bd)', label: 'JDB', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-jdbby4.webp' },
+    { id: 'FC', name: 'FC捕鱼', gameCount: 12, gradient: 'linear-gradient(135deg, #1b5e20, #2e7d32)', label: 'FC GAMING', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-fcby3.webp' },
+    { id: 'JILI', name: 'JILI捕鱼', gameCount: 20, gradient: 'linear-gradient(135deg, #f57f17, #f9a825)', label: 'JILI', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-jlby4.webp' },
+    { id: 'COMING', name: '即将推出', gameCount: 0, gradient: 'linear-gradient(135deg, #333, #555)', label: '', image: '', backgroundImage: '/img/ztb/ztb-jqqd3.webp' }
   ],
   lottery: [
-    { id: 'TCG', name: 'TCG彩票', gameCount: 30, gradient: 'linear-gradient(135deg, #4a148c, #6a1b9a)', label: 'TCG LOTTERY', image: '/img/providers/provider_gfg.png' },
-    { id: 'VR', name: 'VR彩票', gameCount: 18, gradient: 'linear-gradient(135deg, #880e4f, #ad1457)', label: 'VR LOTTERY', image: '/img/providers/provider_gfg.png' },
-    { id: 'HASH', name: '哈希彩票', gameCount: 10, gradient: 'linear-gradient(135deg, #1a237e, #283593)', label: 'HASH', image: '/img/providers/provider_gfg.png' }
+    { id: 'TCG', name: '加拿大4.2-4.6', gameCount: 30, gradient: 'linear-gradient(135deg, #4a148c, #6a1b9a)', label: 'TCG LOTTERY', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-pc284.2-4.63.webp' },
+    { id: 'VR', name: '加拿大高倍网盘', gameCount: 18, gradient: 'linear-gradient(135deg, #880e4f, #ad1457)', label: 'VR LOTTERY', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-pc28high3.webp' },
+    { id: 'HASH1', name: '1分哈希', gameCount: 10, gradient: 'linear-gradient(135deg, #1a237e, #283593)', label: 'HASH', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-hash1min3.webp' },
+    { id: 'HASH', name: '哈希彩票', gameCount: 10, gradient: 'linear-gradient(135deg, #1a237e, #283593)', label: 'HASH', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-hash3.webp' },
+    { id: 'COMING', name: '即将推出', gameCount: 0, gradient: 'linear-gradient(135deg, #333, #555)', label: '', image: '', backgroundImage: '/img/ztb/ztb-jqqd3.webp' }
   ],
   sports: [
-    { id: 'CROWN', name: 'CR皇冠体育', gameCount: 1, gradient: 'linear-gradient(135deg, #b71c1c, #c62828)', label: 'CROWN SPORTS', image: '/img/providers/provider_gfg.png' },
-    { id: 'IM', name: 'IM体育', gameCount: 1, gradient: 'linear-gradient(135deg, #1565c0, #42a5f5)', label: 'IM SPORTS', image: '/img/providers/provider_gfg.png' },
-    { id: 'FB', name: 'FB体育', gameCount: 1, gradient: 'linear-gradient(135deg, #2e7d32, #4caf50)', label: 'FB SPORTS', image: '/img/providers/provider_gfg.png' },
-    { id: 'CMD', name: 'CMD体育', gameCount: 1, gradient: 'linear-gradient(135deg, #e65100, #ff8f00)', label: 'CMD SPORTS', image: '/img/providers/provider_gfg.png' },
-    { id: 'SBO', name: 'SBO体育', gameCount: 1, gradient: 'linear-gradient(135deg, #4a148c, #7b1fa2)', label: 'SBO SPORTS', image: '/img/providers/provider_gfg.png' }
+    { id: 'CROWN', name: 'CR皇冠体育', gameCount: 1, gradient: 'linear-gradient(135deg, #b71c1c, #c62828)', label: 'CROWN SPORTS', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-crhgty3.webp' },
+    { id: 'COMING', name: '即将推出', gameCount: 0, gradient: 'linear-gradient(135deg, #333, #555)', label: '', image: '', backgroundImage: '/img/ztb/ztb-jqqd3.webp' }
   ],
   chess: [
-    { id: 'FC', name: 'FC棋牌', gameCount: 10, gradient: 'linear-gradient(135deg, #004d40, #00695c)', label: 'FC GAMING', image: '/img/providers/provider_gfg.png' },
-    { id: 'JILI', name: 'JILI棋牌', gameCount: 8, gradient: 'linear-gradient(135deg, #e65100, #ef6c00)', label: 'JILI', image: '/img/providers/provider_gfg.png' }
+    { id: 'FC', name: 'FC棋牌', gameCount: 10, gradient: 'linear-gradient(135deg, #004d40, #00695c)', label: 'FC GAMING', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-fcqp3.webp' },
+    { id: 'JILI', name: 'JILI棋牌', gameCount: 8, gradient: 'linear-gradient(135deg, #e65100, #ef6c00)', label: 'JILI', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-jlqp3.webp' },
+    { id: 'COMING', name: '即将推出', gameCount: 0, gradient: 'linear-gradient(135deg, #333, #555)', label: '', image: '', backgroundImage: '/img/ztb/ztb-jqqd3.webp' }
+  ],
+  video: [
+    { id: 'SEXY', name: '成人', gameCount: 0, gradient: 'linear-gradient(135deg, #e84393, #d63031)', label: '', image: '', backgroundImage: '/img/ztb/ztb-zzyscr4.webp' },
+    { id: 'MOVIE', name: '电影', gameCount: 0, gradient: 'linear-gradient(135deg, #0984e3, #6c5ce7)', label: '', image: '', backgroundImage: '/img/ztb/ztb-zzysdy4.webp' },
+    { id: 'COMING', name: '即将推出', gameCount: 0, gradient: 'linear-gradient(135deg, #333, #555)', label: '', image: '', backgroundImage: '/img/ztb/ztb-jqqd3.webp' }
   ]
 }
 
