@@ -88,6 +88,80 @@ const routes = [
     path: '/support',
     name: 'Support',
     component: () => import('@/views/SupportPage.vue')
+  },
+  {
+    path: '/recharge',
+    name: 'Recharge',
+    component: () => import('@/views/RechargePage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/vip',
+    name: 'Vip',
+    component: () => import('@/views/VipPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/safeCenter',
+    name: 'SecurityCenter',
+    component: () => import('@/views/SecurityCenterPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/monthka',
+    name: 'ActivityDetail',
+    component: () => import('@/views/ActivityDetailPage.vue')
+  },
+  {
+    path: '/redbag',
+    name: 'RedPacket',
+    component: () => import('@/views/RedPacketPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/pwdRedbag',
+    name: 'PasswordRedPacket',
+    component: () => import('@/views/PasswordRedPacketPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/report',
+    name: 'Report',
+    component: () => import('@/views/ReportPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/transRecord',
+    name: 'TransactionRecord',
+    component: () => import('@/views/TransactionRecordPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/orderRecordSummary',
+    name: 'BetRecord',
+    component: () => import('@/views/BetRecordPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/prizeRecord',
+    name: 'PrizeRecord',
+    component: () => import('@/views/PrizeRecordPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/buyBit',
+    name: 'BuyCrypto',
+    component: () => import('@/views/BuyCryptoPage.vue')
+  },
+  {
+    path: '/softwareDownload',
+    name: 'SoftwareDownload',
+    component: () => import('@/views/SoftwareDownloadPage.vue')
+  },
+  {
+    path: '/agentCooperation',
+    name: 'AgentCooperation',
+    component: () => import('@/views/AgentCooperationPage.vue')
   }
 ]
 

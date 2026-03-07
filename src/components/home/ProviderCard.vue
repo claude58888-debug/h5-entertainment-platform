@@ -1,18 +1,20 @@
 <template>
-  <div class="provider-card" @click="handleClick">
-    <div class="card-image">
-      <img v-lazy="provider.logo" :alt="provider.name" />
-    </div>
-    <div class="card-info">
+  <div class="provider-card" :style="{ background: provider.gradient }" @click="handleClick">
+    <div class="card-content">
       <span class="provider-name">{{ provider.name }}</span>
-      <span class="game-count">{{ provider.gameCount }} {{ t('home.allGames') }}</span>
+      <span class="provider-label">{{ provider.label }}</span>
+    </div>
+    <div class="card-deco">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none" opacity="0.15">
+        <circle cx="30" cy="30" r="25" stroke="white" stroke-width="2"/>
+        <circle cx="30" cy="30" r="15" stroke="white" stroke-width="2"/>
+      </svg>
     </div>
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   provider: { type: Object, required: true },
@@ -20,7 +22,6 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const { t } = useI18n()
 
 function handleClick() {
   router.push(`/games/${props.category}?provider=${props.provider.id}`)
@@ -29,50 +30,47 @@ function handleClick() {
 
 <style lang="scss" scoped>
 .provider-card {
-  width: $provider-card-width;
-  height: $provider-card-height;
+  width: 140px;
+  height: 90px;
   flex-shrink: 0;
   border-radius: 12px;
-  background: $bg-card;
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s;
+  position: relative;
   display: flex;
-  flex-direction: column;
+  align-items: flex-end;
 
   &:active {
     transform: scale(0.96);
   }
 }
 
-.card-image {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.card-content {
   padding: 12px;
-
-  img {
-    max-width: 100%;
-    max-height: 60px;
-    object-fit: contain;
-  }
-}
-
-.card-info {
-  padding: 8px 10px 10px;
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .provider-name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
 }
 
-.game-count {
-  font-size: 10px;
-  color: $text-muted;
+.provider-label {
+  font-size: 9px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+}
+
+.card-deco {
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  z-index: 1;
 }
 </style>

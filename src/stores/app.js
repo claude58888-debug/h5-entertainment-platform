@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import { mockBanners, mockAnnouncements } from '@/mock'
 
 export const useAppStore = defineStore('app', () => {
-  const banners = ref([])
-  const announcements = ref([])
+  const banners = ref(mockBanners)
+  const announcements = ref(mockAnnouncements)
   const config = ref({})
   const loading = ref(false)
 

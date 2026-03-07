@@ -1,40 +1,37 @@
 <template>
   <div class="coming-soon-card">
     <div class="card-content">
-      <span class="icon">🔮</span>
-      <span class="text">{{ t('common.comingSoon') }}</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 6v6l4 2"/>
+      </svg>
+      <span class="text">即将推出</span>
     </div>
   </div>
 </template>
 
-<script setup>
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
-</script>
-
 <style lang="scss" scoped>
 .coming-soon-card {
-  width: $provider-card-width;
-  height: $provider-card-height;
+  width: 140px;
+  height: 90px;
   flex-shrink: 0;
   border-radius: 12px;
-  background: $bg-card;
+  background: rgba(255,255,255,0.04);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px dashed $border-color;
+  border: 1px dashed rgba(255,255,255,0.1);
 }
 
 .card-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.icon { font-size: 28px; }
 .text {
-  font-size: 12px;
+  font-size: 11px;
   color: $text-muted;
 }
 </style>

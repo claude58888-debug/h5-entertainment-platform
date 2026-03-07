@@ -5,7 +5,7 @@
       left-icon="volume-o"
       :text="noticeText"
       background="#1e2a4a"
-      color="#f59e0b"
+      color="#f0c040"
     />
   </div>
 </template>

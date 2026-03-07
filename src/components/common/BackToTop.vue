@@ -1,7 +1,10 @@
 <template>
   <transition name="fade">
     <div class="back-to-top" v-show="visible" @click="scrollToTop">
-      <span>↑</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+      <span>TOP</span>
     </div>
   </transition>
 </template>
@@ -31,24 +34,31 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .back-to-top {
   position: fixed;
-  right: 16px;
   bottom: 80px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: $accent-purple;
-  color: #fff;
+  left: calc(50% + 179px);
+  width: auto;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255,255,255,0.7);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  gap: 2px;
+  font-size: 9px;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba($accent-purple, 0.4);
-  z-index: 99;
-  transition: transform 0.2s;
+  z-index: 9999;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
 
   &:active {
-    transform: scale(0.9);
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  @media (max-width: 450px) {
+    left: auto;
+    right: 10px;
   }
 }
 

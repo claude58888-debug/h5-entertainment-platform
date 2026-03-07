@@ -1,7 +1,7 @@
 {
-  "name": "H5 Entertainment Platform",
-  "short_name": "H5 Play",
-  "description": "Mobile-first H5 entertainment platform",
+    "name": "人人娱乐 - RR.TOP",
+    "short_name": "人人娱乐",
+    "description": "人人娱乐 - 最安全的在线娱乐平台",
   "start_url": "/#/home",
   "display": "standalone",
   "background_color": "#1a1a2e",

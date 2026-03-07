@@ -3,8 +3,8 @@ import { ref, computed } from 'vue'
 import { mockUser } from '@/mock'
 
 export const useUserStore = defineStore('user', () => {
-  const token = ref(localStorage.getItem('token') || '')
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  const token = ref('')
+  const user = ref(null)
   const showLoginModal = ref(false)
 
   const isLoggedIn = computed(() => !!token.value)
