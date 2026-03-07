@@ -25,27 +25,27 @@ const actions = [
   {
     label: '充值',
     path: '/deposit',
-    image: 'https://rr86.online/static/img/%E9%87%91%E5%88%9A%E5%8C%BA_%E5%85%85%E5%80%BC.79e3487a.webp',
+    image: '/img/icons/deposit.webp',
   },
   {
     label: '提现',
     path: '/withdraw',
-    image: 'https://rr86.online/static/img/recharge.77f88fba.png',
+    image: '/img/icons/withdraw.png',
   },
   {
     label: '任务',
     path: '/tasks',
-    image: 'https://rr86.online/static/img/renwu.08955b7b.png',
+    image: '/img/icons/task.png',
   },
   {
     label: '我的收入',
     path: '/income',
-    image: 'https://rr86.online/static/img/shouru.c9225545.png',
+    image: '/img/icons/income.png',
   },
   {
     label: '邀请好友',
     path: '/invite',
-    image: 'https://rr86.online/static/img/inviteFriends.78ba91c4.png',
+    image: '/img/icons/invite.png',
   }
 ]
 

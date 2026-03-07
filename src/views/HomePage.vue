@@ -80,15 +80,15 @@
         </div>
         <div class="crypto-section">
           <a href="https://www.huobi.com" target="_blank" class="crypto-link">
-            <img src="https://rr86.online/static/img/%E7%81%AB%E5%B8%81%E7%BD%91.8c599bf2.svg" alt="HTX" class="crypto-img" />
+            <img src="/img/crypto/huobi.svg" alt="HTX" class="crypto-img" />
             <span>火币网</span>
           </a>
           <a href="https://www.binance.com" target="_blank" class="crypto-link">
-            <img src="https://rr86.online/static/img/%E5%B8%81%E5%AE%89.2776e44c.svg" alt="BINANCE" class="crypto-img" />
+            <img src="/img/crypto/binance.svg" alt="BINANCE" class="crypto-img" />
             <span>币安</span>
           </a>
           <a href="https://www.okx.com" target="_blank" class="crypto-link">
-            <img src="https://rr86.online/static/img/%E6%AC%A7%E6%98%93.db9b41f3.svg" alt="OKEX" class="crypto-img" />
+            <img src="/img/crypto/okex.svg" alt="OKEX" class="crypto-img" />
             <span>欧易</span>
           </a>
         </div>
@@ -97,26 +97,26 @@
         <SectionHeader title="游戏事业" icon="🤝" />
         <div class="partners-section">
           <div class="partner-logo">
-            <img src="https://rr86.online/static/img/provider_evo.25d0355f.png" alt="EVO" />
+            <img src="/img/providers/provider_evo.png" alt="EVO" />
           </div>
           <div class="partner-logo">
-            <img src="https://rr86.online/static/img/provider_gfg.1ae695c4.png" alt="GFG" />
+            <img src="/img/providers/provider_gfg.png" alt="GFG" />
           </div>
           <div class="partner-logo">
-            <img src="https://rr86.online/static/img/provider_pg.140b8ae6.png" alt="PG" />
+            <img src="/img/providers/provider_pg.png" alt="PG" />
           </div>
           <div class="partner-logo">
-            <img src="https://rr86.online/static/img/provider_pp.3390e3aa.png" alt="PP" />
+            <img src="/img/providers/provider_pp.png" alt="PP" />
           </div>
           <div class="partner-logo">
-            <img src="https://rr86.online/static/img/provider_wm.ba288149.png" alt="WM" />
+            <img src="/img/providers/provider_wm.png" alt="WM" />
           </div>
         </div>
 
         <!-- License -->
         <div class="license-section">
           <div class="license-badges">
-            <img src="https://rr86.online/static/img/game_provider.26d93723.png" alt="Gaming Curacao" class="license-img" />
+            <img src="/img/misc/game_provider.png" alt="Gaming Curacao" class="license-img" />
             <div class="license-badge age-badge">
               <span>18+</span>
             </div>
