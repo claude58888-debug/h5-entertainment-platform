@@ -1,7 +1,8 @@
 <template>
   <div class="game-card" @click="handleClick">
     <div class="card-image" :style="{ background: gameGradient }">
-      <div class="card-deco">
+      <img v-if="game.image" :src="game.image" :alt="game.name" class="game-img" @error="onImgError" />
+      <div v-if="!hasImage" class="card-deco">
         <div class="deco-circle c1"></div>
         <div class="deco-circle c2"></div>
         <div class="deco-diamond"></div>
@@ -15,7 +16,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
@@ -25,6 +26,9 @@ const props = defineProps({
 
 const router = useRouter()
 const userStore = useUserStore()
+const imgFailed = ref(false)
+
+const hasImage = computed(() => props.game.image && !imgFailed.value)
 
 const gradientMap = {
   '极速糖果1000': 'linear-gradient(135deg, #6c5ce7, #e84393)',
@@ -57,6 +61,10 @@ const gameGradient = computed(() => {
   return gradientMap[props.game.name] || 'linear-gradient(135deg, #2d3436, #636e72)'
 })
 
+function onImgError() {
+  imgFailed.value = true
+}
+
 function handleClick() {
   if (!userStore.isLoggedIn) {
     userStore.showLoginModal = true
@@ -84,6 +92,15 @@ function handleClick() {
   border-radius: 10px;
   overflow: hidden;
   position: relative;
+}
+
+.game-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
 }
 
 .card-deco {
@@ -129,6 +146,7 @@ function handleClick() {
   right: 0;
   padding: 30px 8px 10px;
   background: linear-gradient(transparent, rgba(0,0,0,0.6));
+  z-index: 3;
 }
 
 .game-name {

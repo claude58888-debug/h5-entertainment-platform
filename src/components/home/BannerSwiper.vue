@@ -16,12 +16,13 @@
     >
       <swiper-slide v-for="banner in banners" :key="banner.id">
         <router-link :to="banner.link" class="banner-slide" :style="{ background: banner.gradient }">
+          <img v-if="banner.image" :src="banner.image" :alt="banner.title" class="banner-image" @error="onImgError" />
           <div class="banner-content">
             <h3 class="banner-title">{{ banner.title }}</h3>
             <p class="banner-subtitle">{{ banner.subtitle }}</p>
             <span class="banner-btn">了解详情</span>
           </div>
-          <div class="banner-decos">
+          <div v-if="!banner.image" class="banner-decos">
             <div class="deco-circle d1"></div>
             <div class="deco-circle d2"></div>
             <div class="deco-circle d3"></div>
@@ -49,6 +50,10 @@ import 'swiper/css/pagination'
 
 const appStore = useAppStore()
 const banners = computed(() => appStore.banners)
+
+function onImgError(e) {
+  e.target.style.display = 'none'
+}
 </script>
 
 <style lang="scss" scoped>
@@ -82,6 +87,15 @@ const banners = computed(() => appStore.banners)
   padding: 20px 24px;
   position: relative;
   overflow: hidden;
+}
+
+.banner-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
 }
 
 .banner-content {

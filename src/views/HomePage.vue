@@ -49,28 +49,18 @@
         <SectionHeader title="体育竞猜" icon="⚽" more="/games/sports" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in sportsProviders" :key="p.id" :provider="p" category="sports" />
-          <ComingSoonCard />
         </div>
 
         <!-- Chess -->
         <SectionHeader title="棋牌游戏" icon="♟️" more="/games/chess" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in chessProviders" :key="p.id" :provider="p" category="chess" />
-          <ComingSoonCard />
         </div>
 
         <!-- Video -->
         <SectionHeader title="人人影视" icon="🎬" />
         <div class="scroll-row hide-scrollbar">
-          <div class="video-card adult" @click="$router.push('/video')">
-            <span class="video-label">成人</span>
-          </div>
-          <div class="video-card movie" @click="$router.push('/video')">
-            <span class="video-label">电影</span>
-          </div>
-          <div class="video-card coming">
-            <span class="video-label">即将推出</span>
-          </div>
+          <ProviderCard v-for="p in videoProviders" :key="p.id" :provider="p" category="video" />
         </div>
 
         <!-- Crypto Section -->
@@ -80,15 +70,15 @@
         </div>
         <div class="crypto-section">
           <a href="https://www.huobi.com" target="_blank" class="crypto-link">
-            <div class="crypto-icon huobi">H</div>
+            <img src="/img/crypto/huobi.svg" alt="HTX" class="crypto-img" />
             <span>火币网</span>
           </a>
           <a href="https://www.binance.com" target="_blank" class="crypto-link">
-            <div class="crypto-icon binance">B</div>
+            <img src="/img/crypto/binance.svg" alt="BINANCE" class="crypto-img" />
             <span>币安</span>
           </a>
           <a href="https://www.okx.com" target="_blank" class="crypto-link">
-            <div class="crypto-icon okx">O</div>
+            <img src="/img/crypto/okex.svg" alt="OKEX" class="crypto-img" />
             <span>欧易</span>
           </a>
         </div>
@@ -96,18 +86,27 @@
         <!-- Partners -->
         <SectionHeader title="游戏事业" icon="🤝" />
         <div class="partners-section">
-          <div class="partner-logo" v-for="name in ['PG', 'PP', 'EVO', 'JILI', 'JDB', 'CQ9']" :key="name">
-            <span>{{ name }}</span>
+          <div class="partner-logo">
+            <img src="/img/providers/provider_evo.png" alt="EVO" />
+          </div>
+          <div class="partner-logo">
+            <img src="/img/providers/provider_gfg.png" alt="GFG" />
+          </div>
+          <div class="partner-logo">
+            <img src="/img/providers/provider_pg.png" alt="PG" />
+          </div>
+          <div class="partner-logo">
+            <img src="/img/providers/provider_pp.png" alt="PP" />
+          </div>
+          <div class="partner-logo">
+            <img src="/img/providers/provider_wm.png" alt="WM" />
           </div>
         </div>
 
         <!-- License -->
         <div class="license-section">
           <div class="license-badges">
-            <div class="license-badge">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <span class="badge-text">Gaming Curacao</span>
-            </div>
+            <img src="/img/misc/game_provider.png" alt="Gaming Curacao" class="license-img" />
             <div class="license-badge age-badge">
               <span>18+</span>
             </div>
@@ -142,7 +141,6 @@ import GameCategoryTabs from '@/components/home/GameCategoryTabs.vue'
 import SectionHeader from '@/components/home/SectionHeader.vue'
 import GameCard from '@/components/home/GameCard.vue'
 import ProviderCard from '@/components/home/ProviderCard.vue'
-import ComingSoonCard from '@/components/home/ComingSoonCard.vue'
 
 const appStore = useAppStore()
 const gameStore = useGameStore()
@@ -158,6 +156,7 @@ const fishingProviders = computed(() => gameStore.getProvidersByCategory('fishin
 const lotteryProviders = computed(() => gameStore.getProvidersByCategory('lottery'))
 const sportsProviders = computed(() => gameStore.getProvidersByCategory('sports'))
 const chessProviders = computed(() => gameStore.getProvidersByCategory('chess'))
+const videoProviders = computed(() => gameStore.getProvidersByCategory('video'))
 
 const categoryGames = computed(() => gameStore.getGamesByCategory(activeCategory.value))
 
@@ -209,36 +208,6 @@ onMounted(() => {
   p { margin-top: 12px; }
 }
 
-.video-card {
-  width: 140px;
-  height: 90px;
-  flex-shrink: 0;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-
-  &.adult {
-    background: linear-gradient(135deg, #e84393, #d63031);
-  }
-  &.movie {
-    background: linear-gradient(135deg, #0984e3, #6c5ce7);
-  }
-  &.coming {
-    background: rgba(255,255,255,0.04);
-    border: 1px dashed rgba(255,255,255,0.1);
-    cursor: default;
-  }
-}
-
-.video-label {
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-}
 
 .crypto-header {
   display: flex;
@@ -282,20 +251,10 @@ onMounted(() => {
   color: $text-secondary;
 }
 
-.crypto-icon {
+.crypto-img {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-
-  &.huobi { background: #1e88e5; }
-  &.binance { background: #f0b90b; color: #000; }
-  &.okx { background: #555; }
+  object-fit: contain;
 }
 
 .partners-section {
@@ -314,9 +273,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  color: $text-muted;
-  font-weight: 600;
+
+  img {
+    height: 24px;
+    object-fit: contain;
+    opacity: 0.7;
+  }
+}
+
+.license-img {
+  height: 50px;
+  object-fit: contain;
 }
 
 .license-section {
