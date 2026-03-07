@@ -3,9 +3,11 @@
     <div class="card-content">
       <span class="provider-name">{{ provider.name }}</span>
       <span class="provider-label">{{ provider.label }}</span>
+      <span v-if="showCount" class="provider-count">{{ provider.gameCount }} 款游戏</span>
     </div>
     <div class="card-deco">
-      <svg width="60" height="60" viewBox="0 0 60 60" fill="none" opacity="0.15">
+      <img v-if="provider.image" :src="provider.image" :alt="provider.name" class="provider-logo" @error="onImgError" />
+      <svg v-else width="60" height="60" viewBox="0 0 60 60" fill="none" opacity="0.15">
         <circle cx="30" cy="30" r="25" stroke="white" stroke-width="2"/>
         <circle cx="30" cy="30" r="15" stroke="white" stroke-width="2"/>
       </svg>
@@ -18,10 +20,15 @@ import { useRouter } from 'vue-router'
 
 const props = defineProps({
   provider: { type: Object, required: true },
-  category: { type: String, default: '' }
+  category: { type: String, default: '' },
+  showCount: { type: Boolean, default: false }
 })
 
 const router = useRouter()
+
+function onImgError(e) {
+  e.target.style.display = 'none'
+}
 
 function handleClick() {
   router.push(`/games/${props.category}?provider=${props.provider.id}`)
@@ -67,10 +74,24 @@ function handleClick() {
   text-transform: uppercase;
 }
 
+.provider-count {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+}
+
 .card-deco {
   position: absolute;
   right: -5px;
   top: -5px;
   z-index: 1;
+}
+
+.provider-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  opacity: 0.3;
+  filter: brightness(2);
 }
 </style>

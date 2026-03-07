@@ -80,15 +80,15 @@
         </div>
         <div class="crypto-section">
           <a href="https://www.huobi.com" target="_blank" class="crypto-link">
-            <div class="crypto-icon huobi">H</div>
+            <img src="https://rr86.online/static/img/%E7%81%AB%E5%B8%81%E7%BD%91.8c599bf2.svg" alt="HTX" class="crypto-img" />
             <span>火币网</span>
           </a>
           <a href="https://www.binance.com" target="_blank" class="crypto-link">
-            <div class="crypto-icon binance">B</div>
+            <img src="https://rr86.online/static/img/%E5%B8%81%E5%AE%89.2776e44c.svg" alt="BINANCE" class="crypto-img" />
             <span>币安</span>
           </a>
           <a href="https://www.okx.com" target="_blank" class="crypto-link">
-            <div class="crypto-icon okx">O</div>
+            <img src="https://rr86.online/static/img/%E6%AC%A7%E6%98%93.db9b41f3.svg" alt="OKEX" class="crypto-img" />
             <span>欧易</span>
           </a>
         </div>
@@ -96,18 +96,27 @@
         <!-- Partners -->
         <SectionHeader title="游戏事业" icon="🤝" />
         <div class="partners-section">
-          <div class="partner-logo" v-for="name in ['PG', 'PP', 'EVO', 'JILI', 'JDB', 'CQ9']" :key="name">
-            <span>{{ name }}</span>
+          <div class="partner-logo">
+            <img src="https://rr86.online/static/img/provider_evo.25d0355f.png" alt="EVO" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://rr86.online/static/img/provider_gfg.1ae695c4.png" alt="GFG" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://rr86.online/static/img/provider_pg.140b8ae6.png" alt="PG" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://rr86.online/static/img/provider_pp.3390e3aa.png" alt="PP" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://rr86.online/static/img/provider_wm.ba288149.png" alt="WM" />
           </div>
         </div>
 
         <!-- License -->
         <div class="license-section">
           <div class="license-badges">
-            <div class="license-badge">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <span class="badge-text">Gaming Curacao</span>
-            </div>
+            <img src="https://rr86.online/static/img/game_provider.26d93723.png" alt="Gaming Curacao" class="license-img" />
             <div class="license-badge age-badge">
               <span>18+</span>
             </div>
@@ -282,20 +291,10 @@ onMounted(() => {
   color: $text-secondary;
 }
 
-.crypto-icon {
+.crypto-img {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-
-  &.huobi { background: #1e88e5; }
-  &.binance { background: #f0b90b; color: #000; }
-  &.okx { background: #555; }
+  object-fit: contain;
 }
 
 .partners-section {
@@ -314,9 +313,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  color: $text-muted;
-  font-weight: 600;
+
+  img {
+    height: 24px;
+    object-fit: contain;
+    opacity: 0.7;
+  }
+}
+
+.license-img {
+  height: 50px;
+  object-fit: contain;
 }
 
 .license-section {
