@@ -1,0 +1,117 @@
+@use './variables' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #0a0a1a !important;
+  overflow-x: hidden;
+  color: $text-primary;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  max-width: $max-width !important;
+  margin: 0 auto !important;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background-color: $bg-primary;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+// Scrollbar hide
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Page transitions
+.slide-fade-enter-active {
+  transition: all 0.25s ease-out;
+}
+.slide-fade-leave-active {
+  transition: all 0.2s ease-in;
+}
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+// Vant overrides for dark theme
+:root {
+  --van-background: #{$bg-primary};
+  --van-background-2: #{$bg-card};
+  --van-text-color: #{$text-primary};
+  --van-text-color-2: #{$text-secondary};
+  --van-text-color-3: #{$text-muted};
+  --van-border-color: #{$border-color};
+  --van-active-color: #{$bg-card};
+  --van-popup-background: #{$bg-primary};
+  --van-action-sheet-background: #{$bg-primary};
+  --van-button-primary-background: #{$accent-purple};
+  --van-button-primary-border-color: #{$accent-purple};
+  --van-tab-active-text-color: #{$accent-purple};
+  --van-tabs-bottom-bar-color: #{$accent-purple};
+  --van-field-input-text-color: #{$text-primary};
+  --van-cell-background: #{$bg-card};
+  --van-skeleton-paragraph-background: #{$bg-card};
+  --van-skeleton-avatar-background: #{$bg-card};
+  --van-notice-bar-background: #{$bg-card};
+  --van-notice-bar-text-color: #{$accent-gold};
+  --van-pull-refresh-text-color: #{$text-secondary};
+  --van-loading-text-color: #{$text-secondary};
+  --van-toast-background: #{$bg-card};
+  --van-toast-text-color: #{$text-primary};
+  --van-overlay-background: rgba(0, 0, 0, 0.7);
+  --van-nav-bar-background: #{$bg-header};
+  --van-nav-bar-title-text-color: #{$text-primary};
+  --van-nav-bar-icon-color: #{$text-primary};
+  --van-field-label-color: #{$text-secondary};
+  --van-cell-text-color: #{$text-primary};
+}
+
+// Skeleton theme
+.van-skeleton {
+  --van-skeleton-paragraph-background: #{$bg-card};
+}
+
+// Constrain Vant popups/overlays to 450px container
+.van-overlay,
+.van-popup {
+  max-width: $max-width;
+  left: 50% !important;
+  transform: translateX(-50%);
+}
+.van-popup--bottom {
+  max-width: $max-width;
+  left: 50% !important;
+  transform: translateX(-50%);
+}

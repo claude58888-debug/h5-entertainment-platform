@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#1a1a2e" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>人人娱乐 - RR.TOP</title>
+    <style>
+      /* Critical layout styles - inline to prevent FOUC and ensure max-width constraint */
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #0a0a1a !important;
+        overflow-x: hidden;
+        width: 100%;
+        min-height: 100%;
+      }
+      #app {
+        max-width: 450px !important;
+        margin: 0 auto !important;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        background-color: #1a1a2e;
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

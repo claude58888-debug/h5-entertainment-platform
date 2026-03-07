@@ -1,0 +1,17 @@
+{
+    "name": "人人娱乐 - RR.TOP",
+    "short_name": "人人娱乐",
+    "description": "人人娱乐 - 最安全的在线娱乐平台",
+  "start_url": "/#/home",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
