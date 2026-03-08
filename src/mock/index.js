@@ -7,7 +7,7 @@ export const mockBanners = [
 ]
 
 export const mockAnnouncements = [
-  { id: 1, content: '请大家认准平台唯一客服 @RRYL666 @RRYL555 我们客服绝对不会让会员私下转账，请大家不要上外面冒充客服的骗子的当，充值请一定到人人娱乐官网首页自助充值。' }
+  { id: 1, content: '请大家认准平台唯一客服 @DDYL666 @DDYL555 我们客服绝对不会让会员私下转账，请大家不要上外面冒充客服的骗子的当，充值请一定到大大娱乐官网首页自助充值。' }
 ]
 
 export const mockGames = [
@@ -207,5 +207,5 @@ export const mockCategories = [
   { id: 'lottery', label: '彩票', icon: 'lottery' },
   { id: 'sports', label: '体育竞猜', icon: 'sports' },
   { id: 'chess', label: '棋牌游戏', icon: 'chess' },
-  { id: 'video', label: '人人影视', icon: 'video' }
+  { id: 'video', label: '大大影视', icon: 'video' }
 ]

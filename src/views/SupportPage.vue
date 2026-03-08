@@ -38,9 +38,9 @@ const activeFaq = ref([])
 
 const options = [
   { id: 'livechat', name: t('support.livechat'), desc: '即时响应', icon: '💬' },
-  { id: 'telegram', name: t('support.telegram'), desc: '@RRYL666', icon: '✈️' },
-  { id: 'whatsapp', name: t('support.whatsapp'), desc: '点击联系', icon: '📱' },
-  { id: 'email', name: t('support.email'), desc: 'support@rr.top', icon: '📧' }
+    { id: 'telegram', name: t('support.telegram'), desc: '@DDYL666', icon: '✈️' },
+    { id: 'whatsapp', name: t('support.whatsapp'), desc: '点击联系', icon: '📱' },
+    { id: 'email', name: t('support.email'), desc: 'support@dd.top', icon: '📧' }
 ]
 
 const faqs = [

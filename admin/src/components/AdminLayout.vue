@@ -2,7 +2,7 @@
   <div class="admin-layout" :class="{ dark: true }">
     <div class="sidebar" :style="{ width: isCollapsed ? '64px' : '220px' }">
       <div class="logo-container">
-        <span v-if="!isCollapsed" class="logo-text">🎮 人人娱乐</span>
+        <span v-if="!isCollapsed" class="logo-text">🎮 大大娱乐</span>
         <span v-else class="logo-icon">🎮</span>
       </div>
       <el-menu

@@ -103,7 +103,7 @@ const titleMap = {
   lottery: '彩票',
   sports: '体育竞猜',
   chess: '棋牌游戏',
-  video: '人人影视'
+  video: '大大影视'
 }
 
 const pageTitle = computed(() => titleMap[category.value] || '全部游戏')

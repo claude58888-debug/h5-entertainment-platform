@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h1 class="login-title">人人娱乐</h1>
+      <h1 class="login-title">大大娱乐</h1>
       <p class="login-subtitle">管理后台登录</p>
 
       <div class="role-selector">
