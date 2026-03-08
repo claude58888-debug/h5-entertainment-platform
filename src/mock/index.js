@@ -1,9 +1,9 @@
 export const mockBanners = [
-  { id: 1, title: '每日百充 最多赠送588U', subtitle: 'Daily Deposit Bonus', link: '/promotions', gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)', image: '/img/banners/banner-allbonus.webp' },
-  { id: 2, title: '每周有效投注', subtitle: 'Weekly Valid Bets Bonus', link: '/promotions', gradient: 'linear-gradient(135deg, #f0c040, #e67e22)', image: '/img/banners/banner-yessc2.webp' },
-  { id: 3, title: '电子游戏闯关', subtitle: 'Slot Game Challenge', link: '/promotions', gradient: 'linear-gradient(135deg, #00b894, #00cec9)', image: '/img/banners/banner-slotrekeback2.webp' },
-  { id: 4, title: '棋牌游戏闯关', subtitle: 'Chess Game Challenge', link: '/promotions', gradient: 'linear-gradient(135deg, #e17055, #d63031)', image: '/img/banners/banner-actThroughtQP.webp' },
-  { id: 5, title: '首充好礼', subtitle: 'First Deposit Gift', link: '/promotions', gradient: 'linear-gradient(135deg, #6c5ce7, #fd79a8)', image: '/img/banners/banner-actThroughtDZ.webp' }
+  { id: 1, title: '每日百充 最多赠送588U', subtitle: '每日充值即享丰厚奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)', image: '/img/banners/banner-allbonus.webp' },
+  { id: 2, title: '每周有效投注', subtitle: '周投注达标赢取奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #f0c040, #e67e22)', image: '/img/banners/banner-yessc2.webp' },
+  { id: 3, title: '电子游戏闯关', subtitle: '过关斩将赢大奖', link: '/promotions', gradient: 'linear-gradient(135deg, #00b894, #00cec9)', image: '/img/banners/banner-slotrekeback2.webp' },
+  { id: 4, title: '棋牌游戏闯关', subtitle: '连续过关赢丰厚奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #e17055, #d63031)', image: '/img/banners/banner-actThroughtQP.webp' },
+  { id: 5, title: '首充好礼', subtitle: '首次充值即送豪礼', link: '/promotions', gradient: 'linear-gradient(135deg, #6c5ce7, #fd79a8)', image: '/img/banners/banner-actThroughtDZ.webp' }
 ]
 
 export const mockAnnouncements = [
@@ -146,13 +146,13 @@ export const mockProviders = {
 }
 
 export const mockPromotions = [
-  { id: 1, title: '每日百充 最多赠送588U', description: '每日充值即可获得丰厚奖金，最高赠送588U，3倍流水即可提现', type: 'deposit', gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)' },
-  { id: 2, title: '每周有效投注', description: '每周有效投注达标，最高可获得12888U奖金', type: 'cashback', gradient: 'linear-gradient(135deg, #f0c040, #e67e22)' },
-  { id: 3, title: 'VIP专属特权', description: 'VIP会员专享特权，升级即送红包，月月领红包', type: 'vip', gradient: 'linear-gradient(135deg, #e84393, #fd79a8)' },
-  { id: 4, title: '邀请好友 赚取佣金', description: '邀请好友注册，获得下级0.6%投注佣金', type: 'referral', gradient: 'linear-gradient(135deg, #00b894, #00cec9)' },
-  { id: 5, title: '首充好礼', description: '首次充值即送丰厚奖励，最高赠送588U', type: 'event', gradient: 'linear-gradient(135deg, #e17055, #d63031)' },
-  { id: 6, title: '电子游戏闯关', description: '参与电子游戏闯关活动，过关斩将赢大奖', type: 'event', gradient: 'linear-gradient(135deg, #0984e3, #6c5ce7)' },
-  { id: 7, title: '棋牌游戏闯关', description: '棋牌游戏闯关活动，连续过关赢取丰厚奖金', type: 'event', gradient: 'linear-gradient(135deg, #fdcb6e, #e17055)' }
+  { id: 1, title: '每日百充 最多赠送588U', description: '每日充值即可获得丰厚奖金，最高赠送588U，3倍流水即可提现', type: 'deposit', gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)', image: '/img/banners/banner-allbonus.webp', startDate: '2026-01-01', endDate: '2026-12-31' },
+  { id: 2, title: '每周有效投注', description: '每周有效投注达标，最高可获得12888U奖金', type: 'cashback', gradient: 'linear-gradient(135deg, #f0c040, #e67e22)', image: '/img/banners/banner-yessc2.webp', startDate: '2026-01-01', endDate: '2026-12-31' },
+  { id: 3, title: 'VIP专属特权', description: 'VIP会员专享特权，升级即送红包，月月领红包', type: 'vip', gradient: 'linear-gradient(135deg, #e84393, #fd79a8)', image: '/img/banners/banner-actThroughtDZ.webp', startDate: '2026-01-01', endDate: '2026-12-31' },
+  { id: 4, title: '邀请好友 赚取佣金', description: '邀请好友注册，获得下级0.6%投注佣金', type: 'referral', gradient: 'linear-gradient(135deg, #00b894, #00cec9)', image: '/img/banners/banner-slotrekeback2.webp', startDate: '2026-01-01', endDate: '2026-12-31' },
+  { id: 5, title: '首充好礼', description: '首次充值即送丰厚奖励，最高赠送588U', type: 'event', gradient: 'linear-gradient(135deg, #e17055, #d63031)', image: '/img/banners/banner-actThroughtQP.webp', startDate: '2026-01-01', endDate: '2026-12-31' },
+  { id: 6, title: '电子游戏闯关', description: '参与电子游戏闯关活动，过关斩将赢大奖', type: 'event', gradient: 'linear-gradient(135deg, #0984e3, #6c5ce7)', image: '/img/banners/banner-slotrekeback2.webp', startDate: '2026-01-01', endDate: '2026-12-31' },
+  { id: 7, title: '棋牌游戏闯关', description: '棋牌游戏闯关活动，连续过关赢取丰厚奖金', type: 'event', gradient: 'linear-gradient(135deg, #fdcb6e, #e17055)', image: '/img/banners/banner-actThroughtQP.webp', startDate: '2026-01-01', endDate: '2026-12-31' }
 ]
 
 export const mockTasks = [

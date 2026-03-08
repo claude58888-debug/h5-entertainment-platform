@@ -19,7 +19,9 @@
           name="password"
           :label="t('auth.password')"
           :placeholder="t('auth.passwordPlaceholder')"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
+          :right-icon="showPassword ? 'eye-o' : 'closed-eye'"
+          @click-right-icon="showPassword = !showPassword"
           :rules="[{ required: true, message: t('auth.passwordPlaceholder') }]"
         />
       </van-cell-group>
@@ -49,6 +51,7 @@ const userStore = useUserStore()
 const phone = ref('')
 const password = ref('')
 const loading = ref(false)
+const showPassword = ref(false)
 
 async function onSubmit() {
   loading.value = true
@@ -57,7 +60,7 @@ async function onSubmit() {
     showToast({ message: t('auth.loginSuccess'), type: 'success' })
     router.push('/home')
   } catch (e) {
-    showToast({ message: t('common.error'), type: 'fail' })
+    showToast({ message: e.message || t('common.error'), type: 'fail' })
   } finally {
     loading.value = false
   }

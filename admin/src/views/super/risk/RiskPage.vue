@@ -80,7 +80,7 @@
             <el-table-column prop="addedAt" label="封禁时间" width="180" />
             <el-table-column label="操作" width="100">
               <template #default="{ row }">
-                <el-button size="small" type="danger" text @click="ElMessage.success('已移除')">解封</el-button>
+                <el-button size="small" type="danger" text @click="unbanDevice(row)">解封</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -142,7 +142,20 @@ function removeIp(row) {
 }
 
 function handleAlert(row, action) {
-  const labels = { review: '标记为审查中', freeze: '冻结账户', dismiss: '已忽略' }
-  ElMessage.success(labels[action])
+  if (action === 'freeze') {
+    ElMessageBox.confirm(`确定要冻结会员 ${row.member} 的账户吗？此操作将立即生效。`, '确认冻结', { type: 'warning', confirmButtonText: '确定冻结', cancelButtonText: '取消' }).then(() => {
+      ElMessage.success('已冻结账户')
+    }).catch(() => {})
+  } else {
+    const labels = { review: '标记为审查中', dismiss: '已忽略' }
+    ElMessage.success(labels[action])
+  }
+}
+
+function unbanDevice(row) {
+  ElMessageBox.confirm(`确定要解封设备 ${row.fingerprint.substring(0, 16)}... 吗？关联的 ${row.relatedAccounts} 个账号将恢复正常。`, '确认解封', { type: 'warning' }).then(() => {
+    deviceBlacklist.value = deviceBlacklist.value.filter(d => d.fingerprint !== row.fingerprint)
+    ElMessage.success('已解封设备')
+  }).catch(() => {})
 }
 </script>

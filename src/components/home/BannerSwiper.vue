@@ -17,7 +17,7 @@
       <swiper-slide v-for="banner in banners" :key="banner.id">
         <router-link :to="banner.link" class="banner-slide" :style="{ background: banner.gradient }">
           <img v-if="banner.image" :src="banner.image" :alt="banner.title" class="banner-image" @error="onImgError" />
-          <div class="banner-content">
+          <div v-if="!banner.image" class="banner-content">
             <h3 class="banner-title">{{ banner.title }}</h3>
             <p class="banner-subtitle">{{ banner.subtitle }}</p>
             <span class="banner-btn">了解详情</span>
