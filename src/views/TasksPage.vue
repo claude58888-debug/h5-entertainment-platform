@@ -60,27 +60,50 @@
       <!-- Task List -->
       <div class="task-list">
         <div v-for="task in filteredTasks" :key="task.id" class="task-card">
-          <div class="task-left">
+          <div class="task-header">
             <div class="task-icon-wrap">
               <span class="task-icon">{{ getTaskIcon(task) }}</span>
             </div>
             <div class="task-info">
               <h4>{{ task.title }}</h4>
               <p>{{ task.description }}</p>
-              <div class="task-progress">
-                <div class="progress-bar">
-                  <div
-                    class="progress-fill"
-                    :style="{ width: Math.min(100, (task.progress / task.target) * 100) + '%' }"
-                  ></div>
-                </div>
-                <span class="progress-text">{{ task.progress }}/{{ task.target }}</span>
-              </div>
             </div>
           </div>
-          <div class="task-reward-section">
-            <span class="reward-amount">+{{ task.reward }}</span>
-            <span class="reward-unit">{{ task.rewardUnit }}</span>
+
+          <!-- Reward Tier Progress Nodes -->
+          <div v-if="task.tiers && task.tiers.length" class="tier-progress-section">
+            <div class="tier-progress-bar">
+              <button class="tier-nav-btn" @click="scrollTierLeft(task.id)">&lt;</button>
+              <div class="tier-steps">
+                <div class="tier-line"></div>
+                <div
+                  v-for="tier in getVisibleTiers(task)"
+                  :key="tier.level"
+                  class="tier-step"
+                  :class="{ active: tier.level === task.currentTier, completed: tier.level < task.currentTier }"
+                >
+                  <div class="step-indicator">
+                    <span class="step-num">{{ tier.level }}</span>
+                    <div v-if="tier.level === task.currentTier" class="step-arrow"></div>
+                  </div>
+                  <span class="step-reward">{{ tier.reward }}U</span>
+                </div>
+              </div>
+              <button class="tier-nav-btn" @click="scrollTierRight(task.id)">&gt;</button>
+            </div>
+          </div>
+
+          <!-- Task Progress -->
+          <div class="task-bottom">
+            <div class="task-progress-row">
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  :style="{ width: Math.min(100, (task.progress / task.target) * 100) + '%' }"
+                ></div>
+              </div>
+              <span class="progress-text">{{ task.progress }}/{{ task.target }}</span>
+            </div>
             <van-button
               size="small"
               round
@@ -89,7 +112,7 @@
               :class="{ 'btn-claimable': !task.claimed && task.progress >= task.target }"
               @click="claimTask(task)"
             >
-              {{ task.claimed ? '已领取' : task.progress >= task.target ? '领取' : '未完成' }}
+              {{ task.claimed ? '已领取' : task.progress >= task.target ? '领取' : '不可领取' }}
             </van-button>
           </div>
         </div>
@@ -162,6 +185,32 @@ function claimSignIn(day) {
   }
   day.claimed = true
   showToast({ message: `签到成功！+${day.reward} USDT`, type: 'success' })
+}
+
+const tierOffsets = ref({})
+
+function getVisibleTiers(task) {
+  const offset = tierOffsets.value[task.id] || 0
+  if (task.tiers && task.tiers.length > 5) {
+    return task.tiers.slice(offset, offset + 5)
+  }
+  return task.tiers || []
+}
+
+function scrollTierLeft(taskId) {
+  const current = tierOffsets.value[taskId] || 0
+  if (current > 0) {
+    tierOffsets.value[taskId] = current - 1
+  }
+}
+
+function scrollTierRight(taskId) {
+  const task = tasks.value.find(t => t.id === taskId)
+  if (!task || !task.tiers) return
+  const current = tierOffsets.value[taskId] || 0
+  if (current + 5 < task.tiers.length) {
+    tierOffsets.value[taskId] = current + 1
+  }
 }
 
 function claimTask(task) {
@@ -341,18 +390,13 @@ function claimTask(task) {
   border-radius: 12px;
   padding: 14px;
   margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
 }
 
-.task-left {
-  flex: 1;
+.task-header {
   display: flex;
   gap: 12px;
   align-items: center;
-  min-width: 0;
+  margin-bottom: 12px;
 }
 
 .task-icon-wrap {
@@ -386,14 +430,137 @@ function claimTask(task) {
   p {
     font-size: 11px;
     color: $text-muted;
-    margin-bottom: 6px;
+    margin-bottom: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 }
 
-.task-progress {
+/* Tier Progress Nodes */
+.tier-progress-section {
+  margin-bottom: 12px;
+}
+
+.tier-progress-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.tier-nav-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+}
+
+.tier-steps {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  padding: 0 4px;
+}
+
+.tier-line {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  z-index: 0;
+}
+
+.tier-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.step-indicator {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: $bg-card;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tier-step.active .step-num {
+  background: $accent-purple;
+  border-color: $accent-purple;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+}
+
+.tier-step.completed .step-num {
+  background: rgba(124, 58, 237, 0.3);
+  border-color: $accent-purple;
+  color: #fff;
+}
+
+.step-arrow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid $accent-purple;
+}
+
+.step-reward {
+  font-size: 10px;
+  color: $accent-gold;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Task Bottom */
+.task-bottom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-progress-row {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -418,25 +585,6 @@ function claimTask(task) {
   font-size: 10px;
   color: $text-muted;
   white-space: nowrap;
-}
-
-.task-reward-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.reward-amount {
-  font-size: 18px;
-  font-weight: 700;
-  color: $accent-gold;
-}
-
-.reward-unit {
-  font-size: 10px;
-  color: $text-muted;
 }
 
 .btn-claimable {
