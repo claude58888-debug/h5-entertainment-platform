@@ -1,7 +1,7 @@
 <template>
   <div class="game-card" @click="handleClick">
     <div class="card-image" :style="{ background: gameGradient }">
-      <img v-if="game.image" :src="game.image" :alt="game.name" class="game-img" @error="onImgError" />
+      <img v-if="game.image && !imgFailed" :src="game.image" :alt="game.name" class="game-img" @error="onImgError" />
       <div v-if="!hasImage" class="card-deco">
         <div class="deco-circle c1"></div>
         <div class="deco-circle c2"></div>
@@ -11,7 +11,6 @@
         <span class="game-name">{{ game.name }}</span>
       </div>
     </div>
-    <div class="card-provider">{{ game.provider }}</div>
   </div>
 </template>
 
@@ -61,7 +60,8 @@ const gameGradient = computed(() => {
   return gradientMap[props.game.name] || 'linear-gradient(135deg, #2d3436, #636e72)'
 })
 
-function onImgError() {
+function onImgError(e) {
+  e.target.style.display = 'none'
   imgFailed.value = true
 }
 
@@ -160,12 +160,4 @@ function handleClick() {
   text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
-.card-provider {
-  padding: 4px 2px 0;
-  font-size: 9px;
-  color: $text-muted;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 </style>

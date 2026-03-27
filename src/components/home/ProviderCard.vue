@@ -101,9 +101,13 @@ function handleClick() {
 }
 
 .provider-name {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: #fff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 </style>

@@ -3,7 +3,7 @@
     <div class="support-hero">
       <div class="hero-icon">💬</div>
       <h2>{{ t('support.title') }}</h2>
-      <p>24/7 Online Support</p>
+      <p>7×24小时在线客服</p>
     </div>
 
     <div class="support-options">
@@ -37,21 +37,21 @@ const { t } = useI18n()
 const activeFaq = ref([])
 
 const options = [
-  { id: 'livechat', name: t('support.livechat'), desc: 'Instant response', icon: '💬' },
-  { id: 'telegram', name: t('support.telegram'), desc: '@h5play_support', icon: '✈️' },
-  { id: 'whatsapp', name: t('support.whatsapp'), desc: '+1 234 567 890', icon: '📱' },
-  { id: 'email', name: t('support.email'), desc: 'support@h5play.com', icon: '📧' }
+  { id: 'livechat', name: t('support.livechat'), desc: '即时响应', icon: '💬' },
+    { id: 'telegram', name: t('support.telegram'), desc: '@DDYL666', icon: '✈️' },
+    { id: 'whatsapp', name: t('support.whatsapp'), desc: '点击联系', icon: '📱' },
+    { id: 'email', name: t('support.email'), desc: 'support@dd.top', icon: '📧' }
 ]
 
 const faqs = [
-  { id: 1, q: 'How to deposit?', a: 'Go to Deposit page, select payment method, enter amount and submit. Your balance will be updated instantly.' },
-  { id: 2, q: 'How long does withdrawal take?', a: 'Withdrawals are typically processed within 1-24 hours depending on the method chosen.' },
-  { id: 3, q: 'How to become VIP?', a: 'VIP status is automatically upgraded based on your total deposits and gaming activity.' },
-  { id: 4, q: 'Is my data safe?', a: 'We use industry-standard SSL encryption and are licensed by Gaming Curacao to ensure your data safety.' }
+  { id: 1, q: '如何充值？', a: '进入充值页面，选择支付方式，输入金额并提交。余额将即时更新。' },
+  { id: 2, q: '提现需要多久？', a: '提现通常在1-24小时内处理，具体取决于所选方式。' },
+  { id: 3, q: '如何成为VIP？', a: 'VIP等级根据您的总充值和游戏活动自动升级。' },
+  { id: 4, q: '我的数据安全吗？', a: '我们使用行业标准SSL加密，并获得Gaming Curacao许可，确保您的数据安全。' }
 ]
 
 function handleContact(option) {
-  showToast({ message: `Opening ${option.name}...`, position: 'bottom' })
+  showToast({ message: `正在打开 ${option.name}...`, position: 'bottom' })
 }
 </script>
 

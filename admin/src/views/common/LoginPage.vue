@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h1 class="login-title">人人娱乐</h1>
+      <h1 class="login-title">大大娱乐</h1>
       <p class="login-subtitle">管理后台登录</p>
 
       <div class="role-selector">
@@ -64,11 +64,21 @@ const rules = {
 
 async function handleLogin() {
   await formRef.value?.validate()
+  if (authStore.isLocked) {
+    ElMessage.error(`登录已锁定，请${authStore.remainingLockTime}分钟后重试`)
+    return
+  }
   loading.value = true
   setTimeout(() => {
-    authStore.login(form.username, form.password, selectedRole.value)
-    ElMessage.success('登录成功')
-    router.push(selectedRole.value === 'superadmin' ? '/super/dashboard' : '/agent/dashboard')
+    const result = authStore.login(form.username, form.password, selectedRole.value)
+    if (result.success) {
+      ElMessage.success('登录成功')
+      router.push(selectedRole.value === 'superadmin' ? '/super/dashboard' : '/agent/dashboard')
+    } else if (result.locked) {
+      ElMessage.error(`登录失败次数过多，账户已锁定${result.remainingMinutes}分钟`)
+    } else {
+      ElMessage.error(`用户名或密码错误，还剩${result.attemptsLeft}次机会`)
+    }
     loading.value = false
   }, 500)
 }

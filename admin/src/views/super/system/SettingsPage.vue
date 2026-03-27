@@ -78,7 +78,7 @@ import { ElMessage } from 'element-plus'
 
 const activeTab = ref('global')
 const settings = reactive({
-  platformName: '人人娱乐管理平台',
+  platformName: '大大娱乐管理平台',
   maintenance: false,
   maintenanceMsg: '系统正在维护升级中，请稍后再试...',
   allowRegister: true,

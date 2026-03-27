@@ -58,7 +58,7 @@
         </div>
 
         <!-- Video -->
-        <SectionHeader title="人人影视" icon="🎬" />
+        <SectionHeader title="大大影视" icon="🎬" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in videoProviders" :key="p.id" :provider="p" category="video" />
         </div>
@@ -213,7 +213,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 12px 8px;
+  padding: 24px 12px 12px;
 
   h3 {
     font-size: 15px;
@@ -260,8 +260,8 @@ onMounted(() => {
 .partners-section {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 12px;
+  gap: 10px;
+  padding: 8px 12px;
 }
 
 .partner-logo {
@@ -287,7 +287,7 @@ onMounted(() => {
 }
 
 .license-section {
-  margin: 24px 12px 0;
+  margin: 28px 12px 0;
   text-align: center;
   padding: 20px 0;
   border-top: 1px solid $border-color;

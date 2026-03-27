@@ -1,6 +1,6 @@
 <template>
   <div class="category-tabs-wrapper">
-    <div class="category-tabs hide-scrollbar">
+    <div class="category-tabs hide-scrollbar" ref="tabsRef" @scroll="checkScroll">
       <div
         v-for="cat in categories"
         :key="cat.id"
@@ -22,10 +22,12 @@
         <span class="tab-label">{{ cat.label }}</span>
       </div>
     </div>
+    <div v-if="canScrollRight" class="scroll-fade-right"></div>
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted, nextTick } from 'vue'
 import { useGameStore } from '@/stores/game'
 
 const gameStore = useGameStore()
@@ -37,6 +39,18 @@ defineProps({
 defineEmits(['change'])
 
 const categories = gameStore.categories
+const tabsRef = ref(null)
+const canScrollRight = ref(true)
+
+function checkScroll() {
+  if (!tabsRef.value) return
+  const el = tabsRef.value
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 10
+}
+
+onMounted(() => {
+  nextTick(() => checkScroll())
+})
 </script>
 
 <style lang="scss" scoped>
@@ -46,6 +60,7 @@ const categories = gameStore.categories
   z-index: 50;
   background: $bg-primary;
   padding: 8px 0;
+  position: relative;
 }
 
 .category-tabs {
@@ -83,5 +98,16 @@ const categories = gameStore.categories
 .tab-icon-wrap {
   display: flex;
   align-items: center;
+}
+
+.scroll-fade-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, transparent, $bg-primary);
+  pointer-events: none;
+  z-index: 10;
 }
 </style>

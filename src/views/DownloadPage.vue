@@ -13,7 +13,7 @@
           <h3>{{ t('download.android') }}</h3>
           <p>Android 5.0+</p>
         </div>
-        <van-button type="primary" size="small" round>Download</van-button>
+        <van-button type="primary" size="small" round>下载</van-button>
       </div>
 
       <div class="download-card" @click="handleDownload('ios')">
@@ -22,7 +22,7 @@
           <h3>{{ t('download.ios') }}</h3>
           <p>iOS 12.0+</p>
         </div>
-        <van-button type="primary" size="small" round>Download</van-button>
+        <van-button type="primary" size="small" round>下载</van-button>
       </div>
     </div>
 
@@ -34,7 +34,7 @@
     </div>
 
     <div class="install-steps">
-      <h3>Installation Guide</h3>
+      <h3>安装指南</h3>
       <div class="step" v-for="(step, i) in steps" :key="i">
         <span class="step-num">{{ i + 1 }}</span>
         <span class="step-text">{{ step }}</span>
@@ -50,14 +50,14 @@ import { showToast } from 'vant'
 const { t } = useI18n()
 
 const steps = [
-  'Click the download button above',
-  'Allow installation from unknown sources',
-  'Open the downloaded file to install',
-  'Login and enjoy all games'
+  '点击上方下载按钮',
+  '允许从未知来源安装',
+  '打开下载文件进行安装',
+  '登录并畅享所有游戏'
 ]
 
 function handleDownload(platform) {
-  showToast({ message: `${platform} download starting...`, position: 'bottom' })
+  showToast({ message: `${platform === 'android' ? 'Android' : 'iOS'} 下载开始...`, position: 'bottom' })
 }
 </script>
 

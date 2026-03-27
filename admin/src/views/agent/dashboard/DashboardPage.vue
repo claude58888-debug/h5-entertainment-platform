@@ -54,10 +54,17 @@
 
 <script setup>
 import { ref } from 'vue'
-import VChart from 'vue-echarts'
 import { agentDashboardKPI } from '@/mock/data'
 
-const kpis = ref(agentDashboardKPI)
+const d = agentDashboardKPI
+const kpis = ref([
+  { label: '今日新增', value: d.todayNewMembers, color: '#409eff', change: 12 },
+  { label: '今日活跃', value: d.todayActiveMembers, color: '#67c23a', change: 8 },
+  { label: '当前在线', value: d.onlineCount, color: '#67c23a' },
+  { label: '今日充值', value: (d.todayDeposit / 10000).toFixed(1) + '万', prefix: '¥', color: '#409eff', change: 15 },
+  { label: '今日提现', value: (d.todayWithdrawal / 10000).toFixed(1) + '万', prefix: '¥', color: '#e6a23c', change: -5 },
+  { label: '今日盈利', value: (d.todayProfit / 10000).toFixed(1) + '万', prefix: '¥', color: '#f56c6c', change: 22 }
+])
 
 const pendingTasks = ref([
   { type: '提现审批', count: 8, amount: '¥125,000', urgent: true },

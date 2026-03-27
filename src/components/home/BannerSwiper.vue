@@ -16,13 +16,13 @@
     >
       <swiper-slide v-for="banner in banners" :key="banner.id">
         <router-link :to="banner.link" class="banner-slide" :style="{ background: banner.gradient }">
-          <img v-if="banner.image" :src="banner.image" :alt="banner.title" class="banner-image" @error="onImgError" />
-          <div class="banner-content">
+          <img v-if="bannerHasImage(banner)" :src="banner.image" :alt="banner.title" class="banner-image" @error="(e) => onImgError(e, banner.id)" />
+          <div v-if="!bannerHasImage(banner)" class="banner-content">
             <h3 class="banner-title">{{ banner.title }}</h3>
             <p class="banner-subtitle">{{ banner.subtitle }}</p>
             <span class="banner-btn">了解详情</span>
           </div>
-          <div v-if="!banner.image" class="banner-decos">
+          <div v-if="!bannerHasImage(banner)" class="banner-decos">
             <div class="deco-circle d1"></div>
             <div class="deco-circle d2"></div>
             <div class="deco-circle d3"></div>
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay, Pagination } from 'swiper/modules'
 import { useAppStore } from '@/stores/app'
@@ -50,9 +50,16 @@ import 'swiper/css/pagination'
 
 const appStore = useAppStore()
 const banners = computed(() => appStore.banners)
+const failedImages = ref(new Set())
 
-function onImgError(e) {
+function bannerHasImage(banner) {
+  return banner.image && !failedImages.value.has(banner.id)
+}
+
+function onImgError(e, bannerId) {
   e.target.style.display = 'none'
+  failedImages.value.add(bannerId)
+  failedImages.value = new Set(failedImages.value)
 }
 </script>
 

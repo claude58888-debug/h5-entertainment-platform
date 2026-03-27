@@ -14,8 +14,8 @@
           </svg>
         </div>
         <div class="logo-text-wrap">
-          <span class="logo-text-cn">人人娱乐</span>
-          <span class="logo-text-en">RR.TOP</span>
+                    <span class="logo-text-cn">大大娱乐</span>
+                    <span class="logo-text-en">DD.TOP</span>
         </div>
       </router-link>
     </div>
