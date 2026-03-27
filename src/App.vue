@@ -60,4 +60,12 @@ const showAppHeader = computed(() => {
     padding-bottom: $tab-bar-height;
   }
 }
+
+/* Center van-nav-bar title on all sub-pages */
+.van-nav-bar__title {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
 </style>
