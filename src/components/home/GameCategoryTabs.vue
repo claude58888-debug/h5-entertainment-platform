@@ -10,6 +10,7 @@
       >
         <span class="tab-icon-wrap">
           <svg v-if="cat.icon === 'home'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          <svg v-else-if="cat.icon === 'recent'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <svg v-else-if="cat.icon === 'fire'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c1 4-2 6-2 10a4 4 0 108 0c0-4-3-6-2-10"/></svg>
           <svg v-else-if="cat.icon === 'slots'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 4v16M16 4v16"/></svg>
           <svg v-else-if="cat.icon === 'live'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
@@ -59,7 +60,7 @@ onMounted(() => {
   top: $header-height;
   z-index: 50;
   background: $bg-primary;
-  padding: 8px 0;
+  padding: 4px 0;
   position: relative;
 }
 

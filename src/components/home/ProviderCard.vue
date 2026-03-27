@@ -1,33 +1,41 @@
 <template>
   <div class="provider-card" @click="handleClick">
     <img
-      v-if="provider.backgroundImage"
+      v-if="provider.backgroundImage && provider.id !== 'COMING'"
       :src="provider.backgroundImage"
       :alt="provider.name"
       class="card-bg-img"
       @error="onBgError"
     />
-    <div v-else class="card-bg-gradient" :style="{ background: provider.gradient }"></div>
+    <div v-if="!provider.backgroundImage || provider.id === 'COMING'" class="card-bg-gradient" :style="{ background: comingGradient || provider.gradient }">
+      <span v-if="provider.id === 'COMING'" class="coming-text">即将推出</span>
+    </div>
     <img
       v-if="provider.image && provider.id !== 'COMING'"
       :src="provider.image"
-      :alt="provider.label"
+      alt=""
       class="provider-logo"
       @error="onLogoError"
     />
-    <div v-if="provider.name" class="card-overlay">
+    <div v-if="provider.name && provider.id !== 'COMING'" class="card-overlay">
       <span class="provider-name">{{ provider.name }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
   provider: { type: Object, required: true },
   category: { type: String, default: '' },
   showCount: { type: Boolean, default: false }
+})
+
+const comingGradient = computed(() => {
+  if (props.provider.id === 'COMING') return 'linear-gradient(135deg, #2d3436, #636e72)'
+  return null
 })
 
 const router = useRouter()
@@ -109,5 +117,21 @@ function handleClick() {
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
+}
+
+.coming-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.card-bg-gradient {
+  position: relative;
 }
 </style>

@@ -65,7 +65,7 @@ function onImgError(e, bannerId) {
 
 <style lang="scss" scoped>
 .banner-swiper {
-  margin: 8px 12px;
+  margin: 4px 12px 2px;
   border-radius: 12px;
   overflow: hidden;
 }
