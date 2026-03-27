@@ -62,14 +62,14 @@ function handleAction(path) {
 .quick-actions {
   display: flex;
   justify-content: space-around;
-  padding: 12px 8px 8px;
+  padding: 4px 8px 2px;
 }
 
 .action-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
   cursor: pointer;
   min-width: 56px;
 
