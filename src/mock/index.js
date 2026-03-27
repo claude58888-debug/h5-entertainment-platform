@@ -1,9 +1,9 @@
 export const mockBanners = [
-  { id: 1, title: '每日百充 最多赠送588U', subtitle: '每日充值即享丰厚奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)', image: '/img/banners/banner-allbonus.webp' },
-  { id: 2, title: '每周有效投注', subtitle: '周投注达标赢取奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #f0c040, #e67e22)', image: '/img/banners/banner-yessc2.webp' },
-  { id: 3, title: '电子游戏闯关', subtitle: '过关斩将赢大奖', link: '/promotions', gradient: 'linear-gradient(135deg, #00b894, #00cec9)', image: '/img/banners/banner-slotrekeback2.webp' },
-  { id: 4, title: '棋牌游戏闯关', subtitle: '连续过关赢丰厚奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #e17055, #d63031)', image: '/img/banners/banner-actThroughtQP.webp' },
-  { id: 5, title: '首充好礼', subtitle: '首次充值即送豪礼', link: '/promotions', gradient: 'linear-gradient(135deg, #6c5ce7, #fd79a8)', image: '/img/banners/banner-actThroughtDZ.webp' }
+  { id: 1, title: '每日百充 最多赠送588U', subtitle: '每日充值即享丰厚奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)' },
+  { id: 2, title: '每周有效投注', subtitle: '周投注达标赢取奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #f0c040, #e67e22)' },
+  { id: 3, title: '电子游戏闯关', subtitle: '过关斩将赢大奖', link: '/promotions', gradient: 'linear-gradient(135deg, #00b894, #00cec9)' },
+  { id: 4, title: '棋牌游戏闯关', subtitle: '连续过关赢丰厚奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #e17055, #d63031)' },
+  { id: 5, title: '首充好礼', subtitle: '首次充值即送豪礼', link: '/promotions', gradient: 'linear-gradient(135deg, #6c5ce7, #fd79a8)' }
 ]
 
 export const mockAnnouncements = [
