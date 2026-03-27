@@ -16,15 +16,17 @@ export const useUserStore = defineStore('user', () => {
   const loginAttempts = ref(parseInt(localStorage.getItem('login_attempts') || '0'))
   const lockoutUntil = ref(parseInt(localStorage.getItem('lockout_until') || '0'))
 
-  const isLocked = computed(() => {
-    if (lockoutUntil.value && Date.now() < lockoutUntil.value) return true
+  function clearExpiredLock() {
     if (lockoutUntil.value && Date.now() >= lockoutUntil.value) {
       loginAttempts.value = 0
       lockoutUntil.value = 0
       localStorage.removeItem('login_attempts')
       localStorage.removeItem('lockout_until')
     }
-    return false
+  }
+
+  const isLocked = computed(() => {
+    return !!(lockoutUntil.value && Date.now() < lockoutUntil.value)
   })
 
   const remainingLockTime = computed(() => {
@@ -33,6 +35,7 @@ export const useUserStore = defineStore('user', () => {
   })
 
   function login(phone, password) {
+    clearExpiredLock()
     if (isLocked.value) {
       return Promise.reject(new Error(`登录已锁定，请${remainingLockTime.value}分钟后重试`))
     }

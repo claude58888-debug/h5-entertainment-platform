@@ -15,16 +15,17 @@ export const useAuthStore = defineStore('auth', () => {
   const loginAttempts = ref(parseInt(localStorage.getItem('admin_login_attempts') || '0'))
   const lockoutUntil = ref(parseInt(localStorage.getItem('admin_lockout_until') || '0'))
 
-  const isLocked = computed(() => {
-    if (lockoutUntil.value && Date.now() < lockoutUntil.value) return true
+  function clearExpiredLock() {
     if (lockoutUntil.value && Date.now() >= lockoutUntil.value) {
-      // Lock expired, reset
       loginAttempts.value = 0
       lockoutUntil.value = 0
       localStorage.removeItem('admin_login_attempts')
       localStorage.removeItem('admin_lockout_until')
     }
-    return false
+  }
+
+  const isLocked = computed(() => {
+    return !!(lockoutUntil.value && Date.now() < lockoutUntil.value)
   })
 
   const remainingLockTime = computed(() => {
@@ -33,6 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   function login(username, password, selectedRole) {
+    clearExpiredLock()
     if (isLocked.value) {
       return { success: false, locked: true, remainingMinutes: remainingLockTime.value }
     }
