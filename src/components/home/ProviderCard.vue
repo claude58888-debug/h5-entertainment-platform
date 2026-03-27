@@ -60,8 +60,8 @@ function handleClick() {
 
 <style lang="scss" scoped>
 .provider-card {
-  width: 160px;
-  height: 90px;
+  width: 140px;
+  height: 130px;
   flex-shrink: 0;
   border-radius: 12px;
   overflow: hidden;
@@ -90,7 +90,7 @@ function handleClick() {
   position: absolute;
   top: 8px;
   left: 8px;
-  height: 20px;
+  height: 28px;
   width: auto;
   object-fit: contain;
   z-index: 2;
@@ -104,12 +104,12 @@ function handleClick() {
   left: 0;
   right: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-  padding: 20px 12px 8px;
+  padding: 24px 12px 10px;
   z-index: 2;
 }
 
 .provider-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
