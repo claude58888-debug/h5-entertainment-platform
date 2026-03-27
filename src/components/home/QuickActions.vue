@@ -69,7 +69,7 @@ function handleAction(path) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   cursor: pointer;
   min-width: 56px;
 
@@ -79,21 +79,21 @@ function handleAction(path) {
 }
 
 .action-icon {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .action-img {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
 }
 
 .action-label {
-  font-size: 11px;
+  font-size: 13px;
   color: $text-secondary;
   white-space: nowrap;
 }
