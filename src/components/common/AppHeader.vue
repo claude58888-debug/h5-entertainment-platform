@@ -25,9 +25,14 @@
         <router-link to="/register" class="btn-register">注册</router-link>
       </template>
       <template v-else>
-        <router-link to="/profile" class="btn-profile">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
-        </router-link>
+        <div class="balance-display">
+          <span class="balance-icon">💰</span>
+          <span class="balance-amount">{{ walletStore.balance.toFixed(2) }}</span>
+        </div>
+        <button class="btn-refresh" @click="walletStore.fetchBalance()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        </button>
+        <router-link to="/deposit" class="btn-deposit">充值</router-link>
       </template>
       <button class="btn-lang" @click="toggleLocale">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
@@ -39,9 +44,11 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
+import { useWalletStore } from '@/stores/wallet'
 
 const { locale } = useI18n()
 const userStore = useUserStore()
+const walletStore = useWalletStore()
 
 function toggleLocale() {
   const locales = ['zh-CN', 'en', 'vi']
@@ -128,10 +135,51 @@ function toggleLocale() {
   font-size: 12px;
 }
 
-.btn-profile {
-  color: $accent-purple-light;
+.balance-display {
   display: flex;
   align-items: center;
+  gap: 4px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 16px;
+  padding: 4px 10px;
+}
+
+.balance-icon {
+  font-size: 14px;
+}
+
+.balance-amount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.btn-refresh {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid $border-color;
+  background: transparent;
+  color: $text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+
+  &:active {
+    transform: rotate(180deg);
+  }
+}
+
+.btn-deposit {
+  padding: 5px 16px;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7);
+  color: #fff;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .btn-lang {
