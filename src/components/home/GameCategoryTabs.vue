@@ -60,7 +60,7 @@ onMounted(() => {
   top: $header-height;
   z-index: 50;
   background: $bg-primary;
-  padding: 8px 0;
+  padding: 4px 0;
   position: relative;
 }
 
