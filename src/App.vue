@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <AppHeader />
-    <main class="app-main" :class="{ 'has-tabbar': showTabBar }">
+    <AppHeader v-if="showAppHeader" />
+    <main class="app-main" :class="{ 'has-tabbar': showTabBar, 'no-header': !showAppHeader }">
       <router-view v-slot="{ Component }">
         <transition name="slide-fade" mode="out-in">
           <component :is="Component" :key="$route.path" />
@@ -28,6 +28,16 @@ const tabBarPages = ['/', '/home', '/promotions', '/support', '/download', '/pro
 const showTabBar = computed(() => {
   return tabBarPages.some(p => route.path === p || route.path === p + '/')
 })
+
+// Sub-pages with their own nav-bar should hide the main app header
+const subPages = ['/deposit', '/withdraw', '/tasks', '/income', '/invite', '/recharge', '/vip', '/safeCenter', '/report', '/transRecord', '/orderRecordSummary', '/prizeRecord', '/buyBit', '/softwareDownload', '/agentCooperation', '/video', '/login', '/register']
+const subPagePrefixes = ['/games/', '/game/']
+const showAppHeader = computed(() => {
+  const path = route.path
+  if (subPages.some(p => path === p || path === p + '/')) return false
+  if (subPagePrefixes.some(prefix => path.startsWith(prefix))) return false
+  return true
+})
 </script>
 
 <style lang="scss">
@@ -40,6 +50,10 @@ const showTabBar = computed(() => {
 .app-main {
   flex: 1;
   padding-top: $header-height;
+
+  &.no-header {
+    padding-top: 0;
+  }
   padding-bottom: 0;
 
   &.has-tabbar {

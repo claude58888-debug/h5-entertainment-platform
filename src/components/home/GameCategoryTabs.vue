@@ -61,7 +61,6 @@ onMounted(() => {
   z-index: 50;
   background: $bg-primary;
   padding: 2px 0;
-  position: relative;
 }
 
 .category-tabs {
