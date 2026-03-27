@@ -61,7 +61,15 @@ const showAppHeader = computed(() => {
   }
 }
 
-/* Center van-nav-bar title on all sub-pages */
+/* Fix van-nav-bar to align with centered content area */
+.van-nav-bar {
+  max-width: 480px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+}
+
+/* Keep title centered within the nav bar */
 .van-nav-bar__title {
   position: absolute !important;
   left: 50% !important;
