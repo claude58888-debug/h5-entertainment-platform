@@ -11,6 +11,7 @@ export const mockAnnouncements = [
 ]
 
 export const mockGames = [
+  { id: 13, name: '极速糖果1000', category: 'slots', provider: 'PP', hot: true, image: '/img/games/ppvs20sugarrushx.webp' },
   { id: 1, name: '麻将胡了2', category: 'slots', provider: 'PG', hot: true, image: '/img/games/pg74.webp' },
   { id: 2, name: '麻将胡了', category: 'slots', provider: 'PG', hot: true, image: '/img/games/pg65.webp' },
   { id: 3, name: '招财猫', category: 'slots', provider: 'PG', hot: true, image: '/img/games/pg54.webp' },
@@ -23,7 +24,6 @@ export const mockGames = [
   { id: 10, name: '火树银花', category: 'slots', provider: 'PG', hot: false, image: '/img/games/pg106.webp' },
   { id: 11, name: '龙虎门', category: 'slots', provider: 'PG', hot: false, image: '/img/games/pg101.webp' },
   { id: 12, name: '宝石传奇', category: 'slots', provider: 'PG', hot: false, image: '/img/games/pg110.webp' },
-  { id: 13, name: '极速糖果1000', category: 'slots', provider: 'PP', hot: true, image: '/img/games/ppvs20sugarrushx.webp' },
   { id: 14, name: '奥林匹斯之门', category: 'slots', provider: 'PP', hot: true, image: '/img/games/ppvs20olympgate.webp' },
   { id: 15, name: '甜入蜜境', category: 'slots', provider: 'PP', hot: true, image: '/img/games/ppvs20sugarrush.webp' },
   { id: 16, name: '淘金热', category: 'slots', provider: 'PP', hot: true, image: '/img/games/ppvs20goldfever.webp' },
@@ -200,6 +200,7 @@ export const mockUser = {
 
 export const mockCategories = [
   { id: 'home', label: '首页', icon: 'home' },
+  { id: 'recent', label: '最近浏览', icon: 'recent' },
   { id: 'hot', label: '热门', icon: 'fire' },
   { id: 'slots', label: '电子游戏', icon: 'slots' },
   { id: 'live', label: '真人视讯', icon: 'live' },

@@ -14,6 +14,10 @@ export const useGameStore = defineStore('game', () => {
     if (category === 'home' || category === 'hot') {
       return hotGames.value
     }
+    if (category === 'recent') {
+      // Return first 8 games as "recently viewed" for demo
+      return games.value.slice(0, 8)
+    }
     return games.value.filter(g => g.category === category)
   }
 
