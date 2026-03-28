@@ -7,9 +7,6 @@
         <div class="deco-circle c2"></div>
         <div class="deco-diamond"></div>
       </div>
-      <div class="card-overlay">
-        <span class="game-name">{{ game.name }}</span>
-      </div>
     </div>
   </div>
 </template>
@@ -139,25 +136,5 @@ function handleClick() {
   border: 1.5px solid rgba(255,255,255,0.1);
 }
 
-.card-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 30px 8px 10px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.6));
-  z-index: 3;
-}
-
-.game-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-}
 
 </style>
