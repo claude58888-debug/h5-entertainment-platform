@@ -51,7 +51,11 @@ function onLogoError(e) {
 
 function handleClick() {
   if (props.provider.id === 'COMING') return
-  router.push(`/games/${props.category}?provider=${props.provider.id}`)
+  if (props.provider.link) {
+    router.push(props.provider.link)
+  } else {
+    router.push(`/games/${props.category}?provider=${props.provider.id}`)
+  }
 }
 </script>
 

@@ -65,8 +65,7 @@ const routes = [
   {
     path: '/promotions',
     name: 'Promotions',
-    component: () => import('@/views/PromotionsPage.vue'),
-    meta: { requiresAuth: true }
+    component: () => import('@/views/PromotionsPage.vue')
   },
   {
     path: '/profile',
