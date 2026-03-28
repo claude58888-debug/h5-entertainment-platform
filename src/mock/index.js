@@ -199,14 +199,14 @@ export const mockUser = {
 }
 
 export const mockCategories = [
-  { id: 'home', label: '首页', icon: 'home' },
-  { id: 'recent', label: '最近浏览', icon: 'recent' },
-  { id: 'hot', label: '热门', icon: 'fire' },
-  { id: 'slots', label: '电子游戏', icon: 'slots' },
-  { id: 'live', label: '真人视讯', icon: 'live' },
-  { id: 'fishing', label: '捕鱼游戏', icon: 'fish' },
-  { id: 'lottery', label: '彩票', icon: 'lottery' },
-  { id: 'sports', label: '体育竞猜', icon: 'sports' },
-  { id: 'chess', label: '棋牌游戏', icon: 'chess' },
-  { id: 'video', label: '大大影视', icon: 'video' }
+  { id: 'home', labelKey: 'nav.home', icon: 'home' },
+  { id: 'recent', labelKey: 'home.recent', icon: 'recent' },
+  { id: 'hot', labelKey: 'home.hot', icon: 'fire' },
+  { id: 'slots', labelKey: 'home.slots', icon: 'slots' },
+  { id: 'live', labelKey: 'home.live', icon: 'live' },
+  { id: 'fishing', labelKey: 'home.fishing', icon: 'fish' },
+  { id: 'lottery', labelKey: 'home.lottery', icon: 'lottery' },
+  { id: 'sports', labelKey: 'home.sports', icon: 'sports' },
+  { id: 'chess', labelKey: 'home.chess', icon: 'chess' },
+  { id: 'video', labelKey: 'home.video', icon: 'video' }
 ]
