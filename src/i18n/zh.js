@@ -204,6 +204,25 @@ export default {
     singlePointRule: '直接竞猜开奖结果数字（0-27），不同数字赔率不同。',
     selectBetFirst: '请先选择投注项',
     betSuccess: '下注成功！共{count}注，合计{total}元',
-    selectedCount: '已选{count}注，共计{total}元'
+    selectedCount: '已选{count}注，共计{total}元',
+    canadaHighTitle: '加拿大高倍网盘',
+    hash1mTitle: '1分哈希',
+    doubleSided: '双面定位',
+    tailBet: '尾项',
+    dragonTigerTie: '龙虎合',
+    tailBig: '尾大',
+    tailSmall: '尾小',
+    tailOdd: '尾单',
+    tailEven: '尾双',
+    dragon: '龙',
+    tiger: '虎',
+    tie: '和',
+    canadaHighDescText: '加拿大高倍网盘是基于加拿大PC28彩票的高倍率竞猜游戏。每期开出3个0-9的数字，三个数字之和（0-27）为开奖结果。提供更高赔率和更多投注选项。',
+    canadaHighBsoeRule: '结果0-13为小，14-27为大；结果为奇数为单，偶数为双。赔率1.98。',
+    canadaHighComboRule: '大单/小双赔率4.28；大双/小单赔率3.68。',
+    canadaHighExtremeRule: '结果0-1为极小，26-27为极大。赔率16。',
+    canadaHighTailRule: '尾大：和值尾数0-4；尾小：和值尾数5-9；尾单/尾双按和值尾数奇偶判定。赔率1.98。',
+    canadaHighDragonRule: '龙：第一球>第三球；虎：第三球>第一球；和：第一球=第三球。龙/虎赔率2.0，和赔率58。',
+    hash1mDescText: '1分哈希是基于区块链哈希值的快速竞猜游戏。每60秒开出一期，取哈希值转换为3个0-9的数字，三个数字之和（0-27）为开奖结果。'
   }
 }

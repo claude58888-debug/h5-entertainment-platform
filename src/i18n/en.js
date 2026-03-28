@@ -204,6 +204,25 @@ export default {
     singlePointRule: 'Guess the exact result number (0-27). Different numbers have different odds.',
     selectBetFirst: 'Please select a bet first',
     betSuccess: 'Bet placed! {count} bets, total {total}',
-    selectedCount: '{count} bets selected, total {total}'
+    selectedCount: '{count} bets selected, total {total}',
+    canadaHighTitle: 'Canada High Odds',
+    hash1mTitle: '1-Min Hash',
+    doubleSided: 'Double Sided',
+    tailBet: 'Tail Bet',
+    dragonTigerTie: 'Dragon Tiger Tie',
+    tailBig: 'Tail Big',
+    tailSmall: 'Tail Small',
+    tailOdd: 'Tail Odd',
+    tailEven: 'Tail Even',
+    dragon: 'Dragon',
+    tiger: 'Tiger',
+    tie: 'Tie',
+    canadaHighDescText: 'Canada High Odds is a high-multiplier guessing game based on the Canadian PC28 lottery. Each period draws 3 digits (0-9), and the sum (0-27) is the result. Offers higher odds and more betting options.',
+    canadaHighBsoeRule: 'Result 0-13 is Small, 14-27 is Big; odd result is Odd, even result is Even. Odds: 1.98.',
+    canadaHighComboRule: 'Big Odd & Small Even odds: 4.28; Big Even & Small Odd odds: 3.68.',
+    canadaHighExtremeRule: 'Result 0-1 is Extreme Small, 26-27 is Extreme Big. Odds: 16.',
+    canadaHighTailRule: 'Tail Big: sum last digit 0-4; Tail Small: sum last digit 5-9; Tail Odd/Even by last digit parity. Odds: 1.98.',
+    canadaHighDragonRule: 'Dragon: 1st ball > 3rd ball; Tiger: 3rd ball > 1st ball; Tie: equal. Dragon/Tiger odds: 2.0, Tie odds: 58.',
+    hash1mDescText: '1-Min Hash is a fast-paced guessing game based on blockchain hash values. A new round every 60 seconds, converting hash values into 3 digits (0-9), with their sum (0-27) as the result.'
   }
 }

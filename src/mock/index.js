@@ -124,8 +124,8 @@ export const mockProviders = {
   ],
   lottery: [
     { id: 'TCG', name: '加拿大4.2-4.6', gameCount: 30, gradient: 'linear-gradient(135deg, #4a148c, #6a1b9a)', label: 'TCG LOTTERY', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-pc284.2-4.63.webp', link: '/games/canada-28' },
-    { id: 'VR', name: '加拿大高倍网盘', gameCount: 18, gradient: 'linear-gradient(135deg, #880e4f, #ad1457)', label: 'VR LOTTERY', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-pc28high3.webp' },
-    { id: 'HASH1', name: '1分哈希', gameCount: 10, gradient: 'linear-gradient(135deg, #1a237e, #283593)', label: 'HASH', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-hash1min3.webp' },
+    { id: 'VR', name: '加拿大高倍网盘', gameCount: 18, gradient: 'linear-gradient(135deg, #880e4f, #ad1457)', label: 'VR LOTTERY', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-pc28high3.webp', link: '/games/canada-high' },
+    { id: 'HASH1', name: '1分哈希', gameCount: 10, gradient: 'linear-gradient(135deg, #1a237e, #283593)', label: 'HASH', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-hash1min3.webp', link: '/games/hash-1m' },
     { id: 'HASH', name: '哈希彩票', gameCount: 10, gradient: 'linear-gradient(135deg, #1a237e, #283593)', label: 'HASH', image: '/img/providers/provider_gfg.png', backgroundImage: '/img/ztb/ztb-hash3.webp' },
     { id: 'COMING', name: '即将推出', gameCount: 0, gradient: 'linear-gradient(135deg, #333, #555)', label: '', image: '', backgroundImage: '/img/ztb/ztb-jqqd3.webp' }
   ],
