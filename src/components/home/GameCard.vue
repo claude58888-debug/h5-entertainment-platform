@@ -62,12 +62,22 @@ function onImgError(e) {
   imgFailed.value = true
 }
 
+// Games with dedicated pages
+const dedicatedRoutes = {
+  65: '/games/canada-28'
+}
+
 function handleClick() {
   if (!userStore.isLoggedIn) {
     userStore.showLoginModal = true
     return
   }
-  router.push(`/game/${props.game.id}`)
+  const route = dedicatedRoutes[props.game.id]
+  if (route) {
+    router.push(route)
+  } else {
+    router.push(`/game/${props.game.id}`)
+  }
 }
 </script>
 

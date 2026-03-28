@@ -162,6 +162,12 @@ const routes = [
     path: '/agentCooperation',
     name: 'AgentCooperation',
     component: () => import('@/views/AgentCooperationPage.vue')
+  },
+  {
+    path: '/games/canada-28',
+    name: 'Canada28',
+    component: () => import('@/views/Canada28Page.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
