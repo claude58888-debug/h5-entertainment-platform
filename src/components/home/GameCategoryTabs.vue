@@ -59,7 +59,7 @@ onMounted(() => {
   position: sticky;
   top: $header-height;
   z-index: 50;
-  background: $bg-primary;
+  background: rgba(21, 15, 46, 0.9);
   padding: 2px 0;
 }
 
@@ -85,9 +85,10 @@ onMounted(() => {
   white-space: nowrap;
 
   &.active {
-    background: linear-gradient(135deg, rgba(#6c5ce7, 0.3), rgba(#a855f7, 0.3));
-    color: $accent-purple-light;
+    background: linear-gradient(90deg, $accent-purple, $accent-purple-glow);
+    color: #fff;
     border: 1px solid rgba($accent-purple-light, 0.3);
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.5);
   }
 
   &:not(.active) {
@@ -106,7 +107,7 @@ onMounted(() => {
   top: 0;
   bottom: 0;
   width: 40px;
-  background: linear-gradient(to right, transparent, $bg-primary);
+  background: linear-gradient(to right, transparent, rgba(21, 15, 46, 0.9));
   pointer-events: none;
   z-index: 10;
 }

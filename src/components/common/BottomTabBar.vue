@@ -60,11 +60,12 @@ function isActive(path) {
   width: 100%;
   max-width: $max-width;
   height: $tab-bar-height;
-  background: $bg-header;
+  background: linear-gradient(180deg, #150f2e 0%, #110d28 100%);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  border-top: 1px solid $border-color;
+  border-top: 1px solid rgba(124, 58, 237, 0.3);
+  box-shadow: 0 -4px 20px rgba(124, 58, 237, 0.1);
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }

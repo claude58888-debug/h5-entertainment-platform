@@ -31,6 +31,10 @@ defineEmits(['scroll-left', 'scroll-right'])
   align-items: center;
   justify-content: space-between;
   padding: 14px 12px 8px;
+  border-left: 3px solid $accent-gold;
+  margin-left: 0;
+  padding-left: 8px;
+  margin-right: 0;
 }
 
 .section-left {

@@ -142,11 +142,13 @@ function handleLogout() {
 
 <style lang="scss" scoped>
 .profile-header {
-  background: linear-gradient(135deg, $accent-purple, #4c1d95);
+  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
   padding: 24px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.3);
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
 }
 
 .avatar {
@@ -231,9 +233,11 @@ function handleLogout() {
 }
 
 .balance-card {
-  background: $bg-card;
+  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
   border-radius: 12px;
   padding: 16px;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
 }
 
 .balance-label {
@@ -247,6 +251,8 @@ function handleLogout() {
   font-weight: 700;
   display: block;
   margin: 4px 0 12px;
+  color: #fbbf24;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
 }
 
 .balance-actions {
