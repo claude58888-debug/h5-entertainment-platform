@@ -22,6 +22,21 @@ const routes = [
     component: () => import('@/views/RegisterPage.vue')
   },
   {
+    path: '/games/canada-28',
+    name: 'Canada28',
+    component: () => import('@/views/Canada28Page.vue')
+  },
+  {
+    path: '/games/canada-high',
+    name: 'CanadaHigh',
+    component: () => import('@/views/CanadaHighPage.vue')
+  },
+  {
+    path: '/games/hash-1m',
+    name: 'Hash1m',
+    component: () => import('@/views/Hash1mPage.vue')
+  },
+  {
     path: '/games/:category',
     name: 'Games',
     component: () => import('@/views/GamesPage.vue')
@@ -162,22 +177,8 @@ const routes = [
     name: 'AgentCooperation',
     component: () => import('@/views/AgentCooperationPage.vue')
   },
-  {
-    path: '/games/canada-28',
-    name: 'Canada28',
-    component: () => import('@/views/Canada28Page.vue')
-  },
-  {
-    path: '/games/canada-high',
-    name: 'CanadaHigh',
-    component: () => import('@/views/CanadaHighPage.vue')
-  },
-  {
-    path: '/games/hash-1m',
-    name: 'Hash1m',
-    component: () => import('@/views/Hash1mPage.vue')
-  }
 ]
+
 
 const router = createRouter({
   history: createWebHashHistory(),
