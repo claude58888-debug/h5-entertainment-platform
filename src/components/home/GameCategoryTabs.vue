@@ -20,7 +20,7 @@
           <svg v-else-if="cat.icon === 'chess'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 16l-2 4h12l-2-4"/><path d="M12 4v4M9 8h6M8 8c0 4-4 6-4 12h16c0-6-4-8-4-12"/></svg>
           <svg v-else-if="cat.icon === 'video'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
         </span>
-        <span class="tab-label">{{ cat.label }}</span>
+        <span class="tab-label">{{ $t(cat.labelKey) }}</span>
       </div>
     </div>
     <div v-if="canScrollRight" class="scroll-fade-right"></div>

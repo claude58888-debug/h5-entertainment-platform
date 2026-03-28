@@ -15,7 +15,7 @@
     <!-- Result Card -->
     <div class="result-card">
       <div class="result-header">
-        <span class="period-label">{{ currentPeriod }} 期开奖结果</span>
+        <span class="period-label">{{ currentPeriod }} {{ $t('game.result') }}</span>
         <button class="history-btn" @click="showHistory = !showHistory">
           <van-icon :name="showHistory ? 'arrow-up' : 'arrow-down'" />
         </button>
@@ -44,8 +44,8 @@
         </div>
       </div>
       <div class="next-period">
-        <span>{{ nextPeriod }} 期</span>
-        <span class="countdown-label">下注倒计时:</span>
+        <span>{{ nextPeriod }} {{ $t('game.period') }}</span>
+        <span class="countdown-label">{{ $t('game.countdown') }}:</span>
         <span class="countdown-timer">{{ countdownStr }}</span>
       </div>
     </div>
@@ -82,7 +82,7 @@
           <!-- Special Code -->
           <template v-if="activeSidebar === 'tema'">
             <div class="bet-section">
-              <h4 class="section-title">大小单双</h4>
+              <h4 class="section-title">{{ $t('game.bigSmallOddEven') }}</h4>
               <div class="bet-grid grid-4">
                 <button
                   v-for="item in daxiaodanshuang"
@@ -97,7 +97,7 @@
               </div>
             </div>
             <div class="bet-section">
-              <h4 class="section-title">组合</h4>
+              <h4 class="section-title">{{ $t('game.combination') }}</h4>
               <div class="bet-grid grid-4">
                 <button
                   v-for="item in zuhe"
@@ -112,7 +112,7 @@
               </div>
             </div>
             <div class="bet-section">
-              <h4 class="section-title">极大小</h4>
+              <h4 class="section-title">{{ $t('game.extremeBigSmall') }}</h4>
               <div class="bet-grid grid-2">
                 <button
                   v-for="item in jidaxiao"
@@ -131,7 +131,7 @@
           <!-- Three Digit -->
           <template v-if="activeSidebar === 'sanwei'">
             <div class="bet-section">
-              <h4 class="section-title">三位整合</h4>
+              <h4 class="section-title">{{ $t('game.threeDigit') }}</h4>
               <div class="bet-grid grid-3">
                 <button
                   v-for="item in sanweiItems"
@@ -150,7 +150,7 @@
           <!-- Single Point -->
           <template v-if="activeSidebar === 'dandian'">
             <div class="bet-section">
-              <h4 class="section-title">单点 (0-27)</h4>
+              <h4 class="section-title">{{ $t('game.singlePoint') }} (0-27)</h4>
               <div class="bet-grid grid-4">
                 <button
                   v-for="item in dandianItems"
@@ -171,36 +171,36 @@
       <!-- Road Map -->
       <div v-if="activeTab === 'road'" class="empty-tab">
         <van-icon name="chart-trending-o" size="48" color="#666" />
-        <p>路单图功能开发中</p>
+        <p>{{ $t('game.roadmapDeveloping') }}</p>
       </div>
 
       <!-- Game Records -->
       <div v-if="activeTab === 'records'" class="empty-tab">
         <van-icon name="orders-o" size="48" color="#666" />
-        <p>暂无游戏记录</p>
+        <p>{{ $t('game.noGameRecords') }}</p>
       </div>
 
       <!-- Game Rules -->
       <div v-if="activeTab === 'rules'" class="rules-content">
         <div class="rule-block">
-          <h4>游戏说明</h4>
-          <p>加拿大4.2-4.6是基于加拿大PC28彩票的竞猜游戏。每期开出3个0-9的数字，三个数字之和（0-27）为开奖结果。</p>
+          <h4>{{ $t('game.gameDescription') }}</h4>
+          <p>{{ $t('game.gameDescText') }}</p>
         </div>
         <div class="rule-block">
-          <h4>大小单双</h4>
-          <p>结果0-13为小，14-27为大；结果为奇数为单，偶数为双。赔率1.99。</p>
+          <h4>{{ $t('game.bigSmallOddEven') }}</h4>
+          <p>{{ $t('game.bigSmallOddEvenRule') }}</p>
         </div>
         <div class="rule-block">
-          <h4>组合</h4>
-          <p>大单/大双/小单/小双组合投注。大单、小双赔率4.2；大双、小单赔率4.6。</p>
+          <h4>{{ $t('game.combination') }}</h4>
+          <p>{{ $t('game.combinationRule') }}</p>
         </div>
         <div class="rule-block">
-          <h4>极大小</h4>
-          <p>结果0-1为极小，26-27为极大。赔率15。</p>
+          <h4>{{ $t('game.extremeBigSmall') }}</h4>
+          <p>{{ $t('game.extremeRule') }}</p>
         </div>
         <div class="rule-block">
-          <h4>单点</h4>
-          <p>直接竞猜开奖结果数字（0-27），不同数字赔率不同。</p>
+          <h4>{{ $t('game.singlePoint') }}</h4>
+          <p>{{ $t('game.singlePointRule') }}</p>
         </div>
       </div>
     </div>
@@ -208,7 +208,7 @@
     <!-- Bet Footer -->
     <div class="bet-footer">
       <div class="footer-top">
-        <span class="footer-label">每注押注</span>
+        <span class="footer-label">{{ $t('game.perBet') }}</span>
         <div class="quick-amounts">
           <button
             v-for="amt in quickAmounts"
@@ -224,19 +224,19 @@
           v-model.number="customAmount"
           type="number"
           class="amount-input"
-          placeholder="请输入投注金额"
+          :placeholder="$t('game.betAmount')"
           @input="onCustomAmount"
         />
       </div>
       <div class="footer-actions">
         <button class="clear-btn" @click="clearAll">
           <van-icon name="delete-o" />
-          清空
+          {{ $t('game.clear') }}
         </button>
         <button class="submit-btn" @click="submitBet" :disabled="selectedBets.length === 0">
-          立即下注
+          {{ $t('game.betNow') }}
           <span v-if="selectedBets.length > 0" class="bet-summary">
-            已选{{ selectedBets.length }}注，共计{{ totalBet }}元
+            {{ $t('game.selectedCount', { count: selectedBets.length, total: totalBet }) }}
           </span>
         </button>
       </div>
@@ -247,25 +247,27 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { showToast } from 'vant'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 
 // Tabs
-const tabs = [
-  { key: 'bet', label: '投注区' },
-  { key: 'road', label: '路单图' },
-  { key: 'records', label: '游戏记录' },
-  { key: 'rules', label: '游戏规则' }
-]
+const tabs = computed(() => [
+  { key: 'bet', label: t('game.betZone') },
+  { key: 'road', label: t('game.roadmap') },
+  { key: 'records', label: t('game.gameRecord') },
+  { key: 'rules', label: t('game.gameRules') }
+])
 const activeTab = ref('bet')
 
 // Sidebar
-const sidebarItems = [
-  { key: 'tema', label: '特码整合' },
-  { key: 'sanwei', label: '三位整合' },
-  { key: 'dandian', label: '单点' }
-]
+const sidebarItems = computed(() => [
+  { key: 'tema', label: t('game.specialCode') },
+  { key: 'sanwei', label: t('game.threeDigit') },
+  { key: 'dandian', label: t('game.singlePoint') }
+])
 const activeSidebar = ref('tema')
 
 // Mock data
@@ -314,30 +316,30 @@ onUnmounted(() => {
 })
 
 // Bet options
-const daxiaodanshuang = [
-  { id: 'da', label: '大', odds: 1.99 },
-  { id: 'xiao', label: '小', odds: 1.99 },
-  { id: 'dan', label: '单', odds: 1.99 },
-  { id: 'shuang', label: '双', odds: 1.99 }
-]
+const daxiaodanshuang = computed(() => [
+  { id: 'da', label: t('game.big'), odds: 1.99 },
+  { id: 'xiao', label: t('game.small'), odds: 1.99 },
+  { id: 'dan', label: t('game.odd'), odds: 1.99 },
+  { id: 'shuang', label: t('game.even'), odds: 1.99 }
+])
 
-const zuhe = [
-  { id: 'dadan', label: '大单', odds: 4.2 },
-  { id: 'dashuang', label: '大双', odds: 4.6 },
-  { id: 'xiaodan', label: '小单', odds: 4.6 },
-  { id: 'xiaoshuang', label: '小双', odds: 4.2 }
-]
+const zuhe = computed(() => [
+  { id: 'dadan', label: t('game.bigOdd'), odds: 4.2 },
+  { id: 'dashuang', label: t('game.bigEven'), odds: 4.6 },
+  { id: 'xiaodan', label: t('game.smallOdd'), odds: 4.6 },
+  { id: 'xiaoshuang', label: t('game.smallEven'), odds: 4.2 }
+])
 
-const jidaxiao = [
-  { id: 'jida', label: '极大', odds: 15 },
-  { id: 'jixiao', label: '极小', odds: 15 }
-]
+const jidaxiao = computed(() => [
+  { id: 'jida', label: t('game.extremeBig'), odds: 15 },
+  { id: 'jixiao', label: t('game.extremeSmall'), odds: 15 }
+])
 
-const sanweiItems = [
-  { id: 'duizi', label: '对子', odds: 3.5 },
-  { id: 'shunzi', label: '顺子', odds: 15 },
-  { id: 'baozi', label: '豹子', odds: 88 }
-]
+const sanweiItems = computed(() => [
+  { id: 'duizi', label: t('game.pair'), odds: 3.5 },
+  { id: 'shunzi', label: t('game.straight'), odds: 15 },
+  { id: 'baozi', label: t('game.triple'), odds: 88 }
+])
 
 const dandianOdds = [
   888, 280, 135, 83, 48, 35, 30, 25,
@@ -391,11 +393,11 @@ function clearAll() {
 
 function submitBet() {
   if (selectedBets.value.length === 0) {
-    showToast('请先选择投注项')
+    showToast(t('game.selectBetFirst'))
     return
   }
   showToast({
-    message: `下注成功！共${selectedBets.value.length}注，合计${totalBet.value}元`,
+    message: t('game.betSuccess', { count: selectedBets.value.length, total: totalBet.value }),
     type: 'success'
   })
   selectedBets.value = []

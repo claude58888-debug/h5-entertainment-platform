@@ -1,5 +1,5 @@
 <template>
-  <van-pull-refresh v-model="refreshing" @refresh="onRefresh" pulling-text="下拉刷新" loosing-text="释放刷新" loading-text="刷新中...">
+  <van-pull-refresh v-model="refreshing" @refresh="onRefresh" :pulling-text="$t('common.pullRefresh')" :loosing-text="$t('common.releaseRefresh')" :loading-text="$t('common.refreshing')">
     <div class="home-page">
       <!-- Notice -->
       <AppNotice />
@@ -16,57 +16,57 @@
       <!-- Content based on active category -->
       <template v-if="activeCategory === 'home'">
         <!-- Hot Games -->
-        <SectionHeader title="热门" icon="🔥" more="/games/hot" :scrollable="true" @scroll-left="scrollHot(-1)" @scroll-right="scrollHot(1)" />
+        <SectionHeader :title="$t('home.hot')" icon="🔥" more="/games/hot" :scrollable="true" @scroll-left="scrollHot(-1)" @scroll-right="scrollHot(1)" />
         <div class="scroll-row hide-scrollbar" ref="hotScrollRef">
           <GameCard v-for="game in hotGames" :key="game.id" :game="game" />
         </div>
 
         <!-- Slots -->
-        <SectionHeader title="电子游戏" icon="🎰" more="/games/slots" :scrollable="true" />
+        <SectionHeader :title="$t('home.slots')" icon="🎰" more="/games/slots" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in slotsProviders" :key="p.id" :provider="p" category="slots" />
         </div>
 
         <!-- Live -->
-        <SectionHeader title="真人视讯" icon="🎲" more="/games/live" :scrollable="true" />
+        <SectionHeader :title="$t('home.live')" icon="🎲" more="/games/live" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in liveProviders" :key="p.id" :provider="p" category="live" />
         </div>
 
         <!-- Fishing -->
-        <SectionHeader title="捕鱼游戏" icon="🐟" more="/games/fishing" :scrollable="true" />
+        <SectionHeader :title="$t('home.fishing')" icon="🐟" more="/games/fishing" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in fishingProviders" :key="p.id" :provider="p" category="fishing" />
         </div>
 
         <!-- Lottery -->
-        <SectionHeader title="彩票" icon="🎱" more="/games/lottery" :scrollable="true" />
+        <SectionHeader :title="$t('home.lottery')" icon="🎱" more="/games/lottery" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in lotteryProviders" :key="p.id" :provider="p" category="lottery" />
         </div>
 
         <!-- Sports -->
-        <SectionHeader title="体育竞猜" icon="⚽" more="/games/sports" :scrollable="true" />
+        <SectionHeader :title="$t('home.sports')" icon="⚽" more="/games/sports" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in sportsProviders" :key="p.id" :provider="p" category="sports" />
         </div>
 
         <!-- Chess -->
-        <SectionHeader title="棋牌游戏" icon="♟️" more="/games/chess" :scrollable="true" />
+        <SectionHeader :title="$t('home.chess')" icon="♟️" more="/games/chess" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in chessProviders" :key="p.id" :provider="p" category="chess" />
         </div>
 
         <!-- Video -->
-        <SectionHeader title="大大影视" icon="🎬" />
+        <SectionHeader :title="$t('home.video')" icon="🎬" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in videoProviders" :key="p.id" :provider="p" category="video" />
         </div>
 
         <!-- Crypto Section -->
         <div class="crypto-header">
-          <h3>购买虚拟币</h3>
-          <button class="vpn-btn" @click="$router.push('/softwareDownload')">推荐VPN</button>
+          <h3>{{ $t('home.buyCrypto') }}</h3>
+          <button class="vpn-btn" @click="$router.push('/softwareDownload')">{{ $t('home.recommendVPN') }}</button>
         </div>
         <div class="crypto-section">
           <a href="https://www.huobi.com" target="_blank" class="crypto-link">
@@ -84,7 +84,7 @@
         </div>
 
         <!-- Partners -->
-        <SectionHeader title="游戏事业" icon="🤝" />
+        <SectionHeader :title="$t('home.gamePartners')" icon="🤝" />
         <div class="partners-section">
           <div class="partner-logo">
             <img src="/img/providers/provider_evo.png" alt="EVO" />
@@ -122,7 +122,7 @@
         </div>
         <div v-if="!categoryGames.length" class="empty-state">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/></svg>
-          <p>即将上线</p>
+          <p>{{ $t('common.upcomingOnline') }}</p>
         </div>
       </template>
     </div>

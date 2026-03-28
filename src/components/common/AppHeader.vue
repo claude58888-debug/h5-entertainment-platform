@@ -21,8 +21,8 @@
     </div>
     <div class="header-right">
       <template v-if="!userStore.isLoggedIn">
-        <button class="btn-login" @click="userStore.showLoginModal = true">登录</button>
-        <router-link to="/register" class="btn-register">注册</router-link>
+        <button class="btn-login" @click="userStore.showLoginModal = true">{{ $t('common.login') }}</button>
+        <router-link to="/register" class="btn-register">{{ $t('common.register') }}</router-link>
       </template>
       <template v-else>
         <div class="balance-display">
@@ -32,7 +32,7 @@
         <button class="btn-refresh" @click="walletStore.fetchBalance()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
         </button>
-        <router-link to="/deposit" class="btn-deposit">充值</router-link>
+        <router-link to="/deposit" class="btn-deposit">{{ $t('actions.deposit') }}</router-link>
       </template>
       <button class="btn-lang" @click="toggleLocale">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
@@ -51,11 +51,11 @@ const userStore = useUserStore()
 const walletStore = useWalletStore()
 
 function toggleLocale() {
-  const locales = ['zh-CN', 'en', 'vi']
+  const locales = ['zh', 'en']
   const idx = locales.indexOf(locale.value)
   const newLocale = locales[(idx + 1) % locales.length]
   locale.value = newLocale
-  localStorage.setItem('locale', newLocale)
+  localStorage.setItem('lang', newLocale)
 }
 </script>
 

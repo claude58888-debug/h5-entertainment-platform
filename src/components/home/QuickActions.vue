@@ -9,7 +9,7 @@
       <div class="action-icon">
         <img :src="action.image" :alt="action.label" class="action-img" />
       </div>
-      <span class="action-label">{{ action.label }}</span>
+      <span class="action-label">{{ $t(action.labelKey) }}</span>
     </div>
   </div>
 </template>
@@ -23,27 +23,27 @@ const userStore = useUserStore()
 
 const actions = [
   {
-    label: '充值',
+    labelKey: 'home.recharge',
     path: '/deposit',
     image: '/img/icons/deposit.webp',
   },
   {
-    label: '提现',
+    labelKey: 'home.withdraw',
     path: '/withdraw',
     image: '/img/icons/withdraw.png',
   },
   {
-    label: '任务',
+    labelKey: 'home.task',
     path: '/tasks',
     image: '/img/icons/task.png',
   },
   {
-    label: '我的收入',
+    labelKey: 'home.myIncome',
     path: '/income',
     image: '/img/icons/income.png',
   },
   {
-    label: '邀请好友',
+    labelKey: 'home.inviteFriend',
     path: '/invite',
     image: '/img/icons/invite.png',
   }

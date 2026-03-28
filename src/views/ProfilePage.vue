@@ -20,7 +20,7 @@
         </div>
         <span class="vip-label">VIP{{ (user?.vipLevel || 0) + 1 }}</span>
       </div>
-      <p class="vip-hint">您再存50U即可升级VIP会员体系</p>
+      <p class="vip-hint">{{ t('profile.vipHint') }}</p>
     </div>
 
     <div class="balance-section">
@@ -41,43 +41,43 @@
           <div class="menu-icon-wrapper">
             <van-icon name="records-o" />
           </div>
-          <span>充提记录</span>
+          <span>{{ t('profile.depositRecord') }}</span>
         </div>
         <div class="quick-menu-item" @click="$router.push('/report')">
           <div class="menu-icon-wrapper">
             <van-icon name="chart-trending-o" />
           </div>
-          <span>输赢报表</span>
+          <span>{{ t('profile.profitReport') }}</span>
         </div>
         <div class="quick-menu-item" @click="$router.push('/orderRecordSummary')">
           <div class="menu-icon-wrapper">
             <van-icon name="bill-o" />
           </div>
-          <span>交易记录</span>
+          <span>{{ t('profile.transactionRecord') }}</span>
         </div>
         <div class="quick-menu-item" @click="$router.push('/tasks')">
           <div class="menu-icon-wrapper">
             <van-icon name="todo-list-o" />
           </div>
-          <span>任务中心</span>
+          <span>{{ t('profile.taskCenter') }}</span>
         </div>
         <div class="quick-menu-item" @click="$router.push('/prizeRecord')">
           <div class="menu-icon-wrapper">
             <van-icon name="records" />
           </div>
-          <span>投注记录</span>
+          <span>{{ t('profile.betRecord') }}</span>
         </div>
         <div class="quick-menu-item" @click="$router.push('/buyBit')">
           <div class="menu-icon-wrapper">
             <van-icon name="shopping-cart-o" />
           </div>
-          <span>购买货币</span>
+          <span>{{ t('profile.buyCrypto') }}</span>
         </div>
         <div class="quick-menu-item" @click="$router.push('/prizeRecord')">
           <div class="menu-icon-wrapper">
             <van-icon name="gift-o" />
           </div>
-          <span>抽奖明细</span>
+          <span>{{ t('profile.prizeDetails') }}</span>
         </div>
       </div>
     </div>
@@ -85,8 +85,8 @@
     <!-- 2c: Invite Friends Banner -->
     <div class="invite-banner-section">
       <div class="invite-banner" @click="$router.push('/invite')">
-        <span class="invite-text">👥 邀请好友最高获得0.6% 的返佣</span>
-        <span class="detail-link">详情 &gt;</span>
+        <span class="invite-text">👥 {{ t('profile.inviteBanner') }}</span>
+        <span class="detail-link">{{ t('profile.details') }} &gt;</span>
       </div>
     </div>
 
@@ -97,9 +97,9 @@
         <van-cell :title="t('actions.income')" is-link @click="$router.push('/income')" icon="chart-trending-o" />
         <van-cell :title="t('actions.invite')" is-link @click="$router.push('/invite')" icon="friends-o" />
         <van-cell :title="t('promotions.title')" is-link @click="$router.push('/promotions')" icon="gift-o" />
-        <van-cell title="安全中心" is-link @click="$router.push('/safeCenter')" icon="shield-o" />
-        <van-cell title="代理合作" is-link @click="$router.push('/agentCooperation')" icon="friends-o" />
-        <van-cell title="语言" is-link icon="setting-o" :value="currentLang" @click="toggleLanguage" />
+        <van-cell :title="t('profile.securityCenter')" is-link @click="$router.push('/safeCenter')" icon="shield-o" />
+        <van-cell :title="t('profile.agentCooperation')" is-link @click="$router.push('/agentCooperation')" icon="friends-o" />
+        <van-cell :title="t('profile.language')" is-link icon="setting-o" :value="currentLang" @click="toggleLanguage" />
         <van-cell :title="t('profile.help')" is-link @click="$router.push('/support')" icon="question-o" />
         <van-cell :title="t('profile.about')" is-link icon="info-o" />
       </van-cell-group>
@@ -128,7 +128,9 @@ const user = computed(() => userStore.user)
 const currentLang = computed(() => locale.value === 'zh' ? '简体中文' : 'English')
 
 function toggleLanguage() {
-  locale.value = locale.value === 'zh' ? 'en' : 'zh'
+  const newLocale = locale.value === 'zh' ? 'en' : 'zh'
+  locale.value = newLocale
+  localStorage.setItem('lang', newLocale)
 }
 
 function handleLogout() {
