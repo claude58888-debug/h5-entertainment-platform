@@ -7,7 +7,7 @@
       @click="handleAction(action.path)"
     >
       <div class="action-icon">
-        <img :src="action.image" :alt="action.label" class="action-img" />
+        <img :src="action.image" :alt="$t(action.labelKey)" class="action-img" />
       </div>
       <span class="action-label">{{ $t(action.labelKey) }}</span>
     </div>
