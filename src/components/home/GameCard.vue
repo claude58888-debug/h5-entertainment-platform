@@ -99,6 +99,14 @@ function handleClick() {
   border-radius: 10px;
   overflow: hidden;
   position: relative;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    border-color: rgba(167, 139, 250, 0.5);
+    box-shadow: 0 6px 25px rgba(124, 58, 237, 0.3);
+  }
 }
 
 .game-img {

@@ -1,14 +1,27 @@
-// Colors
-$bg-primary: #1a1a2e;
-$bg-card: #1e2a4a;
-$bg-header: #0f0f23;
-$accent-purple: #7c3aed;
-$accent-purple-light: #a78bfa;
-$accent-gold: #f59e0b;
+// Colors - Enriched Dark Luxury Theme
+$bg-primary: #0e0b1f;           // Deepest dark purple-black (page background)
+$bg-secondary: #150f2e;         // Slightly lighter, for sections
+$bg-card: #1c1640;              // Card background - rich dark purple
+$bg-card-hover: #231b50;        // Card hover state
+$bg-header: #110d28;            // Header - deep dark
+$bg-sidebar: #160f35;           // Sidebar panels
+$bg-input: #1a1540;             // Input fields
+
+$accent-purple: #7c3aed;        // Primary purple
+$accent-purple-light: #a78bfa;  // Light purple
+$accent-purple-glow: #9333ea;   // Glow purple
+$accent-blue: #3b82f6;          // Electric blue accent
+$accent-cyan: #06b6d4;          // Cyan highlight
+$accent-gold: #f59e0b;          // Gold
+$accent-gold-light: #fbbf24;    // Light gold
+$accent-red: #ef4444;           // Alert red
+$accent-green: #10b981;         // Success green
+
 $text-primary: #ffffff;
-$text-secondary: rgba(255, 255, 255, 0.7);
-$text-muted: rgba(255, 255, 255, 0.4);
-$border-color: rgba(255, 255, 255, 0.1);
+$text-secondary: rgba(255, 255, 255, 0.75);
+$text-muted: rgba(255, 255, 255, 0.45);
+$border-color: rgba(124, 58, 237, 0.25);  // Purple-tinted border
+$border-glow: rgba(167, 139, 250, 0.3);   // Glow border
 
 // Layout
 $max-width: 450px;

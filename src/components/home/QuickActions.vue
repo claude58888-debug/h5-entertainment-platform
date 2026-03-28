@@ -84,6 +84,9 @@ function handleAction(path) {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  border-radius: 12px;
 }
 
 .action-img {

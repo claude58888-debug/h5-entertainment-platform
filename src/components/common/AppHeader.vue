@@ -68,13 +68,14 @@ function toggleLocale() {
   width: 100%;
   max-width: $max-width;
   height: $header-height;
-  background: $bg-header;
+  background: linear-gradient(90deg, #110d28 0%, #1c1040 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
   z-index: 100;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+  box-shadow: 0 2px 20px rgba(124, 58, 237, 0.15);
 }
 
 .header-left {

@@ -407,7 +407,7 @@ function submitBet() {
 <style lang="scss" scoped>
 .canada28-page {
   min-height: 100vh;
-  background: #1a1235;
+  background: linear-gradient(180deg, #0e0b1f 0%, #150f2e 100%);
   color: #fff;
   padding-bottom: 140px;
 }
@@ -469,9 +469,11 @@ function submitBet() {
 /* Result Card */
 .result-card {
   margin: 12px;
-  background: linear-gradient(135deg, #2d1f5e, #1e1650);
+  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 100%);
   border-radius: 12px;
   padding: 16px;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .result-header {
@@ -688,8 +690,8 @@ function submitBet() {
   align-items: center;
   justify-content: center;
   padding: 10px 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #1c1640;
+  border: 1px solid rgba(124, 58, 237, 0.25);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -766,8 +768,9 @@ function submitBet() {
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  background: #1e1650;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, #150f2e 0%, #110d28 100%);
+  border-top: 1px solid rgba(124, 58, 237, 0.3);
+  box-shadow: 0 -4px 20px rgba(124, 58, 237, 0.1);
   padding: 10px 12px;
   z-index: 20;
 }
@@ -849,7 +852,8 @@ function submitBet() {
   padding: 10px 16px;
   border-radius: 8px;
   border: none;
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  background: linear-gradient(90deg, #7c3aed, #9333ea);
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
   color: #fff;
   font-size: 15px;
   font-weight: 600;
