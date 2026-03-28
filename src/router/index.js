@@ -166,8 +166,7 @@ const routes = [
   {
     path: '/games/canada-28',
     name: 'Canada28',
-    component: () => import('@/views/Canada28Page.vue'),
-    meta: { requiresAuth: true }
+    component: () => import('@/views/Canada28Page.vue')
   }
 ]
 
