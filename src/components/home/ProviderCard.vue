@@ -17,9 +17,6 @@
       class="provider-logo"
       @error="onLogoError"
     />
-    <div v-if="provider.name && provider.id !== 'COMING'" class="card-overlay">
-      <span class="provider-name">{{ provider.name }}</span>
-    </div>
   </div>
 </template>
 
@@ -98,26 +95,6 @@ function handleClick() {
   opacity: 0.9;
 }
 
-.card-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-  padding: 24px 12px 10px;
-  z-index: 2;
-}
-
-.provider-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-}
 
 .coming-text {
   position: absolute;
