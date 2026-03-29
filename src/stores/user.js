@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { loginApi, registerApi } from '@/api/auth'
-import { mockUser } from '@/mock'
 
 const MAX_LOGIN_ATTEMPTS = 5
 const LOCKOUT_DURATION = 15 * 60 * 1000 // 15 minutes
@@ -52,38 +51,23 @@ export const useUserStore = defineStore('user', () => {
       localStorage.removeItem('lockout_until')
       return { success: true }
     } catch (err) {
-      // Fallback to mock login if API fails
-      console.warn('Login API failed, using mock login', err)
-      const mockToken = 'mock_jwt_token_' + Date.now()
-      token.value = mockToken
-      user.value = { ...mockUser, phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
-      localStorage.setItem('token', mockToken)
-      localStorage.setItem('user', JSON.stringify(user.value))
-      showLoginModal.value = false
-      loginAttempts.value = 0
-      localStorage.removeItem('login_attempts')
-      localStorage.removeItem('lockout_until')
-      return { success: true }
+      loginAttempts.value++
+      localStorage.setItem('login_attempts', loginAttempts.value.toString())
+      if (loginAttempts.value >= MAX_LOGIN_ATTEMPTS) {
+        lockoutUntil.value = Date.now() + LOCKOUT_DURATION
+        localStorage.setItem('lockout_until', lockoutUntil.value.toString())
+      }
+      throw err
     }
   }
 
   async function register(phone, password) {
-    try {
-      const res = await registerApi({ phone, password })
-      token.value = res.access_token
-      user.value = res.user || { phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
-      localStorage.setItem('token', res.access_token)
-      localStorage.setItem('user', JSON.stringify(user.value))
-      return { success: true }
-    } catch (err) {
-      console.warn('Register API failed, using mock register', err)
-      const mockToken = 'mock_jwt_token_' + Date.now()
-      token.value = mockToken
-      user.value = { ...mockUser, phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
-      localStorage.setItem('token', mockToken)
-      localStorage.setItem('user', JSON.stringify(user.value))
-      return { success: true }
-    }
+    const res = await registerApi({ phone, password })
+    token.value = res.access_token
+    user.value = res.user || { phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
+    localStorage.setItem('token', res.access_token)
+    localStorage.setItem('user', JSON.stringify(user.value))
+    return { success: true }
   }
 
   function logout() {
