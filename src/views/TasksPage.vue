@@ -127,11 +127,37 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { mockTasks, mockSignInDays } from '@/mock'
 import { showToast } from 'vant'
 
-const tasks = ref(JSON.parse(JSON.stringify(mockTasks)))
-const signInDays = ref(JSON.parse(JSON.stringify(mockSignInDays)))
+const defaultTasks = [
+  { id: 1, title: '每日签到', description: '每日登录平台签到', reward: 5, rewardUnit: 'USDT', progress: 1, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 8 }, { level: 2, reward: 20 }, { level: 3, reward: 50 }, { level: 4, reward: 100 }, { level: 5, reward: 200 }], currentTier: 1 },
+  { id: 2, title: '投注10次', description: '今日投注至少10次', reward: 10, rewardUnit: 'USDT', progress: 3, target: 10, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 5 }, { level: 2, reward: 15 }, { level: 3, reward: 38 }, { level: 4, reward: 88 }, { level: 5, reward: 188 }], currentTier: 1 },
+  { id: 3, title: '充值一次', description: '今日充值任意金额', reward: 8, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 8 }, { level: 2, reward: 18 }, { level: 3, reward: 38 }, { level: 4, reward: 68 }, { level: 5, reward: 128 }], currentTier: 1 },
+  { id: 4, title: '分享平台', description: '分享平台链接到社交媒体', reward: 3, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 3 }, { level: 2, reward: 8 }, { level: 3, reward: 18 }, { level: 4, reward: 38 }, { level: 5, reward: 88 }], currentTier: 1 },
+  { id: 5, title: '累计投注1000', description: '今日累计投注达到1000', reward: 20, rewardUnit: 'USDT', progress: 350, target: 1000, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 128 }, { level: 5, reward: 288 }], currentTier: 1 },
+  { id: 6, title: '完善个人信息', description: '填写个人基本资料', reward: 10, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 108 }, { level: 5, reward: 218 }], currentTier: 1 },
+  { id: 7, title: '首次充值', description: '完成首次充值操作', reward: 28, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 },
+  { id: 8, title: '首次投注', description: '完成首次游戏投注', reward: 18, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 18 }, { level: 2, reward: 38 }, { level: 3, reward: 88 }, { level: 4, reward: 188 }, { level: 5, reward: 388 }], currentTier: 1 },
+  { id: 9, title: '绑定银行卡', description: '绑定一张银行卡', reward: 15, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 15 }, { level: 2, reward: 35 }, { level: 3, reward: 68 }, { level: 4, reward: 138 }, { level: 5, reward: 268 }], currentTier: 1 },
+  { id: 10, title: '邀请好友', description: '成功邀请一位好友注册', reward: 50, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 50 }, { level: 2, reward: 108 }, { level: 3, reward: 228 }, { level: 4, reward: 468 }, { level: 5, reward: 888 }], currentTier: 1 },
+  { id: 11, title: '周累计充值5000', description: '本周累计充值达到5000', reward: 88, rewardUnit: 'USDT', progress: 1200, target: 5000, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 38 }, { level: 2, reward: 88 }, { level: 3, reward: 188 }, { level: 4, reward: 388 }, { level: 5, reward: 888 }], currentTier: 1 },
+  { id: 12, title: '周累计投注50000', description: '本周累计投注达到50000', reward: 188, rewardUnit: 'USDT', progress: 12000, target: 50000, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 88 }, { level: 2, reward: 188 }, { level: 3, reward: 388 }, { level: 4, reward: 888 }, { level: 5, reward: 1888 }], currentTier: 1 },
+  { id: 13, title: '邀请3位好友', description: '本周邀请3位好友注册', reward: 128, rewardUnit: 'USDT', progress: 1, target: 3, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 58 }, { level: 2, reward: 128 }, { level: 3, reward: 288 }, { level: 4, reward: 588 }, { level: 5, reward: 1288 }], currentTier: 1 },
+  { id: 14, title: '连续登录7天', description: '本周每天都登录平台', reward: 58, rewardUnit: 'USDT', progress: 3, target: 7, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 }
+]
+
+const defaultSignInDays = [
+  { day: 1, reward: 1, claimed: true },
+  { day: 2, reward: 2, claimed: true },
+  { day: 3, reward: 3, claimed: true },
+  { day: 4, reward: 5, claimed: false },
+  { day: 5, reward: 8, claimed: false },
+  { day: 6, reward: 10, claimed: false },
+  { day: 7, reward: 18, claimed: false }
+]
+
+const tasks = ref(JSON.parse(JSON.stringify(defaultTasks)))
+const signInDays = ref(JSON.parse(JSON.stringify(defaultSignInDays)))
 const activeTab = ref('daily')
 
 const taskTabs = [

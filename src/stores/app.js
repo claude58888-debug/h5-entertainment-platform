@@ -1,11 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { mockBanners, mockAnnouncements } from '@/mock'
 import { getBannersApi, getAnnouncementsApi, getAppConfigApi } from '@/api/app'
 
 export const useAppStore = defineStore('app', () => {
-  const banners = ref(mockBanners)
-  const announcements = ref(mockAnnouncements)
+  const banners = ref([])
+  const announcements = ref([])
   const config = ref({})
   const loading = ref(false)
 
