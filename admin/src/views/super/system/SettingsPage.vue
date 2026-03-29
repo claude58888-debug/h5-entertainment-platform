@@ -4,11 +4,30 @@
     <el-tabs v-model="activeTab">
       <el-tab-pane label="全局配置" name="global">
         <div class="form-card">
-          <el-form label-width="140px" style="max-width: 600px;">
+          <el-form label-width="160px" style="max-width: 700px;">
             <el-form-item label="平台名称"><el-input v-model="settings.platformName" /></el-form-item>
             <el-form-item label="维护模式">
-              <el-switch v-model="settings.maintenance" active-text="开启维护" inactive-text="正常运行" />
-              <div v-if="settings.maintenance" style="color:#f56c6c; margin-top: 4px; font-size: 12px;">⚠ 维护模式开启后，所有代理前端将显示维护页面</div>
+              <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <el-switch v-model="settings.maintenance" active-text="开启维护" inactive-text="正常运行" />
+                </div>
+                <div v-if="settings.maintenance" style="color:#f56c6c; font-size: 12px;">⚠ 维护模式开启后，所有前端将显示维护页面</div>
+                <div v-if="settings.maintenance" style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                  <span style="color: #a0a0b0; font-size: 13px;">预计恢复时间:</span>
+                  <el-date-picker
+                    v-model="settings.maintenanceEndTime"
+                    type="datetime"
+                    placeholder="选择恢复时间"
+                    format="YYYY-MM-DD HH:mm"
+                    value-format="YYYY-MM-DD HH:mm:ss"
+                    size="small"
+                    style="width: 220px;"
+                  />
+                </div>
+                <div v-if="settings.maintenance && settings.maintenanceEndTime && maintenanceCountdown" style="background: #2d1a1a; border: 1px solid #f56c6c33; border-radius: 6px; padding: 8px 12px; font-size: 13px;">
+                  <span style="color: #f56c6c;">⏱ 倒计时: {{ maintenanceCountdown }}</span>
+                </div>
+              </div>
             </el-form-item>
             <el-form-item label="维护公告"><el-input v-model="settings.maintenanceMsg" type="textarea" :rows="2" :disabled="!settings.maintenance" /></el-form-item>
             <el-form-item label="新用户注册">
@@ -20,16 +39,23 @@
             <el-form-item label="时区">
               <el-select v-model="settings.timezone"><el-option label="Asia/Shanghai (UTC+8)" value="Asia/Shanghai" /><el-option label="UTC" value="UTC" /></el-select>
             </el-form-item>
-            <el-divider />
-            <el-form-item label="USDT刷新频率">
-              <el-select v-model="settings.usdtRefreshInterval" style="width: 200px;">
-                <el-option label="手动刷新" value="manual" />
-                <el-option label="每小时" value="hourly" />
-                <el-option label="每天" value="daily" />
-              </el-select>
-              <span v-if="settings.lastUsdtRefresh" style="margin-left: 12px; color: #a0a0b0; font-size: 12px;">
-                上次刷新: {{ settings.lastUsdtRefresh }}
-              </span>
+
+            <el-divider content-position="left">汇率与财务</el-divider>
+
+            <el-form-item label="USDT汇率刷新频率">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <el-select v-model="settings.usdtRefreshInterval" style="width: 200px;">
+                  <el-option label="手动刷新" value="manual" />
+                  <el-option label="每5分钟" value="5min" />
+                  <el-option label="每15分钟" value="15min" />
+                  <el-option label="每30分钟" value="30min" />
+                  <el-option label="每小时" value="hourly" />
+                  <el-option label="每天" value="daily" />
+                </el-select>
+                <span v-if="settings.lastUsdtRefresh" style="color: #a0a0b0; font-size: 12px;">
+                  上次刷新: {{ settings.lastUsdtRefresh }}
+                </span>
+              </div>
             </el-form-item>
             <el-form-item label="提现审核阈值">
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -37,21 +63,50 @@
                 <span style="color: #a0a0b0;">CNY (超过此金额需人工审核)</span>
               </div>
             </el-form-item>
+
+            <el-divider content-position="left">VIP与积分</el-divider>
+
+            <el-form-item label="VIP积分倍率">
+              <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="color: #a0a0b0; font-size: 13px;">每投注</span>
+                  <el-input-number v-model="settings.pointsPerBetAmount" :min="1" :max="1000" :step="1" style="width: 120px;" size="small" />
+                  <span style="color: #a0a0b0; font-size: 13px;">CNY =</span>
+                  <el-input-number v-model="settings.pointsPerBetPoints" :min="1" :max="100" :step="1" style="width: 100px;" size="small" />
+                  <span style="color: #a0a0b0; font-size: 13px;">积分</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="color: #a0a0b0; font-size: 13px;">积分倍率:</span>
+                  <el-input-number v-model="settings.vipPointsMultiplier" :min="0.1" :max="10" :step="0.1" :precision="1" style="width: 120px;" size="small" />
+                  <span style="color: #a0a0b0; font-size: 12px;">× (活动期间可调高倍率)</span>
+                </div>
+                <el-button type="primary" text size="small" @click="$router.push('/super/vip')" style="width: fit-content;">前往VIP管理 →</el-button>
+              </div>
+            </el-form-item>
+
+            <el-form-item label="返水比例配置">
+              <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                <div v-for="(rb, idx) in settings.rakebackRates" :key="idx" style="display: flex; align-items: center; gap: 8px;">
+                  <span style="color: #a0a0b0; font-size: 13px; min-width: 50px;">VIP{{ idx }}:</span>
+                  <el-input-number v-model="settings.rakebackRates[idx]" :min="0" :max="10" :step="0.1" :precision="2" style="width: 140px;" size="small" />
+                  <span style="color: #a0a0b0; font-size: 13px;">%</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                  <span style="color: #a0a0b0; font-size: 12px;">结算方式:</span>
+                  <el-select v-model="settings.rakebackSettlement" size="small" style="width: 140px;">
+                    <el-option label="每日自动" value="daily" />
+                    <el-option label="每周自动" value="weekly" />
+                    <el-option label="手动结算" value="manual" />
+                  </el-select>
+                </div>
+                <el-button type="primary" text size="small" @click="$router.push('/super/rakeback')" style="width: fit-content;">前往返水管理 →</el-button>
+              </div>
+            </el-form-item>
+
             <el-divider />
-            <el-form-item label="VIP积分规则">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="color: #a0a0b0;">每投注 10 CNY = 1 积分 | 6个VIP等级</span>
-                <el-button type="primary" text size="small" @click="$router.push('/super/vip')">前往VIP管理</el-button>
-              </div>
-            </el-form-item>
-            <el-form-item label="返水设置">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="color: #a0a0b0;">VIP0: 0.5% ~ VIP5: 1.5% | 每日自动结算</span>
-                <el-button type="primary" text size="small" @click="$router.push('/super/rakeback')">前往返水管理</el-button>
-              </div>
-            </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="save">保存设置</el-button>
+              <el-button @click="resetSettings">重置</el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -144,16 +199,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getSettings, updateSettings, getPermissions, updatePermissions } from '@/api/system'
 
 const activeTab = ref('global')
 const selectedRole = ref('admin')
+const countdownTimer = ref(null)
+const countdownNow = ref(Date.now())
+
 const settings = reactive({
   platformName: '',
   maintenance: false,
   maintenanceMsg: '',
+  maintenanceEndTime: '',
   allowRegister: true,
   currency: 'CNY',
   timezone: 'Asia/Shanghai',
@@ -163,7 +222,23 @@ const settings = reactive({
   adminIpWhitelist: '',
   usdtRefreshInterval: 'manual',
   lastUsdtRefresh: '',
-  withdrawalReviewThreshold: 50000
+  withdrawalReviewThreshold: 50000,
+  pointsPerBetAmount: 10,
+  pointsPerBetPoints: 1,
+  vipPointsMultiplier: 1.0,
+  rakebackRates: [0.5, 0.6, 0.8, 1.0, 1.2, 1.5],
+  rakebackSettlement: 'daily'
+})
+
+const maintenanceCountdown = computed(() => {
+  if (!settings.maintenanceEndTime) return ''
+  const end = new Date(settings.maintenanceEndTime).getTime()
+  const diff = end - countdownNow.value
+  if (diff <= 0) return '已到期'
+  const hours = Math.floor(diff / 3600000)
+  const minutes = Math.floor((diff % 3600000) / 60000)
+  const seconds = Math.floor((diff % 60000) / 1000)
+  return `${hours}小时 ${minutes}分钟 ${seconds}秒`
 })
 
 const roles = [
@@ -198,7 +273,6 @@ function moduleLabel(mod) {
 
 function applySettings(data) {
   if (!data || typeof data !== 'object') return
-  // Handle grouped format: { global: {...}, security: {...}, finance: {...} }
   const flat = {}
   for (const [category, entries] of Object.entries(data)) {
     if (typeof entries === 'object' && entries !== null) {
@@ -210,6 +284,7 @@ function applySettings(data) {
   if (flat.maintenance_mode !== undefined) settings.maintenance = flat.maintenance_mode === 'true'
   if (flat.maintenance !== undefined) settings.maintenance = flat.maintenance === 'true'
   if (flat.maintenanceMsg) settings.maintenanceMsg = flat.maintenanceMsg
+  if (flat.maintenanceEndTime) settings.maintenanceEndTime = flat.maintenanceEndTime
   if (flat.register_enabled !== undefined) settings.allowRegister = flat.register_enabled === 'true'
   if (flat.allowRegister !== undefined) settings.allowRegister = flat.allowRegister === 'true'
   if (flat.currency) settings.currency = flat.currency
@@ -221,9 +296,27 @@ function applySettings(data) {
   if (flat.force2FA !== undefined) settings.force2FA = flat.force2FA === 'true'
   if (flat.ip_whitelist_enabled !== undefined) settings.adminIpWhitelist = flat.adminIpWhitelist || ''
   if (flat.adminIpWhitelist) settings.adminIpWhitelist = flat.adminIpWhitelist
+  if (flat.usdtRefreshInterval) settings.usdtRefreshInterval = flat.usdtRefreshInterval
+  if (flat.lastUsdtRefresh) settings.lastUsdtRefresh = flat.lastUsdtRefresh
+  if (flat.withdrawalReviewThreshold) settings.withdrawalReviewThreshold = parseFloat(flat.withdrawalReviewThreshold) || 50000
+  if (flat.pointsPerBetAmount) settings.pointsPerBetAmount = parseInt(flat.pointsPerBetAmount) || 10
+  if (flat.pointsPerBetPoints) settings.pointsPerBetPoints = parseInt(flat.pointsPerBetPoints) || 1
+  if (flat.vipPointsMultiplier) settings.vipPointsMultiplier = parseFloat(flat.vipPointsMultiplier) || 1.0
+  if (flat.rakebackRates) {
+    try {
+      const parsed = typeof flat.rakebackRates === 'string' ? JSON.parse(flat.rakebackRates) : flat.rakebackRates
+      if (Array.isArray(parsed)) settings.rakebackRates = parsed.map(Number)
+    } catch (e) { /* keep defaults */ }
+  }
+  if (flat.rakebackSettlement) settings.rakebackSettlement = flat.rakebackSettlement
 }
 
 onMounted(async () => {
+  // Start countdown timer for maintenance mode
+  countdownTimer.value = setInterval(() => {
+    countdownNow.value = Date.now()
+  }, 1000)
+
   try {
     const data = await getSettings()
     applySettings(data)
@@ -253,6 +346,10 @@ onMounted(async () => {
   }
 })
 
+onUnmounted(() => {
+  if (countdownTimer.value) clearInterval(countdownTimer.value)
+})
+
 const assets = ref([
   { name: '首充活动模板', size: '1920x600', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
   { name: '返水活动模板', size: '1920x600', color: 'linear-gradient(135deg, #f093fb, #f5576c)' },
@@ -264,11 +361,48 @@ const assets = ref([
 
 async function save() {
   try {
-    await updateSettings(settings)
+    const payload = {
+      global: {
+        platformName: settings.platformName,
+        maintenance: String(settings.maintenance),
+        maintenanceMsg: settings.maintenanceMsg,
+        maintenanceEndTime: settings.maintenanceEndTime || '',
+        allowRegister: String(settings.allowRegister),
+        currency: settings.currency,
+        timezone: settings.timezone,
+        usdtRefreshInterval: settings.usdtRefreshInterval,
+        withdrawalReviewThreshold: String(settings.withdrawalReviewThreshold)
+      },
+      security: {
+        maxLoginAttempts: String(settings.maxLoginAttempts),
+        sessionTimeout: String(settings.sessionTimeout),
+        force2FA: String(settings.force2FA),
+        adminIpWhitelist: settings.adminIpWhitelist
+      },
+      vip: {
+        pointsPerBetAmount: String(settings.pointsPerBetAmount),
+        pointsPerBetPoints: String(settings.pointsPerBetPoints),
+        vipPointsMultiplier: String(settings.vipPointsMultiplier),
+        rakebackRates: JSON.stringify(settings.rakebackRates),
+        rakebackSettlement: settings.rakebackSettlement
+      }
+    }
+    await updateSettings(payload)
     ElMessage.success('设置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
   }
+}
+
+function resetSettings() {
+  settings.pointsPerBetAmount = 10
+  settings.pointsPerBetPoints = 1
+  settings.vipPointsMultiplier = 1.0
+  settings.rakebackRates = [0.5, 0.6, 0.8, 1.0, 1.2, 1.5]
+  settings.rakebackSettlement = 'daily'
+  settings.withdrawalReviewThreshold = 50000
+  settings.usdtRefreshInterval = 'manual'
+  ElMessage.info('已重置为默认值，请点击保存')
 }
 
 async function savePermissions(role) {

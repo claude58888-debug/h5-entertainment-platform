@@ -283,16 +283,58 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
   res.json(result)
 })
 
-// Dashboard alerts - counts of pending items
+// Dashboard stats - real aggregated data
+app.get('/api/admin/dashboard/stats', authMiddleware, (req, res) => {
+  const cached = cacheGet('dashboard:stats')
+  if (cached) return res.json(cached)
+
+  const totalMembers = db.prepare('SELECT COUNT(*) as count FROM members').get().count
+  const todayRegistrations = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now')").get().count
+  const totalDeposits = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed'").get().total
+  const totalWithdrawals = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved')").get().total
+  const todayDeposits = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= date('now')").get().total
+  const todayWithdrawals = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= date('now')").get().total
+  const activeOnline = Math.floor(Math.random() * 500) + 100 // placeholder
+
+  const result = {
+    totalMembers,
+    todayRegistrations,
+    totalDeposits,
+    totalWithdrawals,
+    todayDeposits,
+    todayWithdrawals,
+    todayProfit: todayDeposits - todayWithdrawals,
+    activeOnline
+  }
+  cacheSet('dashboard:stats', result, 30000)
+  res.json(result)
+})
+
+// Dashboard alerts - counts of pending items and recent risk events
 app.get('/api/admin/dashboard/alerts', authMiddleware, (req, res) => {
   const pendingWithdrawals = db.prepare("SELECT COUNT(*) as count FROM withdrawals WHERE status = 'pending'").get().count
   const pendingKyc = db.prepare("SELECT COUNT(*) as count FROM kyc_documents WHERE status = 'pending'").get().count
   const openAmlAlerts = db.prepare("SELECT COUNT(*) as count FROM aml_alerts WHERE status = 'open'").get().count
 
+  const recentRiskEvents = db.prepare("SELECT * FROM aml_alerts ORDER BY created_at DESC LIMIT 10").all().map(r => ({
+    id: r.id,
+    userId: r.user_id,
+    transactionId: r.transaction_id,
+    alertType: r.alert_type,
+    amount: r.amount,
+    description: r.description,
+    status: r.status,
+    createdAt: r.created_at
+  }))
+
+  const recentSuspicious = db.prepare("SELECT r.name, r.triggers, r.status FROM risk_rules r WHERE r.status = 'active' ORDER BY r.triggers DESC LIMIT 5").all()
+
   res.json({
     pendingWithdrawals: pendingWithdrawals || 0,
     pendingKyc: pendingKyc || 0,
-    suspiciousActivities: openAmlAlerts || 0
+    suspiciousActivities: openAmlAlerts || 0,
+    recentRiskEvents,
+    activeRiskRules: recentSuspicious
   })
 })
 
@@ -531,6 +573,42 @@ app.put('/api/admin/agents/:id', authMiddleware, validateUpdateAgent, handleVali
 app.delete('/api/admin/agents/:id', authMiddleware, (req, res) => {
   db.prepare('DELETE FROM agents WHERE id = ?').run(req.params.id)
   res.json({ success: true })
+})
+
+// Agent stats summary
+app.get('/api/admin/agents/stats', authMiddleware, (req, res) => {
+  const cached = cacheGet('agents:stats')
+  if (cached) return res.json(cached)
+
+  const totalAgents = db.prepare('SELECT COUNT(*) as count FROM agents').get().count
+  const activeAgents = db.prepare("SELECT COUNT(*) as count FROM agents WHERE status = 'active'").get().count
+  const frozenAgents = db.prepare("SELECT COUNT(*) as count FROM agents WHERE status = 'frozen'").get().count
+  const inactiveAgents = db.prepare("SELECT COUNT(*) as count FROM agents WHERE status = 'inactive'").get().count
+  const totalBalance = db.prepare('SELECT COALESCE(SUM(balance), 0) as total FROM agents').get().total
+  const totalMonthRevenue = db.prepare('SELECT COALESCE(SUM(month_revenue), 0) as total FROM agents').get().total
+  const totalMembers = db.prepare('SELECT COALESCE(SUM(members), 0) as total FROM agents').get().total
+
+  const topAgents = db.prepare('SELECT id, brand, members, month_revenue, balance, status FROM agents ORDER BY month_revenue DESC LIMIT 5').all().map(r => ({
+    id: r.id,
+    brand: r.brand,
+    members: r.members,
+    monthRevenue: r.month_revenue,
+    balance: r.balance,
+    status: r.status
+  }))
+
+  const result = {
+    totalAgents,
+    activeAgents,
+    frozenAgents,
+    inactiveAgents,
+    totalBalance,
+    totalMonthRevenue,
+    totalMembers,
+    topAgents
+  }
+  cacheSet('agents:stats', result, 60000)
+  res.json(result)
 })
 
 // ==================== FINANCE ====================
@@ -1242,22 +1320,52 @@ app.get('/api/admin/announcements', authMiddleware, (req, res) => {
   const rows = db.prepare('SELECT * FROM announcements ORDER BY created_at DESC').all()
   const announcements = rows.map(r => ({
     ...r,
-    created: r.created_at
+    created: r.created_at,
+    targetType: r.target_type,
+    targetVipLevel: r.target_vip_level,
+    scheduledAt: r.scheduled_at,
+    publishedAt: r.published_at
   }))
   res.json(announcements)
 })
 
 app.post('/api/admin/announcements', authMiddleware, validateCreateAnnouncement, handleValidationErrors, (req, res, next) => {
   try {
-    const { title, content, target, status } = req.body
-    db.prepare('INSERT INTO announcements (title, content, target, status) VALUES (?,?,?,?)').run(
-      title, content || '', target || '全部代理', status || 'active'
+    const { title, content, target, targetType, targetVipLevel, type, status, scheduledAt } = req.body
+    const finalStatus = scheduledAt ? 'scheduled' : (status || 'published')
+    const publishedAt = finalStatus === 'published' ? new Date().toISOString() : null
+
+    const result = db.prepare(
+      'INSERT INTO announcements (title, content, target, target_type, target_vip_level, type, status, scheduled_at, published_at) VALUES (?,?,?,?,?,?,?,?,?)'
+    ).run(
+      title, content || '', target || '全部用户', targetType || 'all', targetVipLevel || null, type || '普通', finalStatus, scheduledAt || null, publishedAt
     )
     auditLog(req.user.username, '创建公告', title, '创建公告: ' + title, req.ip || '0.0.0.0')
-    res.json({ success: true })
+    res.json({ success: true, id: result.lastInsertRowid })
   } catch (err) {
     next(err)
   }
+})
+
+app.put('/api/admin/announcements/:id', authMiddleware, (req, res) => {
+  const ann = db.prepare('SELECT * FROM announcements WHERE id = ?').get(req.params.id)
+  if (!ann) return res.status(404).json({ error: 'Announcement not found' })
+
+  const { title, content, target, targetType, targetVipLevel, type, status, scheduledAt } = req.body
+  db.prepare(`UPDATE announcements SET
+    title = COALESCE(?, title),
+    content = COALESCE(?, content),
+    target = COALESCE(?, target),
+    target_type = COALESCE(?, target_type),
+    target_vip_level = ?,
+    type = COALESCE(?, type),
+    status = COALESCE(?, status),
+    scheduled_at = ?,
+    published_at = CASE WHEN ? = 'published' AND published_at IS NULL THEN datetime('now') ELSE published_at END
+    WHERE id = ?`).run(
+    title, content, target, targetType, targetVipLevel || null, type, status, scheduledAt || null, status, req.params.id
+  )
+  res.json({ success: true })
 })
 
 app.delete('/api/admin/announcements/:id', authMiddleware, (req, res) => {

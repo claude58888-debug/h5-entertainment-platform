@@ -295,7 +295,12 @@ export function initDB() {
       title TEXT NOT NULL,
       content TEXT,
       target TEXT DEFAULT '全部代理',
+      target_type TEXT DEFAULT 'all',
+      target_vip_level INTEGER,
+      type TEXT DEFAULT '普通',
       status TEXT DEFAULT 'active',
+      scheduled_at TEXT,
+      published_at TEXT,
       created_at TEXT NOT NULL DEFAULT (date('now'))
     );
 
