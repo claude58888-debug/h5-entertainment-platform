@@ -6,8 +6,8 @@ async def seed_data(db_path: str):
     """Seed database with demo data matching the admin mock data."""
     db = await aiosqlite.connect(db_path)
 
-    # Check if already seeded
-    cursor = await db.execute("SELECT COUNT(*) FROM users")
+    # Check if already seeded (use admin_accounts so reset-database doesn't re-trigger seed)
+    cursor = await db.execute("SELECT COUNT(*) FROM admin_accounts")
     count = (await cursor.fetchone())[0]
     if count > 0:
         await db.close()

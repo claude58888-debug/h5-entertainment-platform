@@ -61,12 +61,12 @@ async def _super_dashboard(db):
 
     return {
         "kpi": {
-            "totalMembers": total_members or 128456,
-            "todayNewMembers": today_new or 342,
-            "onlineNow": 1893,
-            "todayDeposit": today_deposit or 2856000,
-            "todayWithdrawal": today_withdrawal or 1245000,
-            "todayProfit": (today_deposit or 2856000) - (today_withdrawal or 1245000),
+            "totalMembers": total_members,
+            "todayNewMembers": today_new,
+            "onlineNow": 0,
+            "todayDeposit": today_deposit,
+            "todayWithdrawal": today_withdrawal,
+            "todayProfit": today_deposit - today_withdrawal,
         },
         "revenueTrend": revenue_trend,
         "topGamesGGR": top_games,
@@ -87,16 +87,16 @@ async def _agent_dashboard(db):
 
     return {
         "kpi": {
-            "todayNewMembers": today_new or 58,
-            "todayActiveMembers": 423,
-            "onlineCount": 156,
-            "todayDeposit": today_deposit or 486000,
-            "todayWithdrawal": today_withdrawal or 198000,
-            "todayProfit": (today_deposit or 486000) - (today_withdrawal or 198000),
-            "weeklyProfit": 1850000,
-            "monthlyProfit": 7200000,
-            "creditBalance": 500000,
-            "pendingWithdrawals": 12,
-            "pendingTickets": 5,
+            "todayNewMembers": today_new,
+            "todayActiveMembers": 0,
+            "onlineCount": 0,
+            "todayDeposit": today_deposit,
+            "todayWithdrawal": today_withdrawal,
+            "todayProfit": today_deposit - today_withdrawal,
+            "weeklyProfit": 0,
+            "monthlyProfit": 0,
+            "creditBalance": 0,
+            "pendingWithdrawals": 0,
+            "pendingTickets": 0,
         }
     }
