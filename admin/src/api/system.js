@@ -28,6 +28,10 @@ export function createAnnouncement(data) {
   return api.post('/api/admin/announcements', data)
 }
 
+export function updateAnnouncement(id, data) {
+  return api.put(`/api/admin/announcements/${id}`, data)
+}
+
 export function deleteAnnouncement(id) {
   return api.delete(`/api/admin/announcements/${id}`)
 }
