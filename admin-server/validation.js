@@ -341,3 +341,38 @@ export const validateAddBlacklistIP = [
     .isLength({ max: 500 }).withMessage('Reason must be under 500 characters')
     .trim()
 ]
+
+// ==================== MEMBER MANAGEMENT (Phase 11A) ====================
+
+export const validateVipAdjust = [
+  body('level')
+    .notEmpty().withMessage('VIP level is required')
+    .isInt({ min: 0, max: 99 }).withMessage('VIP level must be 0-99'),
+  body('reason')
+    .optional()
+    .isLength({ max: 500 }).withMessage('Reason must be under 500 characters')
+    .trim()
+]
+
+export const validateTagsUpdate = [
+  body('tags')
+    .isArray().withMessage('Tags must be an array')
+    .custom(tags => tags.length <= 20).withMessage('Maximum 20 tags allowed'),
+  body('tags.*')
+    .isString().withMessage('Each tag must be a string')
+    .isLength({ min: 1, max: 50 }).withMessage('Tag must be 1-50 characters')
+    .trim()
+]
+
+export const validateBalanceAdjust = [
+  body('amount')
+    .notEmpty().withMessage('Amount is required')
+    .isFloat({ min: 0.01 }).withMessage('Amount must be greater than 0'),
+  body('type')
+    .notEmpty().withMessage('Type is required')
+    .isIn(['deposit', 'deduction']).withMessage('Type must be deposit or deduction'),
+  body('reason')
+    .notEmpty().withMessage('Reason is required')
+    .isLength({ min: 1, max: 500 }).withMessage('Reason must be 1-500 characters')
+    .trim()
+]
