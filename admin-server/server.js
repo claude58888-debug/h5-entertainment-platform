@@ -293,7 +293,10 @@ app.get('/api/admin/settlements', authMiddleware, (req, res) => {
   const rows = db.prepare('SELECT * FROM settlements ORDER BY id').all()
   const settlements = rows.map(r => ({
     ...r,
-    shareRate: r.share_rate,
+    totalBets: r.total_bets,
+    commissionRate: r.commission_rate,
+    commissionAmount: r.commission_amount,
+    upstreamDeduction: r.upstream_deduction,
     paidTime: r.paid_time
   }))
   res.json(settlements)
@@ -624,10 +627,14 @@ app.get('/api/admin/admins', authMiddleware, (req, res) => {
 })
 
 app.post('/api/admin/admins', authMiddleware, (req, res) => {
-  const { username, password, role, displayName } = req.body
+  const { username, role, displayName } = req.body
+  const pwd = req.body.password
+  if (!username || !pwd) {
+    return res.status(400).json({ error: 'Username and password are required' })
+  }
   try {
     db.prepare('INSERT INTO admins (username, password, role, display_name) VALUES (?,?,?,?)').run(
-      username, password, role || 'admin', displayName || username
+      username, pwd, role || 'admin', displayName || username
     )
     res.json({ success: true })
   } catch (err) {
