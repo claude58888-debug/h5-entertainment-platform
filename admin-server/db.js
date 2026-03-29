@@ -123,15 +123,23 @@ export function initDB() {
       status TEXT DEFAULT 'settled'
     );
 
-    -- VIP levels
+    -- VIP levels (enhanced with points system)
     CREATE TABLE IF NOT EXISTS vip_levels (
-      level INTEGER PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      level INTEGER UNIQUE NOT NULL,
       name TEXT NOT NULL,
+      min_points INTEGER DEFAULT 0,
+      benefits_json TEXT DEFAULT '[]',
+      rakeback_bonus REAL DEFAULT 0,
+      monthly_review INTEGER DEFAULT 0,
       upgrade_deposit REAL DEFAULT 0,
       upgrade_wager REAL DEFAULT 0,
       monthly_bonus REAL DEFAULT 0,
       birthday_bonus REAL DEFAULT 0,
-      withdraw_limit TEXT DEFAULT '50000'
+      withdraw_limit TEXT DEFAULT '50000',
+      status TEXT DEFAULT 'active',
+      points_rule TEXT DEFAULT '10 CNY = 1 积分',
+      quarterly_review INTEGER DEFAULT 1
     );
 
     -- Auto review rules for withdrawals
@@ -146,24 +154,62 @@ export function initDB() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    -- Rakeback config
+    -- Rakeback config (enhanced with house edge)
     CREATE TABLE IF NOT EXISTS rakeback_config (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       game_type TEXT NOT NULL,
+      house_edge_min REAL DEFAULT 0,
+      house_edge_max REAL DEFAULT 0,
+      default_edge REAL DEFAULT 0,
       rate REAL NOT NULL DEFAULT 0,
       min_bet REAL DEFAULT 0,
       status TEXT DEFAULT 'active'
     );
 
-    -- Rakeback records
+    -- Rakeback records (enhanced with VIP level and date)
     CREATE TABLE IF NOT EXISTS rakeback_records (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id TEXT NOT NULL,
       member TEXT NOT NULL,
+      date TEXT DEFAULT (date('now')),
       game_type TEXT,
+      total_bets REAL DEFAULT 0,
       bet_amount REAL DEFAULT 0,
+      calculated_rakeback REAL DEFAULT 0,
       rakeback_amount REAL DEFAULT 0,
+      vip_level INTEGER DEFAULT 0,
       time TEXT NOT NULL DEFAULT (datetime('now')),
-      status TEXT DEFAULT 'settled'
+      status TEXT DEFAULT 'pending'
+    );
+
+    -- Agent settlements
+    CREATE TABLE IF NOT EXISTS agent_settlements (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      agent_id TEXT NOT NULL,
+      agent_name TEXT DEFAULT '',
+      period_start TEXT NOT NULL,
+      period_end TEXT NOT NULL,
+      total_revenue REAL DEFAULT 0,
+      commission_rate REAL DEFAULT 0,
+      commission_amount REAL DEFAULT 0,
+      upstream_fee REAL DEFAULT 0,
+      net_amount REAL DEFAULT 0,
+      status TEXT DEFAULT 'pending',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      approved_at TEXT,
+      approved_by TEXT
+    );
+
+    -- Role permissions (RBAC)
+    CREATE TABLE IF NOT EXISTS role_permissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      role TEXT NOT NULL,
+      module TEXT NOT NULL,
+      can_view INTEGER DEFAULT 0,
+      can_create INTEGER DEFAULT 0,
+      can_edit INTEGER DEFAULT 0,
+      can_delete INTEGER DEFAULT 0,
+      UNIQUE(role, module)
     );
 
     -- Promotions / Activities
@@ -484,6 +530,16 @@ export function initDB() {
 
     -- Rakeback records: queried by member
     CREATE INDEX IF NOT EXISTS idx_rakeback_member ON rakeback_records(member);
+    CREATE INDEX IF NOT EXISTS idx_rakeback_member_id ON rakeback_records(member_id);
+    CREATE INDEX IF NOT EXISTS idx_rakeback_date ON rakeback_records(date);
+
+    -- Agent settlements: queried by agent_id, status, period
+    CREATE INDEX IF NOT EXISTS idx_agent_settlements_agent ON agent_settlements(agent_id);
+    CREATE INDEX IF NOT EXISTS idx_agent_settlements_status ON agent_settlements(status);
+    CREATE INDEX IF NOT EXISTS idx_agent_settlements_period ON agent_settlements(period_start, period_end);
+
+    -- Role permissions: queried by role
+    CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role);
 
     -- Promotion claims: queried by member_id
     CREATE INDEX IF NOT EXISTS idx_promo_claims_member ON h5_promotion_claims(member_id);

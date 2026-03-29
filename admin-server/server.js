@@ -935,29 +935,50 @@ app.get('/api/admin/vip-levels', authMiddleware, (req, res) => {
 
   const rows = db.prepare('SELECT * FROM vip_levels ORDER BY level').all()
   const levels = rows.map(r => ({
+    id: r.id,
     level: r.level,
     name: r.name,
+    minPoints: r.min_points,
+    benefits: (() => { try { return JSON.parse(r.benefits_json || '[]') } catch { return [] } })(),
+    benefitsJson: r.benefits_json,
+    rakebackBonus: r.rakeback_bonus,
+    monthlyReview: r.monthly_review,
     upgradeDeposit: r.upgrade_deposit,
     upgradeWager: r.upgrade_wager,
     monthlyBonus: r.monthly_bonus,
     birthdayBonus: r.birthday_bonus,
-    withdrawLimit: r.withdraw_limit === 'unlimited' ? 'unlimited' : Number(r.withdraw_limit)
+    withdrawLimit: r.withdraw_limit === 'unlimited' ? 'unlimited' : Number(r.withdraw_limit),
+    status: r.status || 'active',
+    pointsRule: r.points_rule,
+    quarterlyReview: r.quarterly_review
   }))
   cacheSet('admin:vip-levels', levels, 120000)
   res.json(levels)
 })
 
-app.put('/api/admin/vip-levels/:level', authMiddleware, (req, res) => {
-  const { name, upgradeDeposit, upgradeWager, monthlyBonus, birthdayBonus, withdrawLimit } = req.body
+app.put('/api/admin/vip-levels/:id', authMiddleware, (req, res) => {
+  const { name, minPoints, benefitsJson, rakebackBonus, monthlyReview, upgradeDeposit, upgradeWager, monthlyBonus, birthdayBonus, withdrawLimit, status, quarterlyReview } = req.body
   db.prepare(`UPDATE vip_levels SET
     name = COALESCE(?, name),
+    min_points = COALESCE(?, min_points),
+    benefits_json = COALESCE(?, benefits_json),
+    rakeback_bonus = COALESCE(?, rakeback_bonus),
+    monthly_review = COALESCE(?, monthly_review),
     upgrade_deposit = COALESCE(?, upgrade_deposit),
     upgrade_wager = COALESCE(?, upgrade_wager),
     monthly_bonus = COALESCE(?, monthly_bonus),
     birthday_bonus = COALESCE(?, birthday_bonus),
-    withdraw_limit = COALESCE(?, withdraw_limit)
-    WHERE level = ?`).run(name, upgradeDeposit, upgradeWager, monthlyBonus, birthdayBonus,
-    withdrawLimit !== undefined ? String(withdrawLimit) : null, req.params.level)
+    withdraw_limit = COALESCE(?, withdraw_limit),
+    status = COALESCE(?, status),
+    quarterly_review = COALESCE(?, quarterly_review)
+    WHERE id = ?`).run(
+    name, minPoints, benefitsJson, rakebackBonus, monthlyReview,
+    upgradeDeposit, upgradeWager, monthlyBonus, birthdayBonus,
+    withdrawLimit !== undefined ? String(withdrawLimit) : null,
+    status, quarterlyReview, req.params.id
+  )
+  cacheInvalidate('admin:vip-levels')
+  auditLog(req.user.username, 'VIP等级更新', 'vip_level_' + req.params.id, 'Updated VIP level config', req.ip || '0.0.0.0')
   res.json({ success: true })
 })
 
@@ -967,18 +988,25 @@ app.get('/api/admin/rakeback/config', authMiddleware, (req, res) => {
   const config = rows.map(r => ({
     ...r,
     gameType: r.game_type,
+    houseEdgeMin: r.house_edge_min,
+    houseEdgeMax: r.house_edge_max,
+    defaultEdge: r.default_edge,
     minBet: r.min_bet
   }))
   res.json(config)
 })
 
 app.put('/api/admin/rakeback/config/:id', authMiddleware, (req, res) => {
-  const { rate, minBet, status } = req.body
+  const { rate, minBet, status, houseEdgeMin, houseEdgeMax, defaultEdge } = req.body
   db.prepare(`UPDATE rakeback_config SET
     rate = COALESCE(?, rate),
     min_bet = COALESCE(?, min_bet),
-    status = COALESCE(?, status)
-    WHERE id = ?`).run(rate, minBet, status, req.params.id)
+    status = COALESCE(?, status),
+    house_edge_min = COALESCE(?, house_edge_min),
+    house_edge_max = COALESCE(?, house_edge_max),
+    default_edge = COALESCE(?, default_edge)
+    WHERE id = ?`).run(rate, minBet, status, houseEdgeMin, houseEdgeMax, defaultEdge, req.params.id)
+  auditLog(req.user.username, '返水配置更新', 'rakeback_config_' + req.params.id, 'Updated rakeback config', req.ip || '0.0.0.0')
   res.json({ success: true })
 })
 
@@ -986,9 +1014,13 @@ app.get('/api/admin/rakeback/records', authMiddleware, (req, res) => {
   const rows = db.prepare('SELECT * FROM rakeback_records ORDER BY time DESC').all()
   const records = rows.map(r => ({
     ...r,
+    memberId: r.member_id,
     gameType: r.game_type,
+    totalBets: r.total_bets,
     betAmount: r.bet_amount,
-    rakebackAmount: r.rakeback_amount
+    calculatedRakeback: r.calculated_rakeback,
+    rakebackAmount: r.rakeback_amount,
+    vipLevel: r.vip_level
   }))
   res.json(records)
 })
@@ -1470,6 +1502,120 @@ app.put('/api/admin/compliance/settings', authMiddleware, (req, res) => {
 
   auditLog(req.user.username, '合规设置更新', 'compliance_settings', 'Updated compliance settings', req.ip || '0.0.0.0')
 
+  res.json({ success: true })
+})
+
+// ==================== AGENT SETTLEMENTS ====================
+app.get('/api/admin/agents/settlements', authMiddleware, (req, res) => {
+  const { agent_id, status, period_start, period_end } = req.query
+  let query = 'SELECT * FROM agent_settlements WHERE 1=1'
+  const params = []
+  if (agent_id) { query += ' AND agent_id = ?'; params.push(agent_id) }
+  if (status) { query += ' AND status = ?'; params.push(status) }
+  if (period_start) { query += ' AND period_start >= ?'; params.push(period_start) }
+  if (period_end) { query += ' AND period_end <= ?'; params.push(period_end) }
+  query += ' ORDER BY created_at DESC'
+  const rows = db.prepare(query).all(...params)
+  res.json(rows.map(r => ({
+    ...r,
+    agentId: r.agent_id,
+    agentName: r.agent_name,
+    periodStart: r.period_start,
+    periodEnd: r.period_end,
+    totalRevenue: r.total_revenue,
+    commissionRate: r.commission_rate,
+    commissionAmount: r.commission_amount,
+    upstreamFee: r.upstream_fee,
+    netAmount: r.net_amount,
+    createdAt: r.created_at,
+    approvedAt: r.approved_at,
+    approvedBy: r.approved_by
+  })))
+})
+
+app.post('/api/admin/agents/settlements/calculate', authMiddleware, (req, res) => {
+  const { periodStart, periodEnd } = req.body
+  if (!periodStart || !periodEnd) {
+    return res.status(400).json({ error: 'periodStart and periodEnd are required' })
+  }
+
+  const agents = db.prepare('SELECT * FROM agents WHERE status = ?').all('active')
+  const commissionTiers = [
+    { min: 1, max: 9, rate: 25 },
+    { min: 10, max: 49, rate: 30 },
+    { min: 50, max: 99, rate: 35 },
+    { min: 100, max: 499, rate: 40 },
+    { min: 500, max: Infinity, rate: 45 }
+  ]
+
+  const results = []
+  for (const agent of agents) {
+    const memberCount = agent.members || 0
+    const tier = commissionTiers.find(t => memberCount >= t.min && memberCount <= t.max) || commissionTiers[0]
+    const totalRevenue = agent.month_revenue || 0
+    const commissionAmount = totalRevenue * (tier.rate / 100)
+    const upstreamFee = commissionAmount * 0.05
+    const netAmount = commissionAmount - upstreamFee
+
+    const existing = db.prepare('SELECT * FROM agent_settlements WHERE agent_id = ? AND period_start = ? AND period_end = ?').get(agent.id, periodStart, periodEnd)
+    if (existing) continue
+
+    db.prepare(`INSERT INTO agent_settlements (agent_id, agent_name, period_start, period_end, total_revenue, commission_rate, commission_amount, upstream_fee, net_amount, status) VALUES (?,?,?,?,?,?,?,?,?,?)`).run(
+      agent.id, agent.brand, periodStart, periodEnd, totalRevenue, tier.rate, commissionAmount, upstreamFee, netAmount, 'pending'
+    )
+    results.push({ agentId: agent.id, agentName: agent.brand, commissionRate: tier.rate, commissionAmount, upstreamFee, netAmount })
+  }
+
+  auditLog(req.user.username, '代理结算计算', 'agent_settlements', 'Calculated settlements for period ' + periodStart + ' to ' + periodEnd, req.ip || '0.0.0.0')
+  res.json({ success: true, count: results.length, results })
+})
+
+app.put('/api/admin/agents/settlements/:id/approve', authMiddleware, (req, res) => {
+  const settlement = db.prepare('SELECT * FROM agent_settlements WHERE id = ?').get(req.params.id)
+  if (!settlement) return res.status(404).json({ error: 'Settlement not found' })
+
+  db.prepare(`UPDATE agent_settlements SET status = 'approved', approved_at = datetime('now'), approved_by = ? WHERE id = ?`).run(
+    req.user.username, req.params.id
+  )
+
+  auditLog(req.user.username, '代理结算审批', settlement.agent_id, 'Approved settlement #' + req.params.id + ' for ' + settlement.agent_name, req.ip || '0.0.0.0')
+  res.json({ success: true })
+})
+
+// ==================== SYSTEM PERMISSIONS (RBAC) ====================
+app.get('/api/admin/system/permissions', authMiddleware, (req, res) => {
+  const rows = db.prepare('SELECT * FROM role_permissions ORDER BY role, module').all()
+  const grouped = {}
+  for (const r of rows) {
+    if (!grouped[r.role]) grouped[r.role] = []
+    grouped[r.role].push({
+      id: r.id,
+      module: r.module,
+      canView: !!r.can_view,
+      canCreate: !!r.can_create,
+      canEdit: !!r.can_edit,
+      canDelete: !!r.can_delete
+    })
+  }
+  res.json(grouped)
+})
+
+app.put('/api/admin/system/permissions/:role', authMiddleware, (req, res) => {
+  const { permissions } = req.body
+  const role = req.params.role
+  if (!permissions || !Array.isArray(permissions)) {
+    return res.status(400).json({ error: 'permissions array is required' })
+  }
+
+  const stmt = db.prepare('INSERT OR REPLACE INTO role_permissions (role, module, can_view, can_create, can_edit, can_delete) VALUES (?,?,?,?,?,?)')
+  const tx = db.transaction((perms) => {
+    for (const p of perms) {
+      stmt.run(role, p.module, p.canView ? 1 : 0, p.canCreate ? 1 : 0, p.canEdit ? 1 : 0, p.canDelete ? 1 : 0)
+    }
+  })
+  tx(permissions)
+
+  auditLog(req.user.username, '权限更新', role, 'Updated permissions for role: ' + role, req.ip || '0.0.0.0')
   res.json({ success: true })
 })
 

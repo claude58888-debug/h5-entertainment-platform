@@ -342,6 +342,87 @@ export const validateAddBlacklistIP = [
     .trim()
 ]
 
+
+// ==================== VIP LEVELS ====================
+
+export const validateUpdateVipLevel = [
+  body('minPoints')
+    .optional()
+    .isInt({ min: 0 }).withMessage('Min points must be non-negative'),
+  body('benefitsJson')
+    .optional()
+    .isLength({ max: 2000 }).withMessage('Benefits JSON must be under 2000 characters'),
+  body('rakebackBonus')
+    .optional()
+    .isFloat({ min: 0, max: 100 }).withMessage('Rakeback bonus must be 0-100'),
+  body('monthlyReview')
+    .optional()
+    .isIn(['true', 'false', true, false]).withMessage('Monthly review must be boolean'),
+  body('quarterlyReview')
+    .optional()
+    .isIn(['true', 'false', true, false]).withMessage('Quarterly review must be boolean')
+]
+
+// ==================== RAKEBACK CONFIG ====================
+
+export const validateUpdateRakebackConfig = [
+  body('houseEdgeMin')
+    .optional()
+    .isFloat({ min: 0, max: 100 }).withMessage('House edge min must be 0-100'),
+  body('houseEdgeMax')
+    .optional()
+    .isFloat({ min: 0, max: 100 }).withMessage('House edge max must be 0-100'),
+  body('defaultEdge')
+    .optional()
+    .isFloat({ min: 0, max: 100 }).withMessage('Default edge must be 0-100'),
+  body('minBet')
+    .optional()
+    .isFloat({ min: 0 }).withMessage('Min bet must be non-negative'),
+  body('status')
+    .optional()
+    .isIn(['active', 'inactive']).withMessage('Invalid status')
+]
+
+// ==================== AGENT SETTLEMENTS ====================
+
+export const validateCalculateSettlement = [
+  body('agentId')
+    .notEmpty().withMessage('Agent ID is required')
+    .trim(),
+  body('agentName')
+    .optional()
+    .isLength({ max: 100 }).withMessage('Agent name must be under 100 characters')
+    .trim(),
+  body('periodStart')
+    .notEmpty().withMessage('Period start is required'),
+  body('periodEnd')
+    .notEmpty().withMessage('Period end is required'),
+  body('totalRevenue')
+    .notEmpty().withMessage('Total revenue is required')
+    .isFloat({ min: 0 }).withMessage('Total revenue must be non-negative'),
+  body('memberCount')
+    .notEmpty().withMessage('Member count is required')
+    .isInt({ min: 0 }).withMessage('Member count must be non-negative')
+]
+
+// ==================== SYSTEM PERMISSIONS ====================
+
+export const validateUpdatePermissions = [
+  body('permissions')
+    .isArray({ min: 1 }).withMessage('Permissions array is required'),
+  body('permissions.*.module')
+    .notEmpty().withMessage('Module name is required')
+    .trim(),
+  body('permissions.*.canView')
+    .isBoolean().withMessage('canView must be boolean'),
+  body('permissions.*.canCreate')
+    .isBoolean().withMessage('canCreate must be boolean'),
+  body('permissions.*.canEdit')
+    .isBoolean().withMessage('canEdit must be boolean'),
+  body('permissions.*.canDelete')
+    .isBoolean().withMessage('canDelete must be boolean')
+]
+
 // ==================== MEMBER MANAGEMENT (Phase 11A) ====================
 
 export const validateVipAdjust = [
