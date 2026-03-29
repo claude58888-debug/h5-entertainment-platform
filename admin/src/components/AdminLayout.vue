@@ -25,6 +25,7 @@
             </template>
             <el-menu-item index="/super/agents">代理列表</el-menu-item>
             <el-menu-item index="/super/agents/create">创建代理</el-menu-item>
+            <el-menu-item index="/super/agents/settlement">代理结算</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="/super/members">
             <el-icon><User /></el-icon>
@@ -49,6 +50,22 @@
             <el-menu-item index="/super/games/list">游戏列表</el-menu-item>
             <el-menu-item index="/super/games/bets">投注记录</el-menu-item>
           </el-sub-menu>
+          <el-menu-item index="/super/vip">
+            <el-icon><Trophy /></el-icon>
+            <span>VIP管理</span>
+          </el-menu-item>
+          <el-menu-item index="/super/rakeback">
+            <el-icon><Coin /></el-icon>
+            <span>返水管理</span>
+          </el-menu-item>
+          <el-menu-item index="/super/promotions">
+            <el-icon><Present /></el-icon>
+            <span>活动管理</span>
+          </el-menu-item>
+          <el-menu-item index="/super/messages">
+            <el-icon><ChatDotRound /></el-icon>
+            <span>消息中心</span>
+          </el-menu-item>
           <el-menu-item index="/super/risk">
             <el-icon><Warning /></el-icon>
             <span>风控管理</span>
