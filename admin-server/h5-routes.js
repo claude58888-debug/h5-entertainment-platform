@@ -579,6 +579,156 @@ router.get('/rakeback/today', h5Auth, (req, res) => {
   })
 })
 
+// ==================== COMPLIANCE ====================
+
+// POST /api/h5/compliance/kyc/submit - User submits KYC documents
+router.post('/compliance/kyc/submit', h5Auth, (req, res) => {
+  const { documentType, documentUrl } = req.body
+  if (!documentType) {
+    return res.status(400).json({ error: 'Document type is required' })
+  }
+
+  // Check if user already has a pending KYC
+  const existing = db.prepare("SELECT id FROM kyc_documents WHERE user_id = ? AND status = 'pending'")
+    .get(req.h5user.memberId)
+  if (existing) {
+    return res.status(400).json({ error: 'You already have a pending KYC submission' })
+  }
+
+  db.prepare(`INSERT INTO kyc_documents (user_id, document_type, document_url, status)
+    VALUES (?, ?, ?, 'pending')`).run(req.h5user.memberId, documentType, documentUrl || '')
+
+  res.json({ success: true, message: 'KYC documents submitted for review' })
+})
+
+// GET /api/h5/compliance/kyc/status - Check KYC status
+router.get('/compliance/kyc/status', h5Auth, (req, res) => {
+  const kyc = db.prepare('SELECT * FROM kyc_documents WHERE user_id = ? ORDER BY submitted_at DESC LIMIT 1')
+    .get(req.h5user.memberId)
+
+  if (!kyc) {
+    return res.json({ status: 'not_submitted', message: 'No KYC documents submitted' })
+  }
+
+  res.json({
+    status: kyc.status,
+    documentType: kyc.document_type,
+    submittedAt: kyc.submitted_at,
+    reviewedAt: kyc.reviewed_at,
+    rejectReason: kyc.reject_reason || ''
+  })
+})
+
+// POST /api/h5/compliance/self-exclude - User self-exclude
+router.post('/compliance/self-exclude', h5Auth, (req, res) => {
+  const { exclusionType, reason } = req.body
+  const validTypes = ['24h', '7d', '30d', '6m', 'permanent']
+  if (!exclusionType || !validTypes.includes(exclusionType)) {
+    return res.status(400).json({ error: 'Invalid exclusion type. Must be one of: 24h, 7d, 30d, 6m, permanent' })
+  }
+
+  // Check if already self-excluded
+  const active = db.prepare("SELECT id FROM self_exclusions WHERE user_id = ? AND status = 'active'")
+    .get(req.h5user.memberId)
+  if (active) {
+    return res.status(400).json({ error: 'You are already self-excluded' })
+  }
+
+  // Calculate end date
+  const durationMap = {
+    '24h': '+1 day',
+    '7d': '+7 days',
+    '30d': '+30 days',
+    '6m': '+6 months',
+    'permanent': '+100 years'
+  }
+
+  const endDateResult = db.prepare(`SELECT datetime('now', ?) as end_date`).get(durationMap[exclusionType])
+
+  db.prepare(`INSERT INTO self_exclusions (user_id, exclusion_type, start_date, end_date, status, reason)
+    VALUES (?, ?, datetime('now'), ?, 'active', ?)`).run(
+    req.h5user.memberId, exclusionType, endDateResult.end_date, reason || ''
+  )
+
+  // Freeze the member account
+  db.prepare("UPDATE members SET status = 'self_excluded' WHERE id = ?").run(req.h5user.memberId)
+
+  res.json({
+    success: true,
+    message: `Self-exclusion activated for ${exclusionType}`,
+    endDate: endDateResult.end_date
+  })
+})
+
+// GET /api/h5/compliance/self-exclude/status - Check self-exclusion status
+router.get('/compliance/self-exclude/status', h5Auth, (req, res) => {
+  const exclusion = db.prepare("SELECT * FROM self_exclusions WHERE user_id = ? AND status = 'active' ORDER BY start_date DESC LIMIT 1")
+    .get(req.h5user.memberId)
+
+  if (!exclusion) {
+    return res.json({ active: false })
+  }
+
+  res.json({
+    active: true,
+    exclusionType: exclusion.exclusion_type,
+    startDate: exclusion.start_date,
+    endDate: exclusion.end_date,
+    reason: exclusion.reason
+  })
+})
+
+// GET /api/h5/compliance/limits - Get user limits
+router.get('/compliance/limits', h5Auth, (req, res) => {
+  const limits = db.prepare('SELECT * FROM user_limits WHERE user_id = ? ORDER BY limit_type, period')
+    .all(req.h5user.memberId)
+
+  res.json(limits.map(l => ({
+    id: l.id,
+    limitType: l.limit_type,
+    period: l.period,
+    amount: l.amount,
+    createdAt: l.created_at,
+    updatedAt: l.updated_at
+  })))
+})
+
+// PUT /api/h5/compliance/limits - Set/update user limits
+router.put('/compliance/limits', h5Auth, (req, res) => {
+  const { limitType, period, amount } = req.body
+  const validTypes = ['deposit', 'bet']
+  const validPeriods = ['daily', 'weekly', 'monthly']
+
+  if (!validTypes.includes(limitType)) {
+    return res.status(400).json({ error: 'Invalid limit type. Must be deposit or bet' })
+  }
+  if (!validPeriods.includes(period)) {
+    return res.status(400).json({ error: 'Invalid period. Must be daily, weekly, or monthly' })
+  }
+  if (amount === undefined || amount < 0) {
+    return res.status(400).json({ error: 'Amount must be a non-negative number' })
+  }
+
+  // Upsert the limit
+  const existing = db.prepare('SELECT id FROM user_limits WHERE user_id = ? AND limit_type = ? AND period = ?')
+    .get(req.h5user.memberId, limitType, period)
+
+  if (existing) {
+    if (amount === 0) {
+      // Remove limit
+      db.prepare('DELETE FROM user_limits WHERE id = ?').run(existing.id)
+    } else {
+      db.prepare("UPDATE user_limits SET amount = ?, updated_at = datetime('now') WHERE id = ?").run(amount, existing.id)
+    }
+  } else if (amount > 0) {
+    db.prepare('INSERT INTO user_limits (user_id, limit_type, period, amount) VALUES (?, ?, ?, ?)').run(
+      req.h5user.memberId, limitType, period, amount
+    )
+  }
+
+  res.json({ success: true })
+})
+
 // ==================== APP DATA (public) ====================
 
 // GET /api/h5/app/banners

@@ -70,6 +70,17 @@
             <el-icon><Warning /></el-icon>
             <span>风控管理</span>
           </el-menu-item>
+          <el-sub-menu index="compliance-menu">
+            <template #title>
+              <el-icon><DocumentChecked /></el-icon>
+              <span>合规管理</span>
+            </template>
+            <el-menu-item index="/super/compliance">合规总览</el-menu-item>
+            <el-menu-item index="/super/compliance/kyc">KYC管理</el-menu-item>
+            <el-menu-item index="/super/compliance/aml">AML监控</el-menu-item>
+            <el-menu-item index="/super/compliance/exclusion">自我排除</el-menu-item>
+            <el-menu-item index="/super/compliance/settings">负责任博彩</el-menu-item>
+          </el-sub-menu>
           <el-sub-menu index="system-menu">
             <template #title>
               <el-icon><Setting /></el-icon>

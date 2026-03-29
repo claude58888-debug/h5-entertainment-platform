@@ -177,6 +177,33 @@ const routes = [
     name: 'AgentCooperation',
     component: () => import('@/views/AgentCooperationPage.vue')
   },
+  {
+    path: '/self-exclusion',
+    name: 'SelfExclusion',
+    component: () => import('@/views/SelfExclusionPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/limits',
+    name: 'Limits',
+    component: () => import('@/views/LimitsPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/privacy',
+    name: 'Privacy',
+    component: () => import('@/views/PrivacyPolicyPage.vue')
+  },
+  {
+    path: '/terms',
+    name: 'Terms',
+    component: () => import('@/views/TermsPage.vue')
+  },
+  {
+    path: '/responsible-gaming',
+    name: 'ResponsibleGaming',
+    component: () => import('@/views/ResponsibleGamingPage.vue')
+  },
 ]
 
 
