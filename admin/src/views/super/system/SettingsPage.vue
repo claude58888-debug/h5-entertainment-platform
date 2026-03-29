@@ -73,14 +73,15 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { getSettings, updateSettings } from '@/api/system'
 
 const activeTab = ref('global')
 const settings = reactive({
-  platformName: '大大娱乐管理平台',
+  platformName: '',
   maintenance: false,
-  maintenanceMsg: '系统正在维护升级中，请稍后再试...',
+  maintenanceMsg: '',
   allowRegister: true,
   currency: 'CNY',
   timezone: 'Asia/Shanghai',
@@ -88,6 +89,26 @@ const settings = reactive({
   sessionTimeout: 120,
   force2FA: false,
   adminIpWhitelist: ''
+})
+
+onMounted(async () => {
+  try {
+    const data = await getSettings()
+    if (data && Array.isArray(data)) {
+      for (const item of data) {
+        if (item.key === 'platformName') settings.platformName = item.value
+        else if (item.key === 'maintenance') settings.maintenance = item.value === 'true'
+        else if (item.key === 'maintenanceMsg') settings.maintenanceMsg = item.value
+        else if (item.key === 'allowRegister') settings.allowRegister = item.value === 'true'
+        else if (item.key === 'currency') settings.currency = item.value
+        else if (item.key === 'timezone') settings.timezone = item.value
+        else if (item.key === 'maxLoginAttempts') settings.maxLoginAttempts = parseInt(item.value) || 5
+        else if (item.key === 'sessionTimeout') settings.sessionTimeout = parseInt(item.value) || 120
+        else if (item.key === 'force2FA') settings.force2FA = item.value === 'true'
+        else if (item.key === 'adminIpWhitelist') settings.adminIpWhitelist = item.value
+      }
+    }
+  } catch (e) { console.warn('API request failed', e) }
 })
 
 const assets = ref([
@@ -99,7 +120,14 @@ const assets = ref([
   { name: '节日活动模板', size: '1920x600', color: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' }
 ])
 
-function save() { ElMessage.success('设置已保存') }
+async function save() {
+  try {
+    await updateSettings(settings)
+    ElMessage.success('设置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
 </script>
 
 <style scoped>

@@ -181,8 +181,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getActivities, createActivity, updateActivity } from '@/api/promotions'
 
 const search = ref('')
 const typeFilter = ref('')
@@ -220,44 +221,14 @@ const gameContributions = [
   { gameType: '棋牌游戏 (Chess)', contribution: 30, remark: '30%计入流水' }
 ]
 
-const promotions = ref([
-  {
-    id: 1, title: '新人注册彩金', type: 'registration', amount: 88, wagerMultiplier: 20, wagerDays: 7, status: 'active',
-    claims: [
-      { userId: 'M10008', username: 'newbie_2026', amount: 88, wagerRequired: 1760, wagerCompleted: 520, status: 'in_progress', claimedAt: '2026-03-01 12:00:00' },
-      { userId: 'M10009', username: 'new_player01', amount: 88, wagerRequired: 1760, wagerCompleted: 1760, status: 'completed', claimedAt: '2026-02-25 09:30:00' }
-    ]
-  },
-  {
-    id: 2, title: '首充100%奖励', type: 'first-deposit', amount: 5000, wagerMultiplier: 15, wagerDays: 30, status: 'active',
-    claims: [
-      { userId: 'M10002', username: 'lucky_star88', amount: 5000, wagerRequired: 75000, wagerCompleted: 45000, status: 'in_progress', claimedAt: '2026-03-05 14:20:00' },
-      { userId: 'M10006', username: 'fish_lover', amount: 2000, wagerRequired: 30000, wagerCompleted: 30000, status: 'completed', claimedAt: '2026-02-20 16:00:00' }
-    ]
-  },
-  {
-    id: 3, title: '每日签到奖励', type: 'daily', amount: 18, wagerMultiplier: 12, wagerDays: 14, status: 'active',
-    claims: [
-      { userId: 'M10001', username: 'player_wang', amount: 18, wagerRequired: 216, wagerCompleted: 216, status: 'completed', claimedAt: '2026-03-07 08:00:00' },
-      { userId: 'M10003', username: 'dragon_888', amount: 18, wagerRequired: 216, wagerCompleted: 100, status: 'in_progress', claimedAt: '2026-03-07 09:15:00' }
-    ]
-  },
-  {
-    id: 4, title: 'VIP专属月度红包', type: 'vip', amount: 2888, wagerMultiplier: 8, wagerDays: 30, status: 'active',
-    claims: [
-      { userId: 'M10003', username: 'dragon_888', amount: 2888, wagerRequired: 23104, wagerCompleted: 23104, status: 'completed', claimedAt: '2026-03-01 00:00:00' },
-      { userId: 'M10007', username: 'slot_queen', amount: 1288, wagerRequired: 10304, wagerCompleted: 6000, status: 'in_progress', claimedAt: '2026-03-01 00:00:00' }
-    ]
-  },
-  {
-    id: 5, title: '春节特别活动', type: 'daily', amount: 188, wagerMultiplier: 12, wagerDays: 14, status: 'ended',
-    claims: []
-  },
-  {
-    id: 6, title: '周末存送30%', type: 'first-deposit', amount: 10000, wagerMultiplier: 15, wagerDays: 30, status: 'draft',
-    claims: []
-  }
-])
+const promotions = ref([])
+
+onMounted(async () => {
+  try {
+    const data = await getActivities()
+    promotions.value = (data || []).map(p => ({ ...p, claims: p.claims || [] }))
+  } catch (e) { console.warn('API request failed', e) }
+})
 
 const filteredPromotions = computed(() => {
   return promotions.value.filter(p => {
@@ -309,30 +280,41 @@ function handleExpandChange() {
   // expand change handler
 }
 
-function savePromotion() {
+async function savePromotion() {
   if (!form.value.title) {
     ElMessage.warning('请输入活动标题')
     return
   }
-  if (isEdit.value) {
-    const idx = promotions.value.findIndex(p => p.id === form.value.id)
-    if (idx !== -1) {
-      promotions.value[idx] = { ...form.value, claims: promotions.value[idx].claims }
+  try {
+    if (isEdit.value) {
+      await updateActivity(form.value.id, form.value)
+      const idx = promotions.value.findIndex(p => p.id === form.value.id)
+      if (idx !== -1) {
+        promotions.value[idx] = { ...form.value, claims: promotions.value[idx].claims }
+      }
+      ElMessage.success('活动已更新')
+    } else {
+      const newItem = await createActivity(form.value)
+      promotions.value.unshift({ ...form.value, id: newItem?.id || Date.now(), claims: [] })
+      ElMessage.success('活动已创建')
     }
-    ElMessage.success('活动已更新')
-  } else {
-    const newId = Math.max(...promotions.value.map(p => p.id)) + 1
-    promotions.value.unshift({ ...form.value, id: newId, claims: [] })
-    ElMessage.success('活动已创建')
+    dialogVisible.value = false
+  } catch (e) {
+    ElMessage.error('操作失败')
   }
-  dialogVisible.value = false
 }
 
 function toggleStatus(row) {
   const action = row.status === 'active' ? '停用' : '启用'
-  ElMessageBox.confirm(`确定要${action}活动 "${row.title}" 吗?`, '确认', { type: 'warning' }).then(() => {
-    row.status = row.status === 'active' ? 'ended' : 'active'
-    ElMessage.success(`已${action} "${row.title}"`)
+  ElMessageBox.confirm(`确定要${action}活动 "${row.title}" 吗?`, '确认', { type: 'warning' }).then(async () => {
+    const newStatus = row.status === 'active' ? 'ended' : 'active'
+    try {
+      await updateActivity(row.id, { status: newStatus })
+      row.status = newStatus
+      ElMessage.success(`已${action} "${row.title}"`)
+    } catch (e) {
+      ElMessage.error('操作失败')
+    }
   }).catch(() => {})
 }
 </script>

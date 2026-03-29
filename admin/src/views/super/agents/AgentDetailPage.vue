@@ -102,7 +102,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { getAgents } from '@/api/agents'
+import { getAgent, updateAgent } from '@/api/agents'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
@@ -110,35 +110,38 @@ const activeTab = ref('info')
 const settlementCycle = ref('weekly')
 const agent = ref({ id: '', brand: '', domain: '', contact: '', members: 0, balance: 0, monthRevenue: 0, shareMode: 'revenue', shareRate: 0, status: 'active', created: '' })
 const settlements = ref([])
+const balanceHistory = ref([])
 
 onMounted(async () => {
   try {
-    const data = await getAgents()
-    const found = (data || []).find(a => a.id === route.params.id)
-    if (found) agent.value = found
+    const data = await getAgent(route.params.id)
+    if (data) {
+      agent.value = data
+      balanceHistory.value = data.balanceHistory || []
+      settlements.value = data.settlements || []
+    }
   } catch (e) { console.warn('API request failed', e) }
 })
-
-const balanceHistory = ref([
-  { time: '2026-03-07 10:00', type: '充值', amount: 100000, operator: 'superadmin', remark: '日常充值' },
-  { time: '2026-03-05 14:30', type: '扣减', amount: 50000, operator: 'admin_finance', remark: '结算扣除' },
-  { time: '2026-03-03 09:00', type: '充值', amount: 200000, operator: 'superadmin', remark: '首次充值' }
-])
 
 function handleBalance(type) {
   const label = type === 'topup' ? '充值' : '扣减'
   ElMessageBox.prompt(`请输入${label}金额`, `代理${label}`, {
     inputPattern: /^\d+$/,
     inputErrorMessage: '请输入有效金额'
-  }).then(({ value }) => {
+  }).then(async ({ value }) => {
     const amount = parseInt(value)
-    if (type === 'topup') agent.value.balance += amount
-    else agent.value.balance -= amount
-    balanceHistory.value.unshift({
-      time: new Date().toLocaleString('zh-CN'),
-      type: label, amount, operator: 'superadmin', remark: '手动操作'
-    })
-    ElMessage.success(`${label}成功 ¥${amount.toLocaleString()}`)
+    try {
+      await updateAgent(agent.value.id, { balanceAction: type, amount })
+      if (type === 'topup') agent.value.balance += amount
+      else agent.value.balance -= amount
+      balanceHistory.value.unshift({
+        time: new Date().toLocaleString('zh-CN'),
+        type: label, amount, operator: 'superadmin', remark: '手动操作'
+      })
+      ElMessage.success(`${label}成功 ¥${amount.toLocaleString()}`)
+    } catch (e) {
+      ElMessage.error(`${label}失败`)
+    }
   }).catch(() => {})
 }
 </script>

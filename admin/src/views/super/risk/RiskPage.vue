@@ -136,16 +136,26 @@ const deviceBlacklist = ref([
   { fingerprint: 'fp_mno345pqr678', relatedAccounts: 4, accounts: 'user_1007, user_1008, user_1015, user_1020', addedAt: '2026-03-02 18:45' }
 ])
 
-function addIp() {
-  ips.value.unshift({ ...newIp, addedBy: 'superadmin', addedAt: new Date().toLocaleString('zh-CN') })
-  addIpDialog.value = false
-  ElMessage.success('IP已添加')
+async function addIp() {
+  try {
+    await addBlacklist(newIp.ip, newIp.reason)
+    ips.value.unshift({ ...newIp, addedBy: 'superadmin', addedAt: new Date().toLocaleString('zh-CN') })
+    addIpDialog.value = false
+    ElMessage.success('IP已添加')
+  } catch (e) {
+    ElMessage.error('添加失败')
+  }
 }
 
 function removeIp(row) {
-  ElMessageBox.confirm(`确定移除 ${row.ip}?`, '确认', { type: 'warning' }).then(() => {
-    ips.value = ips.value.filter(ip => ip.ip !== row.ip)
-    ElMessage.success('已移除')
+  ElMessageBox.confirm(`确定移除 ${row.ip}?`, '确认', { type: 'warning' }).then(async () => {
+    try {
+      await removeBlacklist(row.ip)
+      ips.value = ips.value.filter(ip => ip.ip !== row.ip)
+      ElMessage.success('已移除')
+    } catch (e) {
+      ElMessage.error('移除失败')
+    }
   }).catch(() => {})
 }
 

@@ -60,6 +60,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { createAgent } from '@/api/agents'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -82,7 +83,12 @@ const rules = {
 
 async function handleSubmit() {
   await formRef.value?.validate()
-  ElMessage.success('代理创建成功')
-  router.push('/super/agents')
+  try {
+    await createAgent(form)
+    ElMessage.success('代理创建成功')
+    router.push('/super/agents')
+  } catch (e) {
+    ElMessage.error('创建失败')
+  }
 }
 </script>

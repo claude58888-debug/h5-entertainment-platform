@@ -117,8 +117,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getSettlements } from '@/api/finance'
 
 const search = ref('')
 const monthFilter = ref('')
@@ -159,16 +160,14 @@ const agentTree = [
   }
 ]
 
-const settlements = ref([
-  { agent: '金沙娱乐', month: '2026-03', subordinates: 156, totalBets: 18500000, commissionRate: 45, commissionAmount: 8325000, upstreamDeduction: 0, status: 'pending' },
-  { agent: '皇冠体育', month: '2026-03', subordinates: 45, totalBets: 8900000, commissionRate: 30, commissionAmount: 2670000, upstreamDeduction: 133500, status: 'pending' },
-  { agent: '新濠天地', month: '2026-03', subordinates: 28, totalBets: 6200000, commissionRate: 30, commissionAmount: 1860000, upstreamDeduction: 93000, status: 'pending' },
-  { agent: '永利娱乐', month: '2026-03', subordinates: 85, totalBets: 12000000, commissionRate: 35, commissionAmount: 4200000, upstreamDeduction: 0, status: 'pending' },
-  { agent: '澳门威尼斯', month: '2026-03', subordinates: 32, totalBets: 4500000, commissionRate: 30, commissionAmount: 1350000, upstreamDeduction: 67500, status: 'pending' },
-  { agent: '金沙娱乐', month: '2026-02', subordinates: 148, totalBets: 16800000, commissionRate: 45, commissionAmount: 7560000, upstreamDeduction: 0, status: 'paid' },
-  { agent: '皇冠体育', month: '2026-02', subordinates: 42, totalBets: 8200000, commissionRate: 30, commissionAmount: 2460000, upstreamDeduction: 123000, status: 'paid' },
-  { agent: '新濠天地', month: '2026-02', subordinates: 25, totalBets: 5800000, commissionRate: 30, commissionAmount: 1740000, upstreamDeduction: 87000, status: 'settled' }
-])
+const settlements = ref([])
+
+onMounted(async () => {
+  try {
+    const data = await getSettlements()
+    settlements.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
+})
 
 const filteredSettlements = computed(() => {
   return settlements.value.filter(s => {

@@ -74,15 +74,25 @@ onMounted(async () => {
 const addDialog = ref(false)
 const form = reactive({ title: '', content: '', target: '全部代理', type: '普通' })
 
-function publish() {
-  list.value.unshift({ id: list.value.length + 1, ...form, status: 'published', publishedAt: new Date().toLocaleString('zh-CN') })
-  addDialog.value = false
-  ElMessage.success('公告已发布')
+async function publish() {
+  try {
+    const result = await createAnnouncement(form)
+    list.value.unshift({ id: result?.id || list.value.length + 1, ...form, status: 'published', publishedAt: new Date().toLocaleString('zh-CN') })
+    addDialog.value = false
+    ElMessage.success('公告已发布')
+  } catch (e) {
+    ElMessage.error('发布失败')
+  }
 }
 function remove(row) {
-  ElMessageBox.confirm('确定删除此公告?', '确认删除', { type: 'warning' }).then(() => {
-    list.value = list.value.filter(a => a.id !== row.id)
-    ElMessage.success('已删除')
+  ElMessageBox.confirm('确定删除此公告?', '确认删除', { type: 'warning' }).then(async () => {
+    try {
+      await deleteAnnouncement(row.id)
+      list.value = list.value.filter(a => a.id !== row.id)
+      ElMessage.success('已删除')
+    } catch (e) {
+      ElMessage.error('删除失败')
+    }
   }).catch(() => {})
 }
 </script>
