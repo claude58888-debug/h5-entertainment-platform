@@ -2,6 +2,34 @@
   <div>
     <h2 class="section-title">提现订单 (全平台)</h2>
 
+    <!-- Financial Summary Cards -->
+    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">提现总额</div>
+          <div style="font-size: 24px; font-weight: 700; color: #e6a23c;">¥{{ summaryData.totalAmount.toLocaleString() }}</div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">待审核</div>
+          <div style="font-size: 24px; font-weight: 700; color: #909399;">{{ summaryData.pendingCount }}</div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">已批准</div>
+          <div style="font-size: 24px; font-weight: 700; color: #67c23a;">{{ summaryData.approvedCount }}</div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">已拒绝</div>
+          <div style="font-size: 24px; font-weight: 700; color: #f56c6c;">{{ summaryData.rejectedCount }}</div>
+        </div>
+      </el-card>
+    </div>
+
     <!-- Auto Review Rules Section -->
     <div class="table-card" style="margin-bottom: 20px;">
       <div class="page-header" style="margin-bottom: 0;">
@@ -49,6 +77,12 @@
           <el-option label="中" value="medium" />
           <el-option label="高" value="high" />
         </el-select>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; color: #606266;">金额范围:</span>
+          <el-input-number v-model="amountMin" :min="0" :precision="0" placeholder="最小" size="small" style="width: 110px;" controls-position="right" />
+          <span style="color: #909399;">-</span>
+          <el-input-number v-model="amountMax" :min="0" :precision="0" placeholder="最大" size="small" style="width: 110px;" controls-position="right" />
+        </div>
         <el-button type="success" :disabled="!selectedIds.length" @click="batchAction('approve')"><el-icon><Check /></el-icon>批量通过 ({{ selectedIds.length }})</el-button>
         <el-button type="danger" :disabled="!selectedIds.length" @click="batchAction('reject')"><el-icon><Close /></el-icon>批量拒绝 ({{ selectedIds.length }})</el-button>
         <el-button @click="exportCSV"><el-icon><Download /></el-icon>导出CSV</el-button>
@@ -73,6 +107,11 @@
         </el-table-column>
         <el-table-column prop="channel" label="渠道" width="120" />
         <el-table-column prop="address" label="提现地址" width="160" show-overflow-tooltip />
+        <el-table-column label="风险分" width="90">
+          <template #default="{ row }">
+            <span :style="{ color: (row.riskScore || 0) >= 80 ? '#f56c6c' : (row.riskScore || 0) >= 50 ? '#e6a23c' : '#67c23a', fontWeight: 600 }">{{ row.riskScore || 0 }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="风险" width="80">
           <template #default="{ row }">
             <el-tag :type="row.riskLevel === 'high' ? 'danger' : row.riskLevel === 'medium' ? 'warning' : 'success'" size="small">
@@ -149,6 +188,8 @@ import { Plus, Check, Close, Download } from '@element-plus/icons-vue'
 const search = ref('')
 const statusFilter = ref('')
 const riskFilter = ref('')
+const amountMin = ref(undefined)
+const amountMax = ref(undefined)
 const orders = ref([])
 const loading = ref(true)
 const selectedIds = ref([])
@@ -173,10 +214,22 @@ onMounted(async () => {
   }
 })
 
+const summaryData = computed(() => {
+  const all = orders.value
+  return {
+    totalAmount: all.reduce((sum, o) => sum + (o.amount || 0), 0),
+    pendingCount: all.filter(o => o.status === 'pending').length,
+    approvedCount: all.filter(o => o.status === 'approved' || o.status === 'completed').length,
+    rejectedCount: all.filter(o => o.status === 'rejected').length
+  }
+})
+
 const filteredOrders = computed(() => orders.value.filter(o => {
   if (search.value && !o.id.includes(search.value) && !o.member.includes(search.value)) return false
   if (statusFilter.value && o.status !== statusFilter.value) return false
   if (riskFilter.value && o.riskLevel !== riskFilter.value) return false
+  if (amountMin.value !== undefined && amountMin.value !== null && o.amount < amountMin.value) return false
+  if (amountMax.value !== undefined && amountMax.value !== null && o.amount > amountMax.value) return false
   return true
 }))
 

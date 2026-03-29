@@ -1,6 +1,35 @@
 <template>
   <div>
     <h2 class="section-title">充值订单 (全平台)</h2>
+
+    <!-- Financial Summary Cards -->
+    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">充值总额</div>
+          <div style="font-size: 24px; font-weight: 700; color: #67c23a;">¥{{ summaryData.totalAmount.toLocaleString() }}</div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">待处理</div>
+          <div style="font-size: 24px; font-weight: 700; color: #e6a23c;">{{ summaryData.pendingCount }}</div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">已完成</div>
+          <div style="font-size: 24px; font-weight: 700; color: #409eff;">{{ summaryData.completedCount }}</div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">失败</div>
+          <div style="font-size: 24px; font-weight: 700; color: #f56c6c;">{{ summaryData.failedCount }}</div>
+        </div>
+      </el-card>
+    </div>
+
     <div class="table-card">
       <div class="filter-bar">
         <el-input v-model="search" placeholder="搜索订单号/会员" style="width: 200px;" clearable prefix-icon="Search" />
@@ -14,7 +43,16 @@
           <el-option label="USDT-ERC20" value="USDT-ERC20" />
           <el-option label="银行转账" value="银行转账" />
         </el-select>
-        <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" style="width: 260px;" />
+        <el-select v-model="paymentMethodFilter" placeholder="支付方式" style="width: 140px;" clearable>
+          <el-option label="加密货币" value="crypto" />
+          <el-option label="银行卡" value="bank" />
+          <el-option label="支付宝" value="alipay" />
+          <el-option label="微信支付" value="wechat" />
+          <el-option label="手动补单" value="manual" />
+        </el-select>
+        <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" style="width: 260px;" value-format="YYYY-MM-DD" />
+        <el-button type="success" :disabled="!selectedIds.length" @click="batchApprove"><el-icon><Check /></el-icon>批量确认 ({{ selectedIds.length }})</el-button>
+        <el-button type="danger" :disabled="!selectedIds.length" @click="batchReject"><el-icon><Close /></el-icon>批量拒绝 ({{ selectedIds.length }})</el-button>
         <el-button type="primary" @click="manualDepositDialog = true"><el-icon><Plus /></el-icon>手动补单</el-button>
         <el-button @click="exportCSV"><el-icon><Download /></el-icon>导出CSV</el-button>
       </div>
@@ -28,7 +66,8 @@
         <el-empty description="暂无充值订单" />
       </div>
 
-      <el-table v-else :data="filteredOrders" stripe>
+      <el-table v-else :data="filteredOrders" stripe @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="50" :selectable="row => row.status === 'pending'" />
         <el-table-column prop="id" label="订单号" width="160" />
         <el-table-column prop="member" label="会员" width="120" />
         <el-table-column prop="agent" label="代理" width="100" />
@@ -36,6 +75,11 @@
           <template #default="{ row }"><span style="color: #67c23a; font-weight: 600;">¥{{ row.amount.toLocaleString() }}</span></template>
         </el-table-column>
         <el-table-column prop="channel" label="渠道" width="120" />
+        <el-table-column label="支付方式" width="110">
+          <template #default="{ row }">
+            <el-tag size="small" type="info">{{ paymentMethodLabel(row.paymentMethod || 'crypto') }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="TxHash" width="200">
           <template #default="{ row }">
             <template v-if="row.txHash">
@@ -106,22 +150,34 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { getDeposits, updateDeposit, createManualDeposit, exportDepositsCSV } from '@/api/finance'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Download, CopyDocument } from '@element-plus/icons-vue'
+import { Plus, Download, CopyDocument, Check, Close } from '@element-plus/icons-vue'
 
 const search = ref('')
 const statusFilter = ref('')
 const channelFilter = ref('')
+const paymentMethodFilter = ref('')
 const dateRange = ref(null)
 const orders = ref([])
 const loading = ref(true)
 const manualDepositDialog = ref(false)
 const submitting = ref(false)
+const selectedIds = ref([])
 const manualForm = reactive({
   member_id: '',
   amount: 0,
   channel: '手动补单',
   txhash: '',
   reason: ''
+})
+
+const summaryData = computed(() => {
+  const all = orders.value
+  return {
+    totalAmount: all.reduce((sum, o) => sum + (o.amount || 0), 0),
+    pendingCount: all.filter(o => o.status === 'pending').length,
+    completedCount: all.filter(o => o.status === 'completed').length,
+    failedCount: all.filter(o => o.status === 'failed').length
+  }
 })
 
 onMounted(async () => {
@@ -139,9 +195,23 @@ const filteredOrders = computed(() => {
     if (search.value && !o.id.includes(search.value) && !o.member.includes(search.value)) return false
     if (statusFilter.value && o.status !== statusFilter.value) return false
     if (channelFilter.value && o.channel !== channelFilter.value) return false
+    if (paymentMethodFilter.value && (o.paymentMethod || 'crypto') !== paymentMethodFilter.value) return false
+    if (dateRange.value && dateRange.value.length === 2) {
+      const orderDate = o.time ? o.time.substring(0, 10) : ''
+      if (orderDate < dateRange.value[0] || orderDate > dateRange.value[1]) return false
+    }
     return true
   })
 })
+
+function paymentMethodLabel(method) {
+  const labels = { crypto: '加密货币', bank: '银行卡', alipay: '支付宝', wechat: '微信支付', manual: '手动补单' }
+  return labels[method] || method
+}
+
+function handleSelectionChange(selection) {
+  selectedIds.value = selection.map(row => row.id)
+}
 
 function isTRC20(row) {
   return row.channel && row.channel.includes('TRC20')
@@ -171,6 +241,7 @@ async function submitManualDeposit() {
       channel: manualForm.channel || '手动补单',
       status: 'completed',
       txHash: manualForm.txhash || '',
+      paymentMethod: 'manual',
       time: new Date().toISOString().replace('T', ' ').substring(0, 19)
     })
     manualDepositDialog.value = false
@@ -220,5 +291,41 @@ function reject(row) {
       ElMessage.error(`操作失败: ${e.message || '未知错误'}`)
     }
   }).catch(() => {})
+}
+
+async function batchApprove() {
+  try {
+    await ElMessageBox.confirm(`确定批量确认 ${selectedIds.value.length} 笔充值订单?`, '批量确认', { type: 'warning' })
+    for (const order of orders.value) {
+      if (selectedIds.value.includes(order.id)) {
+        try {
+          await updateDeposit(order.id, { status: 'completed' })
+          order.status = 'completed'
+        } catch (e) { /* skip failed */ }
+      }
+    }
+    ElMessage.success(`已批量确认 ${selectedIds.value.length} 笔`)
+    selectedIds.value = []
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error('批量操作失败')
+  }
+}
+
+async function batchReject() {
+  try {
+    await ElMessageBox.confirm(`确定批量拒绝 ${selectedIds.value.length} 笔充值订单?`, '批量拒绝', { type: 'warning' })
+    for (const order of orders.value) {
+      if (selectedIds.value.includes(order.id)) {
+        try {
+          await updateDeposit(order.id, { status: 'failed' })
+          order.status = 'failed'
+        } catch (e) { /* skip failed */ }
+      }
+    }
+    ElMessage.success(`已批量拒绝 ${selectedIds.value.length} 笔`)
+    selectedIds.value = []
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error('批量操作失败')
+  }
 }
 </script>
