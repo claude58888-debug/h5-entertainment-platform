@@ -93,7 +93,7 @@ onMounted(async () => {
 })
 
 function formatNum(n) { return n?.toLocaleString() || '0' }
-function formatMoney(n) { return (n / 10000).toFixed(1) + '万' }
+function formatMoney(n) { return ((n || 0) / 10000).toFixed(1) + '万' }
 
 const lineOption = computed(() => ({
   tooltip: { trigger: 'axis' },
