@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = process.env.PORT || 3001
 // JWT_SECRET must be set via environment variable in production
-const JWT_SECRET = process.env.JWT_SECRET || process.env.npm_package_name
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-admin-server-key'
 
 // Initialize database
 initDB()
@@ -55,7 +55,7 @@ app.post('/api/auth/admin-login', (req, res) => {
   }
 
   // Update last login
-  db.prepare('UPDATE admins SET last_login = datetime("now") WHERE id = ?').run(admin.id)
+  db.prepare(`UPDATE admins SET last_login = datetime('now') WHERE id = ?`).run(admin.id)
 
   const tokenRole = role || admin.role
   const token = jwt.sign(
@@ -135,7 +135,7 @@ app.put('/api/admin/members/:id/action', authMiddleware, (req, res) => {
   db.prepare('UPDATE members SET status = ? WHERE id = ?').run(newStatus, req.params.id)
 
   // Audit log
-  db.prepare('INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime("now"),?)').run(
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
     req.user.username, action === 'freeze' ? '冻结账户' : '解冻账户', req.params.id, `${action} member`, req.ip || '10.0.0.1'
   )
 
@@ -191,7 +191,7 @@ app.post('/api/admin/agents', authMiddleware, (req, res) => {
     id, brand, domain || '', contact || '', balance || 0, shareMode || 'revenue', shareRate || 40
   )
 
-  db.prepare('INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime("now"),?)').run(
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
     req.user.username, '创建代理', id, `创建代理 ${brand}`, req.ip || '10.0.0.1'
   )
 
@@ -240,7 +240,7 @@ app.put('/api/admin/deposits/:id', authMiddleware, (req, res) => {
   const newStatus = action === 'approve' ? 'completed' : 'failed'
   db.prepare('UPDATE deposits SET status = ? WHERE id = ?').run(newStatus, req.params.id)
 
-  db.prepare('INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime("now"),?)').run(
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
     req.user.username, action === 'approve' ? '充值确认' : '充值拒绝', req.params.id,
     `${action === 'approve' ? '确认到账' : '拒绝'} ¥${order.amount.toLocaleString()}`, req.ip || '10.0.0.1'
   )
@@ -270,7 +270,7 @@ app.put('/api/admin/withdrawals/:id', authMiddleware, (req, res) => {
 
   db.prepare('UPDATE withdrawals SET status = ? WHERE id = ?').run(newStatus, req.params.id)
 
-  db.prepare('INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime("now"),?)').run(
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
     req.user.username, '审批提现', req.params.id, `${action} ¥${order.amount}`, req.ip || '10.0.0.1'
   )
 
@@ -602,7 +602,7 @@ app.post('/api/admin/risk/blacklist', authMiddleware, (req, res) => {
     ip, reason || '', req.user.username
   )
 
-  db.prepare('INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime("now"),?)').run(
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
     req.user.username, '添加IP黑名单', ip, reason || '', req.ip || '10.0.0.1'
   )
 
