@@ -56,19 +56,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { getWithdrawals, updateWithdrawal } from '@/api/finance'
-import { withdrawalOrders } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const search = ref('')
 const statusFilter = ref('')
 const riskFilter = ref('')
-const orders = ref([...withdrawalOrders])
+const orders = ref([])
 
 onMounted(async () => {
   try {
     const data = await getWithdrawals()
-    if (data?.length) orders.value = data
-  } catch (e) { console.warn('Withdrawals API failed, using mock data', e) }
+    orders.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
 })
 
 const filteredOrders = computed(() => orders.value.filter(o => {

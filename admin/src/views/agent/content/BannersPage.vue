@@ -58,7 +58,6 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { banners } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const bannerList = ref(banners.map((b, i) => ({ ...b, sort: i + 1 })))

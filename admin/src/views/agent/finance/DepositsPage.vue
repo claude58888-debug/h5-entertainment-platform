@@ -46,7 +46,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { getDeposits } from '@/api/finance'
-import { depositOrders } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const search = ref('')
@@ -57,8 +56,8 @@ const orders = ref(depositOrders.filter(o => o.agent === '金沙娱乐'))
 onMounted(async () => {
   try {
     const data = await getDeposits()
-    if (data?.length) orders.value = data
-  } catch (e) { console.warn('Deposits API failed, using mock data', e) }
+    orders.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
 })
 
 const filteredOrders = computed(() => orders.value.filter(o => {

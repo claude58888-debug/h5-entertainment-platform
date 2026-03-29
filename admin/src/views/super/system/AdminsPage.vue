@@ -60,16 +60,15 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { getAdmins, createAdmin as apiCreateAdmin, toggleAdmin, deleteAdmin } from '@/api/system'
-import { adminAccounts } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-const admins = ref([...adminAccounts])
+const admins = ref([])
 
 onMounted(async () => {
   try {
     const data = await getAdmins()
-    if (data?.length) admins.value = data
-  } catch (e) { console.warn('Admins API failed, using mock data', e) }
+    admins.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
 })
 const addDialog = ref(false)
 const newAdmin = reactive({ username: '', realName: '', password: '', role: '运营管理员' })

@@ -110,23 +110,22 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { getRiskRules, getBlacklist, addBlacklist, removeBlacklist } from '@/api/risk'
-import { riskRules, ipBlacklist, realtimeAlerts } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const activeTab = ref('ip')
 const ipSearch = ref('')
 const addIpDialog = ref(false)
-const ips = ref([...ipBlacklist])
-const rules = ref([...riskRules])
+const ips = ref([])
+const rules = ref([])
 
 onMounted(async () => {
   try {
     const [rulesData, blacklistData] = await Promise.all([getRiskRules(), getBlacklist()])
     if (rulesData?.length) rules.value = rulesData.map(r => ({ ...r, enabled: r.status === 'active' }))
     if (blacklistData?.length) ips.value = blacklistData.map(b => ({ ip: b.ip, reason: b.reason, addedBy: b.addedBy, addedAt: b.addedTime, type: 'blacklist' }))
-  } catch (e) { console.warn('Risk API failed, using mock data', e) }
+  } catch (e) { console.warn('API request failed', e) }
 })
-const alerts = ref(realtimeAlerts.map((a, i) => ({ ...a, id: i + 1, member: ['user_' + (1000 + i)][0], agent: ['金沙娱乐', '皇冠体育', '新濠天地'][i % 3] })))
+const alerts = ref([])
 const newIp = reactive({ ip: '', type: 'blacklist', reason: '' })
 
 const filteredIps = computed(() => ips.value.filter(ip => !ipSearch.value || ip.ip.includes(ipSearch.value)))

@@ -59,7 +59,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { getMembers } from '@/api/members'
-import { membersList } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const search = ref('')
@@ -72,8 +71,8 @@ const members = ref(membersList.filter(m => m.agent === '金沙娱乐'))
 onMounted(async () => {
   try {
     const data = await getMembers()
-    if (data?.length) members.value = data
-  } catch (e) { console.warn('Members API failed, using mock data', e) }
+    members.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
 })
 
 const filteredMembers = computed(() => members.value.filter(m => {

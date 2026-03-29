@@ -37,16 +37,15 @@
 import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
 import { getFinancialSummary } from '@/api/finance'
-import { financialSummary } from '@/mock/data'
 
 const period = ref('daily')
-const data = ref([...financialSummary])
+const data = ref([])
 
 onMounted(async () => {
   try {
     const res = await getFinancialSummary()
     if (res?.length) data.value = res
-  } catch (e) { console.warn('Financial summary API failed, using mock data', e) }
+  } catch (e) { console.warn('API request failed', e) }
 })
 const formatM = n => (n / 10000).toFixed(1) + '万'
 

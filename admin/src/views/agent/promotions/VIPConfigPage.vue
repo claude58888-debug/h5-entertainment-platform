@@ -55,10 +55,9 @@
 
 <script setup>
 import { ref } from 'vue'
-import { vipLevels as mockVipLevels } from '@/mock/data'
 import { ElMessage } from 'element-plus'
 
-const vipLevels = ref([...mockVipLevels])
+const vipLevels = ref([])
 const editDialog = ref(false)
 const currentLevel = ref(null)
 

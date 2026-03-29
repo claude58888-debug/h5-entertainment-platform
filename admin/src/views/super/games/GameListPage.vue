@@ -57,19 +57,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { getGames } from '@/api/games'
-import { gamesList } from '@/mock/data'
 
 const search = ref('')
 const providerFilter = ref('')
 const categoryFilter = ref('')
 const statusFilter = ref('')
-const games = ref([...gamesList])
+const games = ref([])
 
 onMounted(async () => {
   try {
     const data = await getGames()
-    if (data?.length) games.value = data
-  } catch (e) { console.warn('Games API failed, using mock data', e) }
+    games.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
 })
 const providerList = ['PG', 'PP', 'CQ9', 'EVO', 'AG', 'JDB', 'JILI', 'FC', 'WM']
 
