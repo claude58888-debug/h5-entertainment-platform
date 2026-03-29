@@ -100,16 +100,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { agentsList, settlementRecords } from '@/mock/data'
+import { getAgents } from '@/api/agents'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const activeTab = ref('info')
 const settlementCycle = ref('weekly')
-const agent = ref(agentsList.find(a => a.id === route.params.id) || agentsList[0])
-const settlements = ref(settlementRecords.filter(s => s.agent === agent.value.brand))
+const agent = ref({ id: '', brand: '', domain: '', contact: '', members: 0, balance: 0, monthRevenue: 0, shareMode: 'revenue', shareRate: 0, status: 'active', created: '' })
+const settlements = ref([])
+
+onMounted(async () => {
+  try {
+    const data = await getAgents()
+    const found = (data || []).find(a => a.id === route.params.id)
+    if (found) agent.value = found
+  } catch (e) { console.warn('API request failed', e) }
+})
 
 const balanceHistory = ref([
   { time: '2026-03-07 10:00', type: '充值', amount: 100000, operator: 'superadmin', remark: '日常充值' },

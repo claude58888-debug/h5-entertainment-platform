@@ -61,16 +61,15 @@
 import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
 import { getProviders } from '@/api/games'
-import { gameProviders } from '@/mock/data'
 import { ElMessage } from 'element-plus'
 
-const providers = ref([...gameProviders])
+const providers = ref([])
 
 onMounted(async () => {
   try {
     const data = await getProviders()
-    if (data?.length) providers.value = data
-  } catch (e) { console.warn('Providers API failed, using mock data', e) }
+    providers.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
 })
 const apiDialog = ref(false)
 const currentProvider = ref({})

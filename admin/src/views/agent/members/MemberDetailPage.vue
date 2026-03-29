@@ -70,12 +70,11 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getMembers } from '@/api/members'
-import { membersList } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const activeTab = ref('deposits')
-const member = ref(membersList.find(m => m.id === route.params.id) || membersList[0])
+const member = ref({ id: '', username: '', vip: 0, balance: 0, totalDeposit: 0, totalWithdraw: 0, registered: '', lastLogin: '', status: 'active' })
 
 onMounted(async () => {
   try {
@@ -84,7 +83,7 @@ onMounted(async () => {
       const found = data.find(m => m.id === route.params.id)
       if (found) member.value = found
     }
-  } catch (e) { console.warn('Member detail API failed, using mock data', e) }
+  } catch (e) { console.warn('API request failed', e) }
 })
 
 const deposits = ref([

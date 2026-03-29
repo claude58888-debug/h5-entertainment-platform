@@ -39,18 +39,17 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { getLogs } from '@/api/system'
-import { auditLogs } from '@/mock/data'
 
 const search = ref('')
 const typeFilter = ref('')
 const dateRange = ref(null)
-const logs = ref([...auditLogs])
+const logs = ref([])
 
 onMounted(async () => {
   try {
     const data = await getLogs()
-    if (data?.length) logs.value = data
-  } catch (e) { console.warn('Logs API failed, using mock data', e) }
+    logs.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
 })
 
 const filteredLogs = computed(() => logs.value.filter(l => {

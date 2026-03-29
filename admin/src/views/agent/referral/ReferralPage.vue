@@ -86,13 +86,12 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { referralData as mockReferralData } from '@/mock/data'
 import { ElMessage } from 'element-plus'
 
 const activeTab = ref('links')
 const referralLink = ref('https://jinsha.com/r/AGT001?ref=promo1')
 const trackingParam = ref('')
-const referralData = ref(mockReferralData)
+const referralData = ref({ totalRegistrations: 0, activeDepositors: 0, totalCommission: 0 })
 const commissionConfig = reactive({ level1: 15, level2: 5, level3: 2 })
 
 const teamTree = ref([

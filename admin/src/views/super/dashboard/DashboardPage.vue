@@ -72,29 +72,28 @@
 import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
 import { getDashboard } from '@/api/dashboard'
-import { superDashboardKPI, revenueTrend as mockRevenueTrend, topGamesGGR as mockTopGames, depositByChannel as mockDepositChannel, realtimeAlerts as mockAlerts } from '@/mock/data'
 
-const kpi = ref({ ...superDashboardKPI })
-const alerts = ref([...mockAlerts])
-const revenueTrendData = ref([...mockRevenueTrend])
-const topGamesData = ref([...mockTopGames])
-const depositChannelData = ref([...mockDepositChannel])
+const kpi = ref({})
+const alerts = ref([])
+const revenueTrendData = ref([])
+const topGamesData = ref([])
+const depositChannelData = ref([])
 
 onMounted(async () => {
   try {
     const data = await getDashboard()
     if (data.kpi) kpi.value = data.kpi
-    if (data.revenueTrend?.length) revenueTrendData.value = data.revenueTrend
-    if (data.topGamesGGR?.length) topGamesData.value = data.topGamesGGR
-    if (data.depositByChannel?.length) depositChannelData.value = data.depositByChannel
-    if (data.realtimeAlerts?.length) alerts.value = data.realtimeAlerts
+    revenueTrendData.value = data.revenueTrend || []
+    topGamesData.value = data.topGamesGGR || []
+    depositChannelData.value = data.depositByChannel || []
+    alerts.value = data.realtimeAlerts || []
   } catch (e) {
-    console.warn('Dashboard API failed, using mock data', e)
+    console.warn('API request failed', e)
   }
 })
 
 function formatNum(n) { return n?.toLocaleString() || '0' }
-function formatMoney(n) { return (n / 10000).toFixed(1) + '万' }
+function formatMoney(n) { return ((n || 0) / 10000).toFixed(1) + '万' }
 
 const lineOption = computed(() => ({
   tooltip: { trigger: 'axis' },

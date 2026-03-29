@@ -47,19 +47,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { getWithdrawals } from '@/api/finance'
-import { withdrawalOrders } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const search = ref('')
 const statusFilter = ref('')
 const selectedRows = ref([])
-const orders = ref(withdrawalOrders.filter(o => o.agent === '金沙娱乐').map(o => ({ ...o, amlCheck: Math.random() > 0.2 ? 'pass' : 'fail' })))
+const orders = ref([])
 
 onMounted(async () => {
   try {
     const data = await getWithdrawals()
-    if (data?.length) orders.value = data.map(o => ({ ...o, amlCheck: Math.random() > 0.2 ? 'pass' : 'fail' }))
-  } catch (e) { console.warn('Withdrawals API failed, using mock data', e) }
+    orders.value = (data || []).map(o => ({ ...o, amlCheck: Math.random() > 0.2 ? 'pass' : 'fail' }))
+  } catch (e) { console.warn('API request failed', e) }
 })
 
 const filteredOrders = computed(() => orders.value.filter(o => {
