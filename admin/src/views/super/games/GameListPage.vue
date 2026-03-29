@@ -20,7 +20,7 @@
           <el-option label="停用" value="inactive" />
         </el-select>
         <el-button :type="sortByHot ? 'warning' : 'default'" @click="toggleHotSort">
-          <el-icon><Flame /></el-icon>{{ sortByHot ? '热度排序中' : '按热度排序' }}
+          <el-icon><Sunset /></el-icon>{{ sortByHot ? '热度排序中' : '按热度排序' }}
         </el-button>
       </div>
       <!-- Loading skeleton -->
@@ -88,7 +88,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { getGames, updateHotScore, updateRecommend } from '@/api/games'
 import { ElMessage } from 'element-plus'
-import { Flame } from '@element-plus/icons-vue'
+import { Sunset } from '@element-plus/icons-vue'
 
 const search = ref('')
 const providerFilter = ref('')
