@@ -16,6 +16,36 @@
         </el-select>
       </div>
 
+      <!-- Advanced search filters -->
+      <div class="advanced-filter-bar">
+        <el-date-picker
+          v-model="registerDateRange"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="注册开始日期"
+          end-placeholder="注册结束日期"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          style="width: 280px;"
+          clearable
+        />
+        <div class="balance-range-filter">
+          <span class="filter-label">余额:</span>
+          <el-input-number v-model="balanceMin" :min="0" :precision="0" :step="1000" placeholder="最低" size="small" style="width: 120px;" controls-position="right" />
+          <span class="filter-separator">-</span>
+          <el-input-number v-model="balanceMax" :min="0" :precision="0" :step="1000" placeholder="最高" size="small" style="width: 120px;" controls-position="right" />
+        </div>
+        <el-button size="small" @click="resetAdvancedFilters">重置筛选</el-button>
+      </div>
+
+      <!-- Batch operations toolbar -->
+      <div v-if="selectedMembers.length" class="batch-toolbar">
+        <span class="batch-info">已选择 {{ selectedMembers.length }} 个会员</span>
+        <el-button size="small" type="danger" @click="batchFreeze">批量冻结</el-button>
+        <el-button size="small" type="success" @click="batchUnfreeze">批量解冻</el-button>
+        <el-button size="small" @click="clearSelection">取消选择</el-button>
+      </div>
+
       <!-- Loading skeleton -->
       <div v-if="loading" class="skeleton-table">
         <el-skeleton :rows="8" animated />
@@ -30,7 +60,8 @@
         </el-empty>
       </div>
 
-      <el-table v-else :data="paginatedMembers" stripe v-loading="loading" @row-click="openDetail">
+      <el-table v-else ref="tableRef" :data="paginatedMembers" stripe v-loading="loading" @row-click="openDetail" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="会员ID" width="90" />
         <el-table-column prop="username" label="用户名" width="130" />
         <el-table-column prop="agent" label="所属代理" width="110" />
@@ -81,69 +112,9 @@
       </div>
     </div>
 
-    <!-- Member Detail Dialog -->
-    <el-dialog v-model="detailVisible" :title="'会员详情 - ' + (detailData.username || '')" width="800px" destroy-on-close>
+    <!-- Member Detail Drawer -->
+    <el-drawer v-model="detailVisible" :title="'会员详情 - ' + (detailData.username || '')" size="720px" destroy-on-close>
       <div v-loading="detailLoading">
-        <!-- Basic Info Summary -->
-        <div class="detail-summary">
-          <div class="detail-summary-item">
-            <span class="detail-label">会员ID</span>
-            <span class="detail-value">{{ detailData.id }}</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">用户名</span>
-            <span class="detail-value">{{ detailData.username }}</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">所属代理</span>
-            <span class="detail-value">{{ detailData.agent || '-' }}</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">VIP等级</span>
-            <span class="detail-value">
-              <el-select v-model="detailVipLevel" size="small" style="width: 100px;" @change="handleVipChange">
-                <el-option v-for="i in 10" :key="i-1" :label="'VIP' + (i-1)" :value="i-1" />
-              </el-select>
-            </span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">余额</span>
-            <span class="detail-value" style="color: #409eff;">¥{{ (detailData.balance || 0).toLocaleString() }}</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">状态</span>
-            <span class="detail-value">
-              <el-tag :type="detailData.status === 'active' ? 'success' : 'danger'" size="small">
-                {{ detailData.status === 'active' ? '正常' : '冻结' }}
-              </el-tag>
-            </span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">注册时间</span>
-            <span class="detail-value">{{ detailData.registered || '-' }}</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">最后登录</span>
-            <span class="detail-value">{{ detailData.lastLogin || '-' }}</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">总充值</span>
-            <span class="detail-value">¥{{ ((detailData.totalDeposit || 0) / 10000).toFixed(1) }}万</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">总提现</span>
-            <span class="detail-value">¥{{ ((detailData.totalWithdraw || 0) / 10000).toFixed(1) }}万</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">总投注次数</span>
-            <span class="detail-value">{{ detailData.betStats?.totalBets || 0 }}</span>
-          </div>
-          <div class="detail-summary-item">
-            <span class="detail-label">总投注金额</span>
-            <span class="detail-value">¥{{ ((detailData.betStats?.totalBetAmount || 0) / 10000).toFixed(1) }}万</span>
-          </div>
-        </div>
-
         <!-- Tags -->
         <div class="detail-tags-section">
           <span class="detail-label" style="margin-right: 8px;">标签:</span>
@@ -168,10 +139,69 @@
           <el-button v-else size="small" @click="showTagInput">+ 添加标签</el-button>
         </div>
 
-        <!-- Tabs -->
+        <!-- Tabs: profile / transactions / login history -->
         <el-tabs v-model="detailTab" style="margin-top: 16px;">
-          <el-tab-pane label="基本信息" name="basic">
-            <div class="detail-info-grid">
+          <el-tab-pane label="个人资料" name="profile">
+            <div class="detail-summary">
+              <div class="detail-summary-item">
+                <span class="detail-label">会员ID</span>
+                <span class="detail-value">{{ detailData.id }}</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">用户名</span>
+                <span class="detail-value">{{ detailData.username }}</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">所属代理</span>
+                <span class="detail-value">{{ detailData.agent || '-' }}</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">VIP等级</span>
+                <span class="detail-value">
+                  <el-select v-model="detailVipLevel" size="small" style="width: 100px;" @change="handleVipChange">
+                    <el-option v-for="i in 10" :key="i-1" :label="'VIP' + (i-1)" :value="i-1" />
+                  </el-select>
+                </span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">余额</span>
+                <span class="detail-value" style="color: #409eff;">¥{{ (detailData.balance || 0).toLocaleString() }}</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">状态</span>
+                <span class="detail-value">
+                  <el-tag :type="detailData.status === 'active' ? 'success' : 'danger'" size="small">
+                    {{ detailData.status === 'active' ? '正常' : '冻结' }}
+                  </el-tag>
+                </span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">注册时间</span>
+                <span class="detail-value">{{ detailData.registered || '-' }}</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">最后登录</span>
+                <span class="detail-value">{{ detailData.lastLogin || '-' }}</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">总充值</span>
+                <span class="detail-value">¥{{ ((detailData.totalDeposit || 0) / 10000).toFixed(1) }}万</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">总提现</span>
+                <span class="detail-value">¥{{ ((detailData.totalWithdraw || 0) / 10000).toFixed(1) }}万</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">总投注次数</span>
+                <span class="detail-value">{{ detailData.betStats?.totalBets || 0 }}</span>
+              </div>
+              <div class="detail-summary-item">
+                <span class="detail-label">总投注金额</span>
+                <span class="detail-value">¥{{ ((detailData.betStats?.totalBetAmount || 0) / 10000).toFixed(1) }}万</span>
+              </div>
+            </div>
+            <div class="detail-info-grid" style="margin-top: 16px;">
+              <h4 style="margin-bottom: 8px; color: #e0e0e0;">设备信息</h4>
               <div v-for="device in (detailData.devices || [])" :key="device.id" class="device-item">
                 <el-tag size="small" type="info">设备</el-tag>
                 <span>{{ device.fingerprint || device.device_info || '未知设备' }}</span>
@@ -180,24 +210,8 @@
             </div>
           </el-tab-pane>
 
-          <el-tab-pane label="投注记录" name="bets">
-            <el-table :data="detailData.bets || []" stripe max-height="400" size="small">
-              <el-table-column prop="id" label="注单ID" width="100" />
-              <el-table-column prop="game" label="游戏" width="120" />
-              <el-table-column prop="provider" label="供应商" width="100" />
-              <el-table-column label="投注额" width="100">
-                <template #default="{ row }">¥{{ (row.betAmount || 0).toLocaleString() }}</template>
-              </el-table-column>
-              <el-table-column label="中奖额" width="100">
-                <template #default="{ row }">¥{{ (row.winAmount || 0).toLocaleString() }}</template>
-              </el-table-column>
-              <el-table-column prop="status" label="状态" width="80" />
-              <el-table-column prop="time" label="时间" width="160" />
-            </el-table>
-          </el-tab-pane>
-
           <el-tab-pane label="交易记录" name="transactions">
-            <el-table :data="allTransactions" stripe max-height="400" size="small">
+            <el-table :data="allTransactions" stripe max-height="500" size="small">
               <el-table-column prop="id" label="订单ID" width="100" />
               <el-table-column label="类型" width="80">
                 <template #default="{ row }">
@@ -215,10 +229,42 @@
                 <template #default="{ row }">{{ row.time || row.created_at }}</template>
               </el-table-column>
             </el-table>
+
+            <h4 style="margin: 16px 0 8px; color: #e0e0e0;">投注记录</h4>
+            <el-table :data="detailData.bets || []" stripe max-height="400" size="small">
+              <el-table-column prop="id" label="注单ID" width="100" />
+              <el-table-column prop="game" label="游戏" width="120" />
+              <el-table-column prop="provider" label="供应商" width="100" />
+              <el-table-column label="投注额" width="100">
+                <template #default="{ row }">¥{{ (row.betAmount || 0).toLocaleString() }}</template>
+              </el-table-column>
+              <el-table-column label="中奖额" width="100">
+                <template #default="{ row }">¥{{ (row.winAmount || 0).toLocaleString() }}</template>
+              </el-table-column>
+              <el-table-column prop="status" label="状态" width="80" />
+              <el-table-column prop="time" label="时间" width="160" />
+            </el-table>
+          </el-tab-pane>
+
+          <el-tab-pane label="登录历史" name="loginHistory">
+            <el-table :data="detailData.loginHistory || []" stripe max-height="500" size="small">
+              <el-table-column prop="time" label="登录时间" width="180" />
+              <el-table-column prop="ip" label="IP地址" width="150" />
+              <el-table-column prop="device" label="设备" width="160" />
+              <el-table-column prop="location" label="地区" width="120" />
+              <el-table-column label="状态" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 'success' ? 'success' : 'danger'" size="small">
+                    {{ row.status === 'success' ? '成功' : '失败' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div v-if="!(detailData.loginHistory || []).length" style="color: #999; text-align: center; padding: 40px 0;">暂无登录历史记录</div>
           </el-tab-pane>
         </el-tabs>
       </div>
-    </el-dialog>
+    </el-drawer>
 
     <!-- Balance Adjustment Dialog -->
     <el-dialog v-model="balanceDialogVisible" title="余额调整" width="450px" destroy-on-close>
@@ -274,10 +320,15 @@ const search = ref('')
 const agentFilter = ref('')
 const statusFilter = ref('')
 const vipFilter = ref('')
+const registerDateRange = ref(null)
+const balanceMin = ref(undefined)
+const balanceMax = ref(undefined)
 const members = ref([])
 const loading = ref(true)
 const currentPage = ref(1)
 const pageSize = ref(10)
+const selectedMembers = ref([])
+const tableRef = ref(null)
 
 // Detail dialog
 const detailVisible = ref(false)
@@ -319,9 +370,69 @@ const filteredMembers = computed(() => {
     if (agentFilter.value && m.agent !== agentFilter.value) return false
     if (statusFilter.value && m.status !== statusFilter.value) return false
     if (vipFilter.value !== '' && m.vip !== vipFilter.value) return false
+    if (registerDateRange.value && registerDateRange.value.length === 2) {
+      const reg = m.registered || m.created_at || ''
+      if (reg < registerDateRange.value[0] || reg > registerDateRange.value[1] + ' 23:59:59') return false
+    }
+    if (balanceMin.value !== undefined && balanceMin.value !== null && m.balance < balanceMin.value) return false
+    if (balanceMax.value !== undefined && balanceMax.value !== null && m.balance > balanceMax.value) return false
     return true
   })
 })
+
+function resetAdvancedFilters() {
+  registerDateRange.value = null
+  balanceMin.value = undefined
+  balanceMax.value = undefined
+}
+
+function handleSelectionChange(rows) {
+  selectedMembers.value = rows
+}
+
+function clearSelection() {
+  tableRef.value?.clearSelection()
+}
+
+function batchFreeze() {
+  const names = selectedMembers.value.map(m => m.username).join('、')
+  ElMessageBox.confirm(`确定要批量冻结以下会员吗？\n${names}`, '批量冻结', { type: 'warning' }).then(async () => {
+    let successCount = 0
+    for (const member of selectedMembers.value) {
+      if (member.status === 'active') {
+        try {
+          await memberAction(member.id, 'freeze')
+          member.status = 'frozen'
+          successCount++
+        } catch (e) {
+          console.warn(`冻结会员 ${member.username} 失败`, e)
+        }
+      }
+    }
+    ElMessage.success(`已成功冻结 ${successCount} 个会员`)
+    clearSelection()
+  }).catch(() => {})
+}
+
+function batchUnfreeze() {
+  const names = selectedMembers.value.map(m => m.username).join('、')
+  ElMessageBox.confirm(`确定要批量解冻以下会员吗？\n${names}`, '批量解冻', { type: 'warning' }).then(async () => {
+    let successCount = 0
+    for (const member of selectedMembers.value) {
+      if (member.status === 'frozen') {
+        try {
+          await memberAction(member.id, 'unfreeze')
+          member.status = 'active'
+          successCount++
+        } catch (e) {
+          console.warn(`解冻会员 ${member.username} 失败`, e)
+        }
+      }
+    }
+    ElMessage.success(`已成功解冻 ${successCount} 个会员`)
+    clearSelection()
+  }).catch(() => {})
+}
 
 const paginatedMembers = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
@@ -362,7 +473,7 @@ function toggleFreeze(row) {
 async function openDetail(row) {
   detailVisible.value = true
   detailLoading.value = true
-  detailTab.value = 'basic'
+  detailTab.value = 'profile'
   try {
     const data = await getMemberDetail(row.id)
     detailData.value = data
@@ -541,5 +652,40 @@ async function submitBalanceAdjust() {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.advanced-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.balance-range-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-label {
+  font-size: 13px;
+  color: #909399;
+  white-space: nowrap;
+}
+.filter-separator {
+  color: #909399;
+}
+.batch-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: rgba(64, 158, 255, 0.08);
+  border: 1px solid rgba(64, 158, 255, 0.2);
+  border-radius: 6px;
+}
+.batch-info {
+  font-size: 14px;
+  color: #409eff;
+  margin-right: 8px;
 }
 </style>
