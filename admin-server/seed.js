@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt'
 import db, { initDB } from './db.js'
 
 // Initialize tables
@@ -20,13 +21,14 @@ for (const t of tables) {
 // ===== Admin accounts =====
 // Default seed credential is read from SEED_ADMIN_PWD env var, fallback for local dev only
 const seedPwd = process.env.SEED_ADMIN_PWD || 'demo'
+const hashedSeedPwd = bcrypt.hashSync(seedPwd, 10)
 const insertAdmin = db.prepare(`INSERT INTO admins (username, password, role, display_name, status, last_login, created_at) VALUES (?,?,?,?,?,?,?)`)
 const adminAccounts = [
-  ['admin', seedPwd, 'superadmin', '管理员', 'active', '2026-03-07 16:00', '2025-01-01'],
-  ['admin_finance', seedPwd, 'finance', '财务管理员', 'active', '2026-03-07 15:30', '2025-03-15'],
-  ['admin_cs', seedPwd, 'cs', '客服管理员', 'active', '2026-03-07 14:00', '2025-06-20'],
-  ['admin_risk', seedPwd, 'risk', '风控管理员', 'active', '2026-03-06 18:00', '2025-08-10'],
-  ['admin_backup', seedPwd, 'admin', '备用管理员', 'inactive', '2026-01-15 10:00', '2025-12-01']
+  ['admin', hashedSeedPwd, 'superadmin', '管理员', 'active', '2026-03-07 16:00', '2025-01-01'],
+  ['admin_finance', hashedSeedPwd, 'finance', '财务管理员', 'active', '2026-03-07 15:30', '2025-03-15'],
+  ['admin_cs', hashedSeedPwd, 'cs', '客服管理员', 'active', '2026-03-07 14:00', '2025-06-20'],
+  ['admin_risk', hashedSeedPwd, 'risk', '风控管理员', 'active', '2026-03-06 18:00', '2025-08-10'],
+  ['admin_backup', hashedSeedPwd, 'admin', '备用管理员', 'inactive', '2026-01-15 10:00', '2025-12-01']
 ]
 for (const row of adminAccounts) insertAdmin.run(...row)
 

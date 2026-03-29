@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 import db from './db.js'
 
 const router = Router()
@@ -29,36 +30,37 @@ function h5Auth(req, res, next) {
 // ==================== AUTH ====================
 
 // POST /api/h5/auth/register
-router.post('/auth/register', (req, res) => {
-  const { username, password, phone } = req.body
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required' })
-  }
-  if (username.length < 3 || username.length > 20) {
-    return res.status(400).json({ error: 'Username must be 3-20 characters' })
-  }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' })
-  }
-
-  // Check if username already exists in h5_users
-  const existing = db.prepare('SELECT id FROM h5_users WHERE username = ?').get(username)
-  if (existing) {
-    return res.status(400).json({ error: 'Username already exists' })
-  }
-
-  // Create member entry (visible in admin dashboard)
-  const memberCount = db.prepare('SELECT COUNT(*) as c FROM members').get().c
-  const memberId = 'M' + (10000 + memberCount + 1)
-
+router.post('/auth/register', async (req, res) => {
   try {
+    const { username, password, phone } = req.body
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password required' })
+    }
+    if (username.length < 3 || username.length > 20) {
+      return res.status(400).json({ error: 'Username must be 3-20 characters' })
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' })
+    }
+
+    // Check if username already exists in h5_users
+    const existing = db.prepare('SELECT id FROM h5_users WHERE username = ?').get(username)
+    if (existing) {
+      return res.status(400).json({ error: 'Username already exists' })
+    }
+
+    // Create member entry (visible in admin dashboard)
+    const memberCount = db.prepare('SELECT COUNT(*) as c FROM members').get().c
+    const memberId = 'M' + (10000 + memberCount + 1)
+
     // Insert into members table
     db.prepare(`INSERT INTO members (id, username, agent, vip, balance, status, registered, last_login, total_deposit, total_withdraw, tags)
       VALUES (?, ?, '', 0, 0, 'active', datetime('now'), datetime('now'), 0, 0, '["H5"]')`).run(memberId, username)
 
-    // Insert into h5_users table
+    // Insert into h5_users table with hashed password
+    const hashedPassword = await bcrypt.hash(password, 10)
     db.prepare(`INSERT INTO h5_users (username, password, phone, nickname, member_id, last_login)
-      VALUES (?, ?, ?, ?, ?, datetime('now'))`).run(username, password, phone || '', username, memberId)
+      VALUES (?, ?, ?, ?, ?, datetime('now'))`).run(username, hashedPassword, phone || '', username, memberId)
 
     const h5user = db.prepare('SELECT * FROM h5_users WHERE username = ?').get(username)
 
@@ -85,50 +87,58 @@ router.post('/auth/register', (req, res) => {
       }
     })
   } catch (err) {
-    return res.status(500).json({ error: 'Registration failed: ' + err.message })
+    return res.status(500).json({ error: 'Registration failed' })
   }
 })
 
 // POST /api/h5/auth/login
-router.post('/auth/login', (req, res) => {
-  const { phone, password, username } = req.body
-  const loginName = username || phone
-  if (!loginName || !password) {
-    return res.status(400).json({ error: 'Username/phone and password required' })
-  }
-
-  const h5user = db.prepare('SELECT * FROM h5_users WHERE username = ? OR phone = ?').get(loginName, loginName)
-  if (!h5user || h5user.password !== password) {
-    return res.status(401).json({ error: 'Invalid credentials' })
-  }
-  if (h5user.status !== 'active') {
-    return res.status(403).json({ error: 'Account disabled' })
-  }
-
-  // Update last login
-  db.prepare(`UPDATE h5_users SET last_login = datetime('now') WHERE id = ?`).run(h5user.id)
-  db.prepare(`UPDATE members SET last_login = datetime('now') WHERE id = ?`).run(h5user.member_id)
-
-  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(h5user.member_id)
-
-  const token = jwt.sign(
-    { id: h5user.id, username: h5user.username, memberId: h5user.member_id, role: 'h5_user' },
-    H5_JWT_SECRET,
-    { expiresIn: '7d' }
-  )
-
-  res.json({
-    access_token: token,
-    user: {
-      id: h5user.member_id,
-      username: h5user.username,
-      nickname: h5user.nickname || h5user.username,
-      phone: h5user.phone,
-      vipLevel: member ? member.vip : 0,
-      balance: member ? member.balance : 0,
-      avatar: h5user.avatar || ''
+router.post('/auth/login', async (req, res) => {
+  try {
+    const { phone, password, username } = req.body
+    const loginName = username || phone
+    if (!loginName || !password) {
+      return res.status(400).json({ error: 'Username/phone and password required' })
     }
-  })
+
+    const h5user = db.prepare('SELECT * FROM h5_users WHERE username = ? OR phone = ?').get(loginName, loginName)
+    if (!h5user) {
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+    const pwdMatch = await bcrypt.compare(password, h5user.password)
+    if (!pwdMatch) {
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+    if (h5user.status !== 'active') {
+      return res.status(403).json({ error: 'Account disabled' })
+    }
+
+    // Update last login
+    db.prepare(`UPDATE h5_users SET last_login = datetime('now') WHERE id = ?`).run(h5user.id)
+    db.prepare(`UPDATE members SET last_login = datetime('now') WHERE id = ?`).run(h5user.member_id)
+
+    const member = db.prepare('SELECT * FROM members WHERE id = ?').get(h5user.member_id)
+
+    const token = jwt.sign(
+      { id: h5user.id, username: h5user.username, memberId: h5user.member_id, role: 'h5_user' },
+      H5_JWT_SECRET,
+      { expiresIn: '7d' }
+    )
+
+    res.json({
+      access_token: token,
+      user: {
+        id: h5user.member_id,
+        username: h5user.username,
+        nickname: h5user.nickname || h5user.username,
+        phone: h5user.phone,
+        vipLevel: member ? member.vip : 0,
+        balance: member ? member.balance : 0,
+        avatar: h5user.avatar || ''
+      }
+    })
+  } catch (err) {
+    return res.status(500).json({ error: 'Login failed' })
+  }
 })
 
 // ==================== USER PROFILE ====================
@@ -168,22 +178,28 @@ router.put('/user/profile', h5Auth, (req, res) => {
 })
 
 // PUT /api/h5/user/password
-router.put('/user/password', h5Auth, (req, res) => {
-  const { oldPassword, newPassword } = req.body
-  if (!oldPassword || !newPassword) {
-    return res.status(400).json({ error: 'Old and new password required' })
-  }
-  if (newPassword.length < 6) {
-    return res.status(400).json({ error: 'New password must be at least 6 characters' })
-  }
+router.put('/user/password', h5Auth, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Old and new password required' })
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' })
+    }
 
-  const h5user = db.prepare('SELECT * FROM h5_users WHERE id = ?').get(req.h5user.id)
-  if (h5user.password !== oldPassword) {
-    return res.status(400).json({ error: 'Old password incorrect' })
-  }
+    const h5user = db.prepare('SELECT * FROM h5_users WHERE id = ?').get(req.h5user.id)
+    const oldPwdMatch = await bcrypt.compare(oldPassword, h5user.password)
+    if (!oldPwdMatch) {
+      return res.status(400).json({ error: 'Old password incorrect' })
+    }
 
-  db.prepare('UPDATE h5_users SET password = ? WHERE id = ?').run(newPassword, req.h5user.id)
-  res.json({ success: true })
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10)
+    db.prepare('UPDATE h5_users SET password = ? WHERE id = ?').run(hashedNewPassword, req.h5user.id)
+    res.json({ success: true })
+  } catch (err) {
+    return res.status(500).json({ error: 'Password change failed' })
+  }
 })
 
 // ==================== WALLET ====================
