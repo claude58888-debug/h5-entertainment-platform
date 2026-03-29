@@ -34,15 +34,37 @@ export const useAuthStore = defineStore('auth', () => {
     return Math.ceil((lockoutUntil.value - Date.now()) / 1000 / 60)
   })
 
+  // Demo credentials for mock login when backend is unavailable
+  const DEMO_ACCOUNTS = {
+    admin: { password: '123456', roles: ['superadmin', 'agent'], displayName: '管理员' }
+  }
+
+  function tryMockLogin(username, password, selectedRole) {
+    const account = DEMO_ACCOUNTS[username]
+    if (account && account.password === password && account.roles.includes(selectedRole)) {
+      return {
+        user: { username, displayName: account.displayName },
+        access_token: 'demo-token-' + Date.now()
+      }
+    }
+    return null
+  }
+
   async function login(username, password, selectedRole) {
     clearExpiredLock()
     if (isLocked.value) {
       return { success: false, locked: true, remainingMinutes: remainingLockTime.value }
     }
 
+    let res = null
     try {
-      const res = await adminLogin(username, password, selectedRole)
+      res = await adminLogin(username, password, selectedRole)
+    } catch (err) {
+      // Backend unavailable — fall back to mock login
+      res = tryMockLogin(username, password, selectedRole)
+    }
 
+    if (res) {
       // Success - reset attempts
       loginAttempts.value = 0
       lockoutUntil.value = 0
@@ -58,18 +80,18 @@ export const useAuthStore = defineStore('auth', () => {
       }
       localStorage.setItem('admin_user', JSON.stringify(user.value))
       return { success: true }
-    } catch (err) {
-      loginAttempts.value++
-      localStorage.setItem('admin_login_attempts', String(loginAttempts.value))
-
-      if (loginAttempts.value >= MAX_LOGIN_ATTEMPTS) {
-        lockoutUntil.value = Date.now() + LOCKOUT_DURATION
-        localStorage.setItem('admin_lockout_until', String(lockoutUntil.value))
-        return { success: false, locked: true, remainingMinutes: 15 }
-      }
-
-      return { success: false, locked: false, attemptsLeft: MAX_LOGIN_ATTEMPTS - loginAttempts.value }
     }
+
+    loginAttempts.value++
+    localStorage.setItem('admin_login_attempts', String(loginAttempts.value))
+
+    if (loginAttempts.value >= MAX_LOGIN_ATTEMPTS) {
+      lockoutUntil.value = Date.now() + LOCKOUT_DURATION
+      localStorage.setItem('admin_lockout_until', String(lockoutUntil.value))
+      return { success: false, locked: true, remainingMinutes: 15 }
+    }
+
+    return { success: false, locked: false, attemptsLeft: MAX_LOGIN_ATTEMPTS - loginAttempts.value }
   }
 
   function logout() {
