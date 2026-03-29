@@ -61,7 +61,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getMembers, memberAction } from '@/api/members'
 import { membersList } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -70,6 +71,13 @@ const agentFilter = ref('')
 const statusFilter = ref('')
 const vipFilter = ref('')
 const members = ref([...membersList])
+
+onMounted(async () => {
+  try {
+    const data = await getMembers()
+    if (data?.length) members.value = data
+  } catch (e) { console.warn('Members API failed, using mock data', e) }
+})
 const agents = ['金沙娱乐', '皇冠体育', '新濠天地', '永利娱乐', '澳门威尼斯']
 
 const filteredMembers = computed(() => {

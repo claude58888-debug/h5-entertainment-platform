@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { getGamesApi, getGameDetailApi, getGameCategoriesApi } from '@/api/game'
 import { mockGames, mockProviders, mockCategories } from '@/mock'
 
 export const useGameStore = defineStore('game', () => {
@@ -15,7 +16,6 @@ export const useGameStore = defineStore('game', () => {
       return hotGames.value
     }
     if (category === 'recent') {
-      // Return first 8 games as "recently viewed" for demo
       return games.value.slice(0, 8)
     }
     return games.value.filter(g => g.category === category)
@@ -25,11 +25,14 @@ export const useGameStore = defineStore('game', () => {
     return providers.value[category] || []
   }
 
-  function fetchGames(params = {}) {
-    return new Promise((resolve) => {
-      loading.value = true
-      setTimeout(() => {
-        let result = [...mockGames]
+  async function fetchGames(params = {}) {
+    loading.value = true
+    try {
+      const res = await getGamesApi(params)
+      if (res?.length) {
+        games.value = res
+        loading.value = false
+        let result = [...res]
         if (params.category && params.category !== 'home' && params.category !== 'hot') {
           result = result.filter(g => g.category === params.category)
         }
@@ -39,14 +42,30 @@ export const useGameStore = defineStore('game', () => {
         if (params.provider) {
           result = result.filter(g => g.provider === params.provider)
         }
-        games.value = mockGames
-        loading.value = false
-        resolve(result)
-      }, 600)
-    })
+        return result
+      }
+      throw new Error('No games data')
+    } catch (e) {
+      console.warn('Games API failed, using mock data', e)
+      let result = [...mockGames]
+      if (params.category && params.category !== 'home' && params.category !== 'hot') {
+        result = result.filter(g => g.category === params.category)
+      }
+      if (params.category === 'hot') {
+        result = result.filter(g => g.hot)
+      }
+      if (params.provider) {
+        result = result.filter(g => g.provider === params.provider)
+      }
+      games.value = mockGames
+      loading.value = false
+      return result
+    }
   }
 
   function getGameById(id) {
+    const found = games.value.find(g => g.id === Number(id))
+    if (found) return found
     return mockGames.find(g => g.id === Number(id))
   }
 

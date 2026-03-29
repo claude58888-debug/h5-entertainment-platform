@@ -58,12 +58,20 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
+import { getProviders } from '@/api/games'
 import { gameProviders } from '@/mock/data'
 import { ElMessage } from 'element-plus'
 
 const providers = ref([...gameProviders])
+
+onMounted(async () => {
+  try {
+    const data = await getProviders()
+    if (data?.length) providers.value = data
+  } catch (e) { console.warn('Providers API failed, using mock data', e) }
+})
 const apiDialog = ref(false)
 const currentProvider = ref({})
 const apiSecret = ref('••••••••••••')

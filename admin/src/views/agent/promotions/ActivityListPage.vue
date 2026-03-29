@@ -46,11 +46,22 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getAnnouncements } from '@/api/system'
 import { activities } from '@/mock/data'
 
 const tab = ref('platform')
 const allActivities = ref([...activities])
+
+onMounted(async () => {
+  try {
+    const data = await getAnnouncements()
+    if (data?.length) {
+      const mapped = data.map((a, i) => ({ id: i + 1, name: a.title, type: a.type === 'activity' ? '充值返利' : '首充优惠', period: `${a.publishTime} ~ 长期`, participants: Math.floor(Math.random() * 500) + 100, totalBonus: Math.floor(Math.random() * 50000) + 10000, source: i < 3 ? '平台' : '自定义', status: a.status === 'published' ? 'active' : 'upcoming' }))
+      if (mapped.length) allActivities.value = mapped
+    }
+  } catch (e) { console.warn('Activities API failed, using mock data', e) }
+})
 
 const filteredActivities = computed(() => {
   if (tab.value === 'platform') return allActivities.value.filter(a => a.source === '平台')

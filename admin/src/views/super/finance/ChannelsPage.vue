@@ -60,11 +60,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getChannels } from '@/api/finance'
 import { paymentChannels } from '@/mock/data'
 import { ElMessage } from 'element-plus'
 
 const channels = ref([...paymentChannels])
+
+onMounted(async () => {
+  try {
+    const data = await getChannels()
+    if (data?.length) channels.value = data
+  } catch (e) { console.warn('Channels API failed, using mock data', e) }
+})
 const usdtRate = ref(7.24)
 const rateMode = ref('manual')
 </script>

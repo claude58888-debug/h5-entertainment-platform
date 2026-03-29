@@ -58,13 +58,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getAgents, updateAgent } from '@/api/agents'
 import { agentsList } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const search = ref('')
 const statusFilter = ref('')
 const agents = ref([...agentsList])
+
+onMounted(async () => {
+  try {
+    const data = await getAgents()
+    if (data?.length) agents.value = data
+  } catch (e) { console.warn('Agents API failed, using mock data', e) }
+})
 
 const filteredAgents = computed(() => {
   return agents.value.filter(a => {
