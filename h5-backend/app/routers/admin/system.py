@@ -1,11 +1,40 @@
 from fastapi import APIRouter, Depends, HTTPException
 import aiosqlite
 
-from app.database import get_db
+from app.database import get_db, DB_PATH
 from app.auth import get_admin_user, get_password_hash
 from app.models import AdminCreate, AnnouncementCreate
 
 router = APIRouter()
+
+
+@router.post("/reset-database")
+async def reset_database():
+    """Delete ALL data from ALL tables, re-create only one admin account."""
+    db = await aiosqlite.connect(DB_PATH)
+    tables = [
+        "users", "wallets", "transactions", "games", "bet_records",
+        "promotions", "tasks", "user_tasks", "vip_levels",
+        "red_packets", "red_packet_claims", "referral_rewards",
+        "announcements", "banners",
+        "admin_accounts", "agents", "members",
+        "deposit_orders", "withdrawal_orders",
+        "games_list", "game_providers", "betting_records",
+        "risk_rules", "ip_blacklist", "audit_logs",
+        "admin_announcements", "activities",
+        "payment_channels", "settlement_records", "financial_summary",
+    ]
+    for table in tables:
+        await db.execute(f"DELETE FROM {table}")
+
+    admin_hash = get_password_hash("123456")
+    await db.execute(
+        "INSERT INTO admin_accounts (username, password_hash, role, status, last_login, created_at) VALUES (?, ?, ?, ?, '', datetime('now'))",
+        ("admin", admin_hash, "超级管理员", "active")
+    )
+    await db.commit()
+    await db.close()
+    return {"status": "ok", "message": "Database reset complete"}
 
 
 # Admin accounts
