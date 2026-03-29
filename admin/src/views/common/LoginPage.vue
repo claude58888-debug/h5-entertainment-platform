@@ -38,7 +38,7 @@
       </el-form>
 
       <div style="text-align: center; color: #555; font-size: 12px; margin-top: 16px;">
-        演示账号: admin / 123456
+        演示账号: admin / demo
       </div>
     </div>
   </div>
@@ -56,7 +56,7 @@ const formRef = ref(null)
 const loading = ref(false)
 const selectedRole = ref('superadmin')
 
-const form = reactive({ username: 'admin', password: '123456' })
+const form = reactive({ username: 'admin', password: 'demo' })
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
