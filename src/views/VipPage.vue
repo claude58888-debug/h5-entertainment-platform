@@ -54,10 +54,17 @@
 </template>
 
 <script setup>
-const currentLevel = 3
-const currentDeposit = 8500
-const nextRequirement = 20000
-const progressPct = Math.min((currentDeposit / nextRequirement) * 100, 100)
+import { ref, computed, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+import request from '@/utils/request'
+
+const userStore = useUserStore()
+
+const vipInfo = ref(null)
+const currentLevel = computed(() => vipInfo.value?.currentLevel ?? userStore.user?.vipLevel ?? 0)
+const currentDeposit = computed(() => vipInfo.value?.totalDeposit ?? 0)
+const nextRequirement = computed(() => vipInfo.value?.nextLevelDeposit ?? 20000)
+const progressPct = computed(() => Math.min((currentDeposit.value / (nextRequirement.value || 1)) * 100, 100))
 
 const benefits = [
   { icon: '💰', label: 'Upgrade Bonus' }, { icon: '🧧', label: 'Monthly Red Packet' },
@@ -65,7 +72,7 @@ const benefits = [
   { icon: '🎁', label: 'Birthday Gift' }, { icon: '👤', label: 'Personal Manager' }
 ]
 
-const levels = [
+const defaultLevels = [
   { level: 0, deposit: '0', turnover: '0', upgradeBonus: '-', monthlyPacket: '-' },
   { level: 1, deposit: '500', turnover: '5,000', upgradeBonus: '18U', monthlyPacket: '8U' },
   { level: 2, deposit: '2,000', turnover: '20,000', upgradeBonus: '58U', monthlyPacket: '18U' },
@@ -73,6 +80,28 @@ const levels = [
   { level: 4, deposit: '20,000', turnover: '300,000', upgradeBonus: '388U', monthlyPacket: '88U' },
   { level: 5, deposit: '50,000', turnover: '1,000,000', upgradeBonus: '888U', monthlyPacket: '188U' }
 ]
+
+const levels = ref(defaultLevels)
+
+onMounted(async () => {
+  try {
+    const res = await request.get('/vip/info')
+    if (res) {
+      vipInfo.value = res
+      if (res.levels && res.levels.length) {
+        levels.value = res.levels.map(l => ({
+          level: l.level,
+          deposit: l.deposit?.toLocaleString() || '0',
+          turnover: l.turnover?.toLocaleString() || '0',
+          upgradeBonus: l.monthlyBonus ? `${l.monthlyBonus}U` : '-',
+          monthlyPacket: l.birthdayBonus ? `${l.birthdayBonus}U` : '-'
+        }))
+      }
+    }
+  } catch (e) {
+    console.warn('VIP API failed, using default data', e)
+  }
+})
 </script>
 
 <style lang="scss" scoped>

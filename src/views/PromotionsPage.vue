@@ -30,13 +30,38 @@
 </template>
 
 <script setup>
-const promotions = [
-  { id: 1, title: '每日首充', description: '最多赠送588U', gradient: 'linear-gradient(135deg, #f0a030, #e67e22)' },
-  { id: 2, title: '每日翻盘金', description: '最多1888U', gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' },
-  { id: 3, title: '电子闯关', description: '每日最多85U', gradient: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
-  { id: 4, title: '棋牌闯关', description: '每日最多85U', gradient: 'linear-gradient(135deg, #e17055, #d63031)' },
-  { id: 5, title: '当周有效投注', description: '最多12888U', gradient: 'linear-gradient(135deg, #00b894, #00897b)' }
+import { ref, onMounted } from 'vue'
+import { getPromotionsApi } from '@/api/promo'
+
+const defaultGradients = [
+  'linear-gradient(135deg, #f0a030, #e67e22)',
+  'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+  'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+  'linear-gradient(135deg, #e17055, #d63031)',
+  'linear-gradient(135deg, #00b894, #00897b)'
 ]
+
+const promotions = ref([
+  { id: 1, title: '每日首充', description: '最多赠送588U', gradient: defaultGradients[0] },
+  { id: 2, title: '每日翻盘金', description: '最多1888U', gradient: defaultGradients[1] },
+  { id: 3, title: '电子闯关', description: '每日最多85U', gradient: defaultGradients[2] },
+  { id: 4, title: '棋牌闯关', description: '每日最多85U', gradient: defaultGradients[3] },
+  { id: 5, title: '当周有效投注', description: '最多12888U', gradient: defaultGradients[4] }
+])
+
+onMounted(async () => {
+  try {
+    const res = await getPromotionsApi()
+    if (Array.isArray(res) && res.length) {
+      promotions.value = res.map((p, i) => ({
+        ...p,
+        gradient: p.gradient || defaultGradients[i % defaultGradients.length]
+      }))
+    }
+  } catch (e) {
+    console.warn('Promotions API failed, using default data', e)
+  }
+})
 </script>
 
 <style lang="scss" scoped>

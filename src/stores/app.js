@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { mockBanners, mockAnnouncements } from '@/mock'
+import { getBannersApi, getAnnouncementsApi, getAppConfigApi } from '@/api/app'
 
 export const useAppStore = defineStore('app', () => {
   const banners = ref(mockBanners)
@@ -8,35 +9,48 @@ export const useAppStore = defineStore('app', () => {
   const config = ref({})
   const loading = ref(false)
 
-  function fetchBanners() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        banners.value = mockBanners
-        resolve(mockBanners)
-      }, 500)
-    })
+  async function fetchBanners() {
+    try {
+      const res = await getBannersApi()
+      if (Array.isArray(res) && res.length) {
+        banners.value = res
+        return res
+      }
+    } catch (e) {
+      console.warn('Banners API failed, using default data', e)
+    }
+    return banners.value
   }
 
-  function fetchAnnouncements() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        announcements.value = mockAnnouncements
-        resolve(mockAnnouncements)
-      }, 300)
-    })
+  async function fetchAnnouncements() {
+    try {
+      const res = await getAnnouncementsApi()
+      if (Array.isArray(res) && res.length) {
+        announcements.value = res
+        return res
+      }
+    } catch (e) {
+      console.warn('Announcements API failed, using default data', e)
+    }
+    return announcements.value
   }
 
-  function fetchConfig() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        config.value = {
-          siteName: 'H5 Entertainment',
-          customerService: 'https://t.me/support',
-          downloadUrl: '#'
-        }
-        resolve(config.value)
-      }, 200)
-    })
+  async function fetchConfig() {
+    try {
+      const res = await getAppConfigApi()
+      if (res) {
+        config.value = res
+        return res
+      }
+    } catch (e) {
+      console.warn('Config API failed, using defaults', e)
+    }
+    config.value = {
+      siteName: 'H5 Entertainment',
+      customerService: 'https://t.me/support',
+      downloadUrl: '#'
+    }
+    return config.value
   }
 
   function initApp() {
