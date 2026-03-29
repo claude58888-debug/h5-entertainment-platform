@@ -31,3 +31,15 @@ export function updateProvider(providerId, data) {
 export function getBets() {
   return api.get('/api/admin/bets')
 }
+
+export function getBetsWithPagination(params) {
+  return api.get('/api/games/bets', { params })
+}
+
+export function updateHotScore(gameId, hotScore) {
+  return api.put(`/api/games/${gameId}/hot-score`, { hot_score: hotScore })
+}
+
+export function updateRecommend(gameId, isRecommended, recommendSort) {
+  return api.put(`/api/games/${gameId}/recommend`, { is_recommended: isRecommended, recommend_sort: recommendSort })
+}

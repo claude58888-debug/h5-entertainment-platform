@@ -19,6 +19,9 @@
           <el-option label="启用" value="active" />
           <el-option label="停用" value="inactive" />
         </el-select>
+        <el-button :type="sortByHot ? 'warning' : 'default'" @click="toggleHotSort">
+          <el-icon><Flame /></el-icon>{{ sortByHot ? '热度排序中' : '按热度排序' }}
+        </el-button>
       </div>
       <!-- Loading skeleton -->
       <div v-if="loading" class="skeleton-table">
@@ -37,6 +40,17 @@
         <el-table-column prop="category" label="分类" width="80" />
         <el-table-column label="RTP" width="80">
           <template #default="{ row }">{{ row.rtp }}%</template>
+        </el-table-column>
+        <el-table-column label="热度分" width="120">
+          <template #default="{ row }">
+            <el-input-number v-model="row.hotScore" :min="0" size="small" controls-position="right" style="width: 90px;" @change="saveHotScore(row)" />
+          </template>
+        </el-table-column>
+        <el-table-column label="推荐" width="140">
+          <template #default="{ row }">
+            <el-switch v-model="row.isRecommended" size="small" @change="saveRecommend(row)" style="margin-right: 6px;" />
+            <el-input-number v-if="row.isRecommended" v-model="row.recommendSort" :min="0" size="small" controls-position="right" style="width: 70px;" @change="saveRecommend(row)" />
+          </template>
         </el-table-column>
         <el-table-column label="标签" width="140">
           <template #default="{ row }">
@@ -72,7 +86,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { getGames } from '@/api/games'
+import { getGames, updateHotScore, updateRecommend } from '@/api/games'
+import { ElMessage } from 'element-plus'
+import { Flame } from '@element-plus/icons-vue'
 
 const search = ref('')
 const providerFilter = ref('')
@@ -82,6 +98,7 @@ const games = ref([])
 const loading = ref(true)
 const currentPage = ref(1)
 const pageSize = ref(20)
+const sortByHot = ref(false)
 
 onMounted(async () => {
   try {
@@ -94,16 +111,44 @@ onMounted(async () => {
 })
 const providerList = ['PG', 'PP', 'CQ9', 'EVO', 'AG', 'JDB', 'JILI', 'FC', 'WM']
 
-const filteredGames = computed(() => games.value.filter(g => {
-  if (search.value && !g.name.includes(search.value)) return false
-  if (providerFilter.value && g.provider !== providerFilter.value) return false
-  if (categoryFilter.value && g.category !== categoryFilter.value) return false
-  if (statusFilter.value && g.status !== statusFilter.value) return false
-  return true
-}))
+function toggleHotSort() {
+  sortByHot.value = !sortByHot.value
+}
+
+const filteredGames = computed(() => {
+  let result = games.value.filter(g => {
+    if (search.value && !g.name.includes(search.value)) return false
+    if (providerFilter.value && g.provider !== providerFilter.value) return false
+    if (categoryFilter.value && g.category !== categoryFilter.value) return false
+    if (statusFilter.value && g.status !== statusFilter.value) return false
+    return true
+  })
+  if (sortByHot.value) {
+    result = [...result].sort((a, b) => (b.hotScore || 0) - (a.hotScore || 0))
+  }
+  return result
+})
 
 const paginatedGames = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   return filteredGames.value.slice(start, start + pageSize.value)
 })
+
+async function saveHotScore(row) {
+  try {
+    await updateHotScore(row.id, row.hotScore)
+    ElMessage.success('热度分已更新')
+  } catch (e) {
+    ElMessage.error('更新失败')
+  }
+}
+
+async function saveRecommend(row) {
+  try {
+    await updateRecommend(row.id, row.isRecommended, row.recommendSort || 0)
+    ElMessage.success('推荐设置已更新')
+  } catch (e) {
+    ElMessage.error('更新失败')
+  }
+}
 </script>

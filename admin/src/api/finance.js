@@ -27,3 +27,35 @@ export function getSettlements() {
 export function getFinancialSummary() {
   return api.get('/api/admin/financial-summary')
 }
+
+export function createManualDeposit(data) {
+  return api.post('/api/finance/deposits/manual', data)
+}
+
+export function exportDepositsCSV() {
+  return api.get('/api/finance/deposits/export', { responseType: 'blob' })
+}
+
+export function exportWithdrawalsCSV() {
+  return api.get('/api/finance/withdrawals/export', { responseType: 'blob' })
+}
+
+export function batchWithdrawals(data) {
+  return api.post('/api/finance/withdrawals/batch', data)
+}
+
+export function getAutoReviewRules() {
+  return api.get('/api/finance/auto-review-rules')
+}
+
+export function createAutoReviewRule(data) {
+  return api.post('/api/finance/auto-review-rules', data)
+}
+
+export function updateAutoReviewRule(id, data) {
+  return api.put(`/api/finance/auto-review-rules/${id}`, data)
+}
+
+export function deleteAutoReviewRule(id) {
+  return api.delete(`/api/finance/auto-review-rules/${id}`)
+}
