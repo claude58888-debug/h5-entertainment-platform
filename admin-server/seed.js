@@ -10,7 +10,8 @@ const tables = [
   'rakeback_records', 'promotions', 'messages', 'system_notifications',
   'chat_sessions', 'risk_rules', 'ip_blacklist', 'audit_logs',
   'announcements', 'payment_channels', 'settlements', 'financial_summary',
-  'revenue_trend', 'system_settings', 'banners'
+  'revenue_trend', 'system_settings', 'banners',
+  'h5_users', 'h5_transactions', 'h5_promotion_claims', 'h5_user_messages'
 ]
 for (const t of tables) {
   db.exec(`DELETE FROM ${t}`)
@@ -250,6 +251,29 @@ const insertBanner = db.prepare(`INSERT INTO banners (title, image, link, sort, 
 insertBanner.run('首充双倍活动', '/img/banners/banner-allbonus.webp', '/activity/ACT001', 1, 'active', '2026-03-01', '2026-03-31')
 insertBanner.run('新游推荐', '/img/banners/banner-yessc2.webp', '/games/slots', 2, 'active', '2026-03-01', '2026-04-30')
 insertBanner.run('返水优惠', '/img/banners/banner-slotrekeback2.webp', '/activity/ACT002', 3, 'active', '2026-01-01', '2026-12-31')
+
+// ===== H5 Demo Users =====
+const insertH5User = db.prepare(`INSERT INTO h5_users (username, password, phone, nickname, member_id, created_at, last_login, status) VALUES (?,?,?,?,?,?,?,?)`)
+insertH5User.run('demo', seedPwd, '13800138000', 'Demo User', 'M10001', '2025-08-20', '2026-03-07 16:30', 'active')
+insertH5User.run('testuser', seedPwd, '13900139000', 'Test Player', 'M10008', '2026-03-01', '2026-03-07 12:00', 'active')
+
+// ===== H5 User Messages =====
+const insertH5Msg = db.prepare(`INSERT INTO h5_user_messages (member_id, title, content, type, is_read, created_at) VALUES (?,?,?,?,?,?)`)
+insertH5Msg.run('M10001', '欢迎加入平台', '感谢您注册成为我们的会员，祝您游戏愉快！新用户可领取首充奖励。', 'system', 1, '2025-08-20 10:00:00')
+insertH5Msg.run('M10001', 'VIP升级通知', '恭喜您升级为VIP6会员，可享受更多专属权益。', 'system', 1, '2026-02-15 10:00:00')
+insertH5Msg.run('M10001', '提现审核通知', '您的提现申请 ¥30,000 正在审核中，请耐心等待。', 'notification', 0, '2026-03-07 16:30:00')
+insertH5Msg.run('M10001', '首充活动提醒', '首充100%奖励活动进行中，充值即享双倍！', 'promotion', 0, '2026-03-05 09:00:00')
+insertH5Msg.run('M10008', '欢迎加入平台', '感谢您注册成为我们的会员，祝您游戏愉快！', 'system', 0, '2026-03-01 00:00:00')
+insertH5Msg.run('M10008', '新手任务开启', '完成新手任务可获得丰厚奖励，赶快行动吧！', 'system', 0, '2026-03-01 00:00:00')
+
+// ===== H5 Transactions =====
+const insertH5Tx = db.prepare(`INSERT INTO h5_transactions (member_id, type, amount, balance_after, description, status, created_at) VALUES (?,?,?,?,?,?,?)`)
+insertH5Tx.run('M10001', 'deposit', 50000, 125000, 'Deposit via USDT-TRC20', 'completed', '2026-03-07 16:25:00')
+insertH5Tx.run('M10001', 'withdraw', 30000, 95000, 'Withdraw to TRC...x8f2', 'pending', '2026-03-07 16:28:00')
+insertH5Tx.run('M10001', 'bet', 500, 94500, 'Bet: 麻将胡了2', 'completed', '2026-03-07 16:29:45')
+insertH5Tx.run('M10001', 'bonus', 1200, 95700, 'Win: 麻将胡了2', 'completed', '2026-03-07 16:29:45')
+insertH5Tx.run('M10008', 'deposit', 10000, 10000, 'Deposit via USDT-TRC20', 'completed', '2026-03-01 10:00:00')
+insertH5Tx.run('M10008', 'bet', 50, 9950, 'Bet: 麻将胡了', 'completed', '2026-03-07 16:27:55')
 
 console.log('Database seeded successfully!')
 db.close()

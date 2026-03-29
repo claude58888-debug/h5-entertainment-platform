@@ -301,6 +301,53 @@ export function initDB() {
       start_time TEXT,
       end_time TEXT
     );
+
+    -- H5 Users (separate auth from admin)
+    CREATE TABLE IF NOT EXISTS h5_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      phone TEXT DEFAULT '',
+      nickname TEXT DEFAULT '',
+      avatar TEXT DEFAULT '',
+      member_id TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      last_login TEXT,
+      status TEXT NOT NULL DEFAULT 'active'
+    );
+
+    -- H5 Transactions (wallet history for H5 users)
+    CREATE TABLE IF NOT EXISTS h5_transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      amount REAL NOT NULL,
+      balance_after REAL DEFAULT 0,
+      description TEXT DEFAULT '',
+      status TEXT DEFAULT 'completed',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    -- H5 Promotion claims
+    CREATE TABLE IF NOT EXISTS h5_promotion_claims (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id TEXT NOT NULL,
+      promotion_id TEXT NOT NULL,
+      amount REAL DEFAULT 0,
+      claimed_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(member_id, promotion_id)
+    );
+
+    -- H5 User messages (inbox for individual users)
+    CREATE TABLE IF NOT EXISTS h5_user_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT DEFAULT '',
+      type TEXT DEFAULT 'system',
+      is_read INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `)
 }
 

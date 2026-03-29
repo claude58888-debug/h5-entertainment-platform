@@ -9,5 +9,5 @@ export function getPromotionDetailApi(id) {
 }
 
 export function applyPromotionApi(id) {
-  return request.post(`/promotions/${id}/apply`)
+  return request.post(`/promotions/${id}/claim`)
 }

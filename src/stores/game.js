@@ -4,10 +4,11 @@ import { getGamesApi, getGameDetailApi, getGameCategoriesApi } from '@/api/game'
 import { mockGames, mockProviders, mockCategories } from '@/mock'
 
 export const useGameStore = defineStore('game', () => {
-  const games = ref(mockGames)
+  const games = ref([])
   const categories = ref(mockCategories)
   const providers = ref(mockProviders)
   const loading = ref(false)
+  const fetched = ref(false)
 
   const hotGames = computed(() => games.value.filter(g => g.hot))
 
@@ -29,30 +30,26 @@ export const useGameStore = defineStore('game', () => {
     loading.value = true
     try {
       const res = await getGamesApi(params)
-      if (res?.length) {
-        games.value = res
-        let result = [...res]
-        if (params.category && params.category !== 'home' && params.category !== 'hot') {
-          result = result.filter(g => g.category === params.category)
+      const list = res?.list || res
+      if (Array.isArray(list) && list.length) {
+        // Merge with existing games if fetching a subset
+        if (!params.category && !params.provider && !params.search) {
+          games.value = list
         }
-        if (params.category === 'hot') {
-          result = result.filter(g => g.hot)
-        }
-        if (params.provider) {
-          result = result.filter(g => g.provider === params.provider)
-        }
+        fetched.value = true
         loading.value = false
-        return result
+        return list
       }
     } catch (e) {
       console.warn('Games API failed, using default data', e)
+      if (!fetched.value) games.value = mockGames
     }
     loading.value = false
     return games.value
   }
 
   function getGameById(id) {
-    return games.value.find(g => g.id === Number(id)) || mockGames.find(g => g.id === Number(id)) || null
+    return games.value.find(g => g.id === id || g.id === String(id)) || mockGames.find(g => g.id === Number(id)) || null
   }
 
   return { games, categories, providers, loading, hotGames, getGamesByCategory, getProvidersByCategory, fetchGames, getGameById }

@@ -9,9 +9,10 @@ export function registerApi(data) {
 }
 
 export function getUserInfoApi() {
-  return request.get('/auth/userinfo')
+  return request.get('/user/profile')
 }
 
 export function logoutApi() {
-  return request.post('/auth/logout')
+  // Client-side only logout (clear token)
+  return Promise.resolve({ success: true })
 }

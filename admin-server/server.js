@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import db, { initDB } from './db.js'
+import h5Routes from './h5-routes.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -21,6 +22,14 @@ app.use(express.json())
 // Serve admin frontend static files
 const adminDist = path.join(__dirname, '..', 'admin', 'dist')
 app.use('/admin', express.static(adminDist))
+
+// Serve H5 frontend static files
+const h5Dist = path.join(__dirname, '..', 'dist')
+app.use('/assets', express.static(path.join(h5Dist, 'assets')))
+app.use('/img', express.static(path.join(h5Dist, 'img')))
+
+// Mount H5 API routes
+app.use('/api/h5', h5Routes)
 
 // JWT auth middleware
 function authMiddleware(req, res, next) {
@@ -729,6 +738,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
+// Catch-all for H5 SPA routing (must be last)
+app.get('*', (req, res) => {
+  const h5Index = path.join(h5Dist, 'index.html')
+  res.sendFile(h5Index, (err) => {
+    if (err) {
+      res.status(404).json({ error: 'Not found' })
+    }
+  })
+})
+
 app.listen(PORT, () => {
   console.log(`Admin API server running on port ${PORT}`)
+  console.log(`H5 API available at /api/h5/*`)
 })

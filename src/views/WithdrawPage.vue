@@ -153,9 +153,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useWalletStore } from '@/stores/wallet'
-import { mockWithdrawRecords } from '@/mock'
+import { getTransactionsApi } from '@/api/wallet'
 import { showToast } from 'vant'
 
 const walletStore = useWalletStore()
@@ -167,7 +167,25 @@ const bankName = ref('')
 const cardNumber = ref('')
 const realName = ref('')
 const withdrawPassword = ref('')
-const records = ref(JSON.parse(JSON.stringify(mockWithdrawRecords)))
+const records = ref([])
+
+onMounted(async () => {
+  try {
+    const res = await getTransactionsApi({ type: 'withdraw', page: 1 })
+    if (res?.list) {
+      records.value = res.list.map(r => ({
+        id: r.id,
+        amount: r.amount,
+        method: r.description || 'USDT-TRC20',
+        status: r.status,
+        time: r.time,
+        address: r.description || ''
+      }))
+    }
+  } catch (e) {
+    console.warn('Failed to load withdraw records', e)
+  }
+})
 
 const quickAmounts = [100, 500, 1000, 5000, 10000]
 

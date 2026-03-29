@@ -40,7 +40,7 @@ export const useUserStore = defineStore('user', () => {
       throw new Error(`登录已锁定，请${remainingLockTime.value}分钟后重试`)
     }
     try {
-      const res = await loginApi({ phone, password })
+      const res = await loginApi({ phone, password, username: phone })
       token.value = res.access_token
       user.value = res.user || { phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
       localStorage.setItem('token', res.access_token)
@@ -62,7 +62,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function register(phone, password) {
-    const res = await registerApi({ phone, password })
+    const res = await registerApi({ phone, password, username: phone })
     token.value = res.access_token
     user.value = res.user || { phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
     localStorage.setItem('token', res.access_token)
