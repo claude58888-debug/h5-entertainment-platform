@@ -105,7 +105,10 @@ export function initDB() {
       is_hot INTEGER DEFAULT 0,
       is_new INTEGER DEFAULT 0,
       bets INTEGER DEFAULT 0,
-      revenue REAL DEFAULT 0
+      revenue REAL DEFAULT 0,
+      hot_score INTEGER DEFAULT 0,
+      is_recommended INTEGER DEFAULT 0,
+      recommend_sort INTEGER DEFAULT 0
     );
 
     -- Betting records
@@ -137,6 +140,18 @@ export function initDB() {
       status TEXT DEFAULT 'active',
       points_rule TEXT DEFAULT '10 CNY = 1 积分',
       quarterly_review INTEGER DEFAULT 1
+    );
+
+    -- Auto review rules for withdrawals
+    CREATE TABLE IF NOT EXISTS auto_review_rules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      condition_field TEXT NOT NULL,
+      operator TEXT NOT NULL DEFAULT '>=',
+      threshold REAL DEFAULT 0,
+      action TEXT NOT NULL DEFAULT 'manual_review',
+      enabled INTEGER DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
     -- Rakeback config (enhanced with house edge)
@@ -528,7 +543,41 @@ export function initDB() {
 
     -- Promotion claims: queried by member_id
     CREATE INDEX IF NOT EXISTS idx_promo_claims_member ON h5_promotion_claims(member_id);
+
+    -- Games: hot_score and recommend sort indexes
+    CREATE INDEX IF NOT EXISTS idx_games_hot_score ON games(hot_score DESC);
+    CREATE INDEX IF NOT EXISTS idx_games_recommend ON games(is_recommended, recommend_sort);
   `)
+
+  // ==================== SEED: Auto Review Rules ====================
+  const autoReviewCount = db.prepare('SELECT COUNT(*) as c FROM auto_review_rules').get().c
+  if (autoReviewCount === 0) {
+    db.prepare(`INSERT INTO auto_review_rules (name, condition_field, operator, threshold, action, enabled) VALUES (?, ?, ?, ?, ?, ?)`).run(
+      '小额自动通过', 'amount', '<', 1000, 'auto_approve', 1
+    )
+    db.prepare(`INSERT INTO auto_review_rules (name, condition_field, operator, threshold, action, enabled) VALUES (?, ?, ?, ?, ?, ?)`).run(
+      '大额人工审核', 'amount', '>', 50000, 'manual_review', 1
+    )
+    db.prepare(`INSERT INTO auto_review_rules (name, condition_field, operator, threshold, action, enabled) VALUES (?, ?, ?, ?, ?, ?)`).run(
+      '新用户24小时内', 'new_user_24h', '=', 1, 'manual_review', 1
+    )
+  }
+
+  // ==================== SEED: Risk Rules (5 real business rules) ====================
+  const riskRuleCount = db.prepare('SELECT COUNT(*) as c FROM risk_rules').get().c
+  if (riskRuleCount === 0) {
+    const riskSeeds = [
+      ['日充值额度监控', '单日充值总额 >= 50000 时触发增强尽职调查(EDD)', 50000, 'active'],
+      ['日提现额度监控', '单日提现总额 >= 100000 时需人工审核', 100000, 'active'],
+      ['新用户大额充值', '注册24小时内充值 >= 10000 标记审查', 10000, 'active'],
+      ['同IP多账号检测', '同一IP关联账号 >= 3 个自动冻结', 3, 'active'],
+      ['投注模式异常检测', '投注金额偏离3个标准差(3σ)时AI标记', 3, 'active']
+    ]
+    const stmtRisk = db.prepare('INSERT INTO risk_rules (name, description, threshold, status) VALUES (?,?,?,?)')
+    for (const seed of riskSeeds) {
+      stmtRisk.run(...seed)
+    }
+  }
 }
 
 export default db

@@ -10,7 +10,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import db, { initDB } from './db.js'
 import h5Routes from './h5-routes.js'
-import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, handleValidationErrors } from './validation.js'
+import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, validateManualDeposit, validateBatchWithdrawal, validateAutoReviewRule, validateHotScore, validateRecommend, validateVipAdjust, validateTagsUpdate, validateBalanceAdjust, handleValidationErrors } from './validation.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -225,29 +225,50 @@ app.post('/api/auth/admin-login', validateAdminLogin, handleValidationErrors, as
 
 // ==================== DASHBOARD ====================
 app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
-  // Cache dashboard stats for 30 seconds
-  const cached = cacheGet('dashboard')
+  const { startDate, endDate } = req.query
+
+  // Use date range cache key if provided
+  const cacheKey = startDate && endDate ? `dashboard:${startDate}:${endDate}` : 'dashboard'
+  const cached = cacheGet(cacheKey)
   if (cached) return res.json(cached)
 
   const totalMembers = db.prepare('SELECT COUNT(*) as count FROM members').get().count
-  const todayNewMembers = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now', '-1 day')").get().count || 342
+
+  // Date-filtered queries
+  let newMembersQuery, depositQuery, withdrawalQuery, revenueTrendQuery, depositByChannelQuery
+  if (startDate && endDate) {
+    newMembersQuery = db.prepare('SELECT COUNT(*) as count FROM members WHERE registered >= ? AND registered <= ?').get(startDate, endDate).count
+    depositQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= ? AND time <= ?").get(startDate, endDate + ' 23:59:59').total
+    withdrawalQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= ? AND time <= ?").get(startDate, endDate + ' 23:59:59').total
+    revenueTrendQuery = db.prepare('SELECT * FROM revenue_trend WHERE date >= ? AND date <= ? ORDER BY date').all(startDate, endDate)
+    depositByChannelQuery = db.prepare("SELECT channel as name, SUM(amount) as value FROM deposits WHERE status = 'completed' AND time >= ? AND time <= ? GROUP BY channel").all(startDate, endDate + ' 23:59:59')
+  } else {
+    newMembersQuery = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now', '-1 day')").get().count
+    depositQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed'").get().total
+    withdrawalQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved')").get().total
+    revenueTrendQuery = db.prepare('SELECT * FROM revenue_trend ORDER BY date').all()
+    depositByChannelQuery = db.prepare("SELECT channel as name, SUM(amount) as value FROM deposits WHERE status = 'completed' GROUP BY channel").all()
+  }
+
   const onlineNow = 1893 // simulated
-  const todayDeposit = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed'").get().total
-  const todayWithdrawal = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved')").get().total
-  const todayProfit = todayDeposit - todayWithdrawal
+  const todayProfit = (depositQuery || 0) - (withdrawalQuery || 0)
+
+  // Agent stats
+  const totalAgents = db.prepare('SELECT COUNT(*) as count FROM agents').get().count
+  const activeAgents = db.prepare("SELECT COUNT(*) as count FROM agents WHERE status = 'active'").get().count
 
   const kpi = {
     totalMembers: totalMembers || 128456,
-    todayNewMembers: todayNewMembers || 342,
+    todayNewMembers: newMembersQuery || 342,
     onlineNow,
-    todayDeposit: todayDeposit || 2856000,
-    todayWithdrawal: todayWithdrawal || 1245000,
-    todayProfit: todayProfit || 1611000
+    todayDeposit: depositQuery || 2856000,
+    todayWithdrawal: withdrawalQuery || 1245000,
+    todayProfit: todayProfit || 1611000,
+    totalAgents: totalAgents || 0,
+    activeAgents: activeAgents || 0
   }
 
-  const revenueTrend = db.prepare('SELECT * FROM revenue_trend ORDER BY date').all()
   const topGamesGGR = db.prepare('SELECT name, revenue as ggr FROM games ORDER BY revenue DESC LIMIT 5').all()
-  const depositByChannel = db.prepare("SELECT channel as name, SUM(amount) as value FROM deposits WHERE status = 'completed' GROUP BY channel").all()
 
   const realtimeAlerts = [
     { id: 1, type: 'warning', text: '会员 user_8823 发起大额提现 ¥50,000', time: '2分钟前', level: 'high' },
@@ -257,9 +278,22 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     { id: 5, type: 'warning', text: '会员 user_5521 连续提现3次，累计 ¥80,000', time: '25分钟前', level: 'high' }
   ]
 
-  const result = { kpi, revenueTrend, topGamesGGR, depositByChannel, realtimeAlerts }
-  cacheSet('dashboard', result, 30000)
+  const result = { kpi, revenueTrend: revenueTrendQuery, topGamesGGR, depositByChannel: depositByChannelQuery, realtimeAlerts }
+  cacheSet(cacheKey, result, 30000)
   res.json(result)
+})
+
+// Dashboard alerts - counts of pending items
+app.get('/api/admin/dashboard/alerts', authMiddleware, (req, res) => {
+  const pendingWithdrawals = db.prepare("SELECT COUNT(*) as count FROM withdrawals WHERE status = 'pending'").get().count
+  const pendingKyc = db.prepare("SELECT COUNT(*) as count FROM kyc_documents WHERE status = 'pending'").get().count
+  const openAmlAlerts = db.prepare("SELECT COUNT(*) as count FROM aml_alerts WHERE status = 'open'").get().count
+
+  res.json({
+    pendingWithdrawals: pendingWithdrawals || 0,
+    pendingKyc: pendingKyc || 0,
+    suspiciousActivities: openAmlAlerts || 0
+  })
 })
 
 // ==================== MEMBERS ====================
@@ -310,6 +344,124 @@ app.post('/api/admin/members', authMiddleware, validateCreateMember, handleValid
   } catch (err) {
     next(err)
   }
+})
+
+// Member detail with aggregated data
+app.get('/api/admin/members/:id/detail', authMiddleware, (req, res) => {
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id)
+  if (!member) return res.status(404).json({ error: 'Member not found' })
+
+  member.tags = JSON.parse(member.tags || '[]')
+  member.totalDeposit = member.total_deposit
+  member.totalWithdraw = member.total_withdraw
+  member.lastLogin = member.last_login
+
+  // Aggregate bet stats
+  const betStats = db.prepare('SELECT COUNT(*) as totalBets, COALESCE(SUM(bet_amount), 0) as totalBetAmount, COALESCE(SUM(win_amount), 0) as totalWinAmount FROM bets WHERE member = ?').get(req.params.id)
+
+  // Recent bets
+  const recentBets = db.prepare('SELECT * FROM bets WHERE member = ? ORDER BY time DESC LIMIT 50').all(req.params.id)
+  const bets = recentBets.map(r => ({
+    ...r,
+    betAmount: r.bet_amount,
+    winAmount: r.win_amount
+  }))
+
+  // Recent transactions (deposits + withdrawals)
+  const deposits = db.prepare('SELECT id, amount, channel, status, time, "deposit" as type FROM deposits WHERE member = ? ORDER BY time DESC LIMIT 30').all(req.params.id)
+  const withdrawals = db.prepare('SELECT id, amount, channel, status, time, "withdrawal" as type FROM withdrawals WHERE member = ? ORDER BY time DESC LIMIT 30').all(req.params.id)
+  const transactions = [...deposits, ...withdrawals].sort((a, b) => (b.time || '').localeCompare(a.time || ''))
+
+  // H5 transactions
+  const h5Transactions = db.prepare('SELECT * FROM h5_transactions WHERE member_id = ? ORDER BY created_at DESC LIMIT 50').all(req.params.id)
+
+  // Device fingerprint info (table may not exist)
+  let devices = []
+  try {
+    devices = db.prepare('SELECT * FROM device_fingerprints WHERE user_id = ? ORDER BY last_seen DESC LIMIT 5').all(req.params.id)
+  } catch (e) {
+    devices = []
+  }
+
+  res.json({
+    ...member,
+    betStats,
+    bets,
+    transactions,
+    h5Transactions,
+    devices
+  })
+})
+
+// VIP manual adjustment
+app.put('/api/admin/members/:id/vip', authMiddleware, validateVipAdjust, handleValidationErrors, (req, res) => {
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id)
+  if (!member) return res.status(404).json({ error: 'Member not found' })
+
+  const { level, reason } = req.body
+  const oldLevel = member.vip
+  db.prepare('UPDATE members SET vip = ? WHERE id = ?').run(level, req.params.id)
+
+  auditLog(req.user.username, 'VIP调整', req.params.id, `VIP ${oldLevel} → ${level}, 原因: ${reason || '手动调整'}`, req.ip || '0.0.0.0')
+
+  res.json({ success: true, oldLevel, newLevel: level })
+})
+
+// Tags update
+app.put('/api/admin/members/:id/tags', authMiddleware, validateTagsUpdate, handleValidationErrors, (req, res) => {
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id)
+  if (!member) return res.status(404).json({ error: 'Member not found' })
+
+  const { tags } = req.body
+  const tagsJson = JSON.stringify(tags || [])
+  db.prepare('UPDATE members SET tags = ? WHERE id = ?').run(tagsJson, req.params.id)
+
+  auditLog(req.user.username, '更新标签', req.params.id, '标签: ' + (tags || []).join(', '), req.ip || '0.0.0.0')
+
+  res.json({ success: true, tags })
+})
+
+// Force logout
+app.post('/api/admin/members/:id/force-logout', authMiddleware, (req, res) => {
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id)
+  if (!member) return res.status(404).json({ error: 'Member not found' })
+
+  // Invalidate by updating last_login to trigger token mismatch on next request
+  db.prepare("UPDATE members SET last_login = datetime('now') WHERE id = ?").run(req.params.id)
+
+  auditLog(req.user.username, '强制下线', req.params.id, '强制下线会员 ' + member.username, req.ip || '0.0.0.0')
+
+  res.json({ success: true, message: '已强制下线' })
+})
+
+// Manual balance adjustment
+app.post('/api/admin/members/:id/balance-adjust', authMiddleware, validateBalanceAdjust, handleValidationErrors, (req, res) => {
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id)
+  if (!member) return res.status(404).json({ error: 'Member not found' })
+
+  const { amount, type, reason } = req.body
+  const adjustAmount = type === 'deduction' ? -Math.abs(amount) : Math.abs(amount)
+  const newBalance = member.balance + adjustAmount
+
+  if (newBalance < 0) {
+    return res.status(400).json({ error: '余额不足，无法扣减' })
+  }
+
+  db.prepare('UPDATE members SET balance = ? WHERE id = ?').run(newBalance, req.params.id)
+
+  // Record in h5_transactions
+  const txType = type === 'deduction' ? 'admin_deduction' : 'admin_deposit'
+  db.prepare('INSERT INTO h5_transactions (member_id, type, amount, balance_after, description, status) VALUES (?,?,?,?,?,?)').run(
+    req.params.id, txType, adjustAmount, newBalance, reason || '管理员手动调整', 'completed'
+  )
+
+  auditLog(req.user.username, '余额调整', req.params.id,
+    `${type === 'deduction' ? '扣减' : '充值'} ¥${Math.abs(amount)}, 原因: ${reason || '手动调整'}, 余额: ¥${member.balance} → ¥${newBalance}`,
+    req.ip || '0.0.0.0')
+
+  cacheInvalidate('dashboard')
+
+  res.json({ success: true, oldBalance: member.balance, newBalance, adjustAmount })
 })
 
 // ==================== AGENTS ====================
@@ -432,6 +584,123 @@ app.put('/api/admin/withdrawals/:id', authMiddleware, (req, res) => {
   res.json({ success: true, status: newStatus })
 })
 
+// POST /api/finance/deposits/manual - Manual deposit creation (补单)
+app.post('/api/finance/deposits/manual', authMiddleware, validateManualDeposit, handleValidationErrors, (req, res, next) => {
+  try {
+    const { member_id, amount, channel, txhash, reason } = req.body
+    const member = db.prepare('SELECT * FROM members WHERE id = ?').get(member_id)
+    if (!member) return res.status(404).json({ error: '会员不存在' })
+
+    const count = db.prepare('SELECT COUNT(*) as c FROM deposits').get().c
+    const id = 'MD' + String(count + 1).padStart(6, '0')
+    db.prepare('INSERT INTO deposits (id, member, agent, amount, channel, status, tx_hash) VALUES (?,?,?,?,?,?,?)').run(
+      id, member_id, member.agent || '', amount, channel || '手动补单', 'completed', txhash || ''
+    )
+
+    // Update member total_deposit
+    db.prepare('UPDATE members SET total_deposit = total_deposit + ?, balance = balance + ? WHERE id = ?').run(amount, amount, member_id)
+
+    auditLog(req.user.username, '手动补单', id, '手动补单 ¥' + amount + ' 给 ' + member_id + ' 原因: ' + reason, req.ip || '0.0.0.0')
+    cacheInvalidate('dashboard')
+    res.json({ success: true, id })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// GET /api/finance/deposits/export - Export deposits as CSV
+app.get('/api/finance/deposits/export', authMiddleware, (req, res) => {
+  const rows = db.prepare('SELECT * FROM deposits ORDER BY time DESC').all()
+  const headers = ['订单号', '会员', '代理', '金额', '渠道', '状态', 'TxHash', '时间']
+  const csvLines = [headers.join(',')]
+  for (const r of rows) {
+    csvLines.push([r.id, r.member, r.agent || '', r.amount, r.channel || '', r.status, r.tx_hash || '', r.time].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))
+  }
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+  res.setHeader('Content-Disposition', 'attachment; filename=deposits_export.csv')
+  res.send('\uFEFF' + csvLines.join('\n'))
+})
+
+// GET /api/finance/withdrawals/export - Export withdrawals as CSV
+app.get('/api/finance/withdrawals/export', authMiddleware, (req, res) => {
+  const rows = db.prepare('SELECT * FROM withdrawals ORDER BY time DESC').all()
+  const headers = ['订单号', '会员', '代理', '金额', '渠道', '状态', '提现地址', '风险等级', '时间']
+  const csvLines = [headers.join(',')]
+  for (const r of rows) {
+    csvLines.push([r.id, r.member, r.agent || '', r.amount, r.channel || '', r.status, r.address || '', r.risk_level || '', r.time].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))
+  }
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+  res.setHeader('Content-Disposition', 'attachment; filename=withdrawals_export.csv')
+  res.send('\uFEFF' + csvLines.join('\n'))
+})
+
+// POST /api/finance/withdrawals/batch - Batch approve/reject withdrawals
+app.post('/api/finance/withdrawals/batch', authMiddleware, validateBatchWithdrawal, handleValidationErrors, (req, res, next) => {
+  try {
+    const { ids, action, reason } = req.body
+    const newStatus = action === 'approve' ? 'approved' : 'rejected'
+    const stmt = db.prepare('UPDATE withdrawals SET status = ? WHERE id = ? AND status IN (\'pending\', \'review\')')
+    let updated = 0
+    for (const id of ids) {
+      const result = stmt.run(newStatus, id)
+      if (result.changes > 0) updated++
+    }
+    auditLog(req.user.username, '批量' + (action === 'approve' ? '通过' : '拒绝') + '提现', ids.join(','), '批量操作 ' + updated + ' 笔, 原因: ' + (reason || ''), req.ip || '0.0.0.0')
+    res.json({ success: true, updated })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// GET /api/finance/auto-review-rules - List auto review rules
+app.get('/api/finance/auto-review-rules', authMiddleware, (req, res) => {
+  const rows = db.prepare('SELECT * FROM auto_review_rules ORDER BY id').all()
+  res.json(rows.map(r => ({ ...r, enabled: !!r.enabled })))
+})
+
+// POST /api/finance/auto-review-rules - Create auto review rule
+app.post('/api/finance/auto-review-rules', authMiddleware, validateAutoReviewRule, handleValidationErrors, (req, res, next) => {
+  try {
+    const { name, condition_field, operator, threshold, action, enabled } = req.body
+    db.prepare('INSERT INTO auto_review_rules (name, condition_field, operator, threshold, action, enabled) VALUES (?,?,?,?,?,?)').run(
+      name, condition_field, operator, threshold, action, enabled !== false ? 1 : 0
+    )
+    auditLog(req.user.username, '创建自动审核规则', name, '创建规则: ' + name, req.ip || '0.0.0.0')
+    res.json({ success: true })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// PUT /api/finance/auto-review-rules/:id - Update auto review rule
+app.put('/api/finance/auto-review-rules/:id', authMiddleware, (req, res) => {
+  const rule = db.prepare('SELECT * FROM auto_review_rules WHERE id = ?').get(req.params.id)
+  if (!rule) return res.status(404).json({ error: 'Rule not found' })
+
+  const { name, condition_field, operator, threshold, action, enabled } = req.body
+  db.prepare(`UPDATE auto_review_rules SET
+    name = COALESCE(?, name),
+    condition_field = COALESCE(?, condition_field),
+    operator = COALESCE(?, operator),
+    threshold = COALESCE(?, threshold),
+    action = COALESCE(?, action),
+    enabled = COALESCE(?, enabled)
+    WHERE id = ?`).run(
+    name || null, condition_field || null, operator || null,
+    threshold !== undefined ? threshold : null,
+    action || null,
+    enabled !== undefined ? (enabled ? 1 : 0) : null,
+    req.params.id
+  )
+  res.json({ success: true })
+})
+
+// DELETE /api/finance/auto-review-rules/:id - Delete auto review rule
+app.delete('/api/finance/auto-review-rules/:id', authMiddleware, (req, res) => {
+  db.prepare('DELETE FROM auto_review_rules WHERE id = ?').run(req.params.id)
+  res.json({ success: true })
+})
+
 app.get('/api/admin/channels', authMiddleware, (req, res) => {
   const rows = db.prepare('SELECT * FROM payment_channels ORDER BY id').all()
   const channels = rows.map(r => ({
@@ -471,7 +740,10 @@ app.get('/api/admin/games', authMiddleware, (req, res) => {
   const games = rows.map(r => ({
     ...r,
     isHot: !!r.is_hot,
-    isNew: !!r.is_new
+    isNew: !!r.is_new,
+    hotScore: r.hot_score || 0,
+    isRecommended: !!r.is_recommended,
+    recommendSort: r.recommend_sort || 0
   }))
   cacheSet('admin:games', games, 60000)
   res.json(games)
@@ -573,6 +845,87 @@ app.get('/api/admin/bets', authMiddleware, (req, res) => {
     winAmount: r.win_amount
   }))
   res.json(bets)
+})
+
+// GET /api/games/bets - Bet records with pagination and filters
+app.get('/api/games/bets', authMiddleware, (req, res) => {
+  const { page = 1, pageSize = 20, search, provider, category, startDate, endDate } = req.query
+  let where = []
+  let params = []
+
+  if (search) {
+    where.push('(b.member LIKE ? OR b.id LIKE ?)')
+    params.push('%' + search + '%', '%' + search + '%')
+  }
+  if (provider) {
+    where.push('b.provider = ?')
+    params.push(provider)
+  }
+  if (category) {
+    where.push('g.category = ?')
+    params.push(category)
+  }
+  if (startDate) {
+    where.push('b.time >= ?')
+    params.push(startDate)
+  }
+  if (endDate) {
+    where.push('b.time <= ?')
+    params.push(endDate)
+  }
+
+  const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
+  const countQuery = `SELECT COUNT(*) as total FROM bets b LEFT JOIN games g ON b.game = g.name ${whereClause}`
+  const total = db.prepare(countQuery).get(...params).total
+
+  const offset = (Number(page) - 1) * Number(pageSize)
+  const dataQuery = `SELECT b.*, g.category as game_category, m.agent as member_agent FROM bets b LEFT JOIN games g ON b.game = g.name LEFT JOIN members m ON b.member = m.id ${whereClause} ORDER BY b.time DESC LIMIT ? OFFSET ?`
+  const rows = db.prepare(dataQuery).all(...params, Number(pageSize), offset)
+
+  res.json({
+    data: rows.map(r => ({
+      id: r.id,
+      member: r.member,
+      agent: r.member_agent || '',
+      game: r.game,
+      provider: r.provider,
+      category: r.game_category || '',
+      betAmount: r.bet_amount,
+      payout: r.win_amount,
+      profit: r.bet_amount - r.win_amount,
+      time: r.time,
+      status: r.status
+    })),
+    total,
+    page: Number(page),
+    pageSize: Number(pageSize)
+  })
+})
+
+// PUT /api/games/:id/hot-score - Update game hot score
+app.put('/api/games/:id/hot-score', authMiddleware, validateHotScore, handleValidationErrors, (req, res) => {
+  const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id)
+  if (!game) return res.status(404).json({ error: 'Game not found' })
+
+  const { hot_score } = req.body
+  db.prepare('UPDATE games SET hot_score = ? WHERE id = ?').run(hot_score, req.params.id)
+  cacheInvalidate('admin:games')
+  cacheInvalidate('h5:games')
+  res.json({ success: true })
+})
+
+// PUT /api/games/:id/recommend - Update game recommend settings
+app.put('/api/games/:id/recommend', authMiddleware, validateRecommend, handleValidationErrors, (req, res) => {
+  const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id)
+  if (!game) return res.status(404).json({ error: 'Game not found' })
+
+  const { is_recommended, recommend_sort } = req.body
+  db.prepare('UPDATE games SET is_recommended = ?, recommend_sort = COALESCE(?, recommend_sort) WHERE id = ?').run(
+    is_recommended ? 1 : 0, recommend_sort !== undefined ? recommend_sort : null, req.params.id
+  )
+  cacheInvalidate('admin:games')
+  cacheInvalidate('h5:games')
+  res.json({ success: true })
 })
 
 // ==================== VIP ====================
