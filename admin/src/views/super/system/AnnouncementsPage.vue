@@ -59,11 +59,19 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import { getAnnouncements, createAnnouncement, deleteAnnouncement } from '@/api/system'
 import { announcements } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const list = ref([...announcements])
+
+onMounted(async () => {
+  try {
+    const data = await getAnnouncements()
+    if (data?.length) list.value = data
+  } catch (e) { console.warn('Announcements API failed, using mock data', e) }
+})
 const addDialog = ref(false)
 const form = reactive({ title: '', content: '', target: '全部代理', type: '普通' })
 

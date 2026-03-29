@@ -69,8 +69,8 @@ async function handleLogin() {
     return
   }
   loading.value = true
-  setTimeout(() => {
-    const result = authStore.login(form.username, form.password, selectedRole.value)
+  try {
+    const result = await authStore.login(form.username, form.password, selectedRole.value)
     if (result.success) {
       ElMessage.success('登录成功')
       router.push(selectedRole.value === 'superadmin' ? '/super/dashboard' : '/agent/dashboard')
@@ -79,7 +79,10 @@ async function handleLogin() {
     } else {
       ElMessage.error(`用户名或密码错误，还剩${result.attemptsLeft}次机会`)
     }
+  } catch (e) {
+    ElMessage.error('登录失败，请重试')
+  } finally {
     loading.value = false
-  }, 500)
+  }
 }
 </script>

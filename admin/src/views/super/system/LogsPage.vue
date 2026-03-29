@@ -37,13 +37,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getLogs } from '@/api/system'
 import { auditLogs } from '@/mock/data'
 
 const search = ref('')
 const typeFilter = ref('')
 const dateRange = ref(null)
 const logs = ref([...auditLogs])
+
+onMounted(async () => {
+  try {
+    const data = await getLogs()
+    if (data?.length) logs.value = data
+  } catch (e) { console.warn('Logs API failed, using mock data', e) }
+})
 
 const filteredLogs = computed(() => logs.value.filter(l => {
   if (search.value && !l.operator.includes(search.value) && !l.action.includes(search.value)) return false

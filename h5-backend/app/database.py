@@ -1,7 +1,8 @@
 import aiosqlite
 import os
 
-DB_PATH = os.getenv("DB_PATH", "/data/app.db")
+_default_db = "/data/app.db" if os.path.isdir("/data") else os.path.join(os.path.dirname(__file__), "..", "data", "app.db")
+DB_PATH = os.getenv("DB_PATH", _default_db)
 
 async def get_db():
     db = await aiosqlite.connect(DB_PATH)
@@ -37,7 +38,6 @@ async def init_db():
         );
         CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
         CREATE INDEX IF NOT EXISTS idx_users_invite_code ON users(invite_code);
-        CREATE INDEX IF NOT EXISTS idx_users_telegram_id ON users(telegram_id);
 
         CREATE TABLE IF NOT EXISTS wallets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,13 +64,11 @@ async def init_db():
         CREATE INDEX IF NOT EXISTS idx_trans_user ON transactions(user_id);
         CREATE INDEX IF NOT EXISTS idx_trans_type ON transactions(type);
         CREATE INDEX IF NOT EXISTS idx_trans_status ON transactions(status);
-        CREATE INDEX IF NOT EXISTS idx_trans_created ON transactions(created_at);
 
         CREATE TABLE IF NOT EXISTS games (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             name_zh TEXT DEFAULT '',
-            name_vi TEXT DEFAULT '',
             category TEXT NOT NULL,
             provider TEXT NOT NULL,
             thumbnail TEXT DEFAULT '',
@@ -97,17 +95,14 @@ async def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         CREATE INDEX IF NOT EXISTS idx_bets_user ON bet_records(user_id);
-        CREATE INDEX IF NOT EXISTS idx_bets_game_type ON bet_records(game_type);
         CREATE INDEX IF NOT EXISTS idx_bets_created ON bet_records(created_at);
 
         CREATE TABLE IF NOT EXISTS promotions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             title_zh TEXT DEFAULT '',
-            title_vi TEXT DEFAULT '',
             description TEXT DEFAULT '',
             description_zh TEXT DEFAULT '',
-            description_vi TEXT DEFAULT '',
             image TEXT DEFAULT '',
             type TEXT DEFAULT 'general',
             start_date TEXT,
@@ -121,7 +116,6 @@ async def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             title_zh TEXT DEFAULT '',
-            title_vi TEXT DEFAULT '',
             description TEXT DEFAULT '',
             type TEXT DEFAULT 'daily',
             reward REAL DEFAULT 0,
@@ -138,7 +132,6 @@ async def init_db():
             claimed INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        CREATE INDEX IF NOT EXISTS idx_user_tasks ON user_tasks(user_id, task_id);
 
         CREATE TABLE IF NOT EXISTS vip_levels (
             level INTEGER PRIMARY KEY,
@@ -162,7 +155,6 @@ async def init_db():
             status TEXT DEFAULT 'active',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        CREATE INDEX IF NOT EXISTS idx_rp_sender ON red_packets(sender_id);
 
         CREATE TABLE IF NOT EXISTS red_packet_claims (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,7 +163,6 @@ async def init_db():
             amount REAL NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        CREATE INDEX IF NOT EXISTS idx_rpc_user ON red_packet_claims(user_id);
 
         CREATE TABLE IF NOT EXISTS referral_rewards (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -181,13 +172,11 @@ async def init_db():
             commission REAL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        CREATE INDEX IF NOT EXISTS idx_ref_user ON referral_rewards(user_id);
 
         CREATE TABLE IF NOT EXISTS announcements (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL,
             content_zh TEXT DEFAULT '',
-            content_vi TEXT DEFAULT '',
             status INTEGER DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -199,6 +188,197 @@ async def init_db():
             sort_order INTEGER DEFAULT 0,
             status INTEGER DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Admin-specific tables
+
+        CREATE TABLE IF NOT EXISTS admin_accounts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT DEFAULT 'admin',
+            status TEXT DEFAULT 'active',
+            last_login TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS agents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            agent_id TEXT UNIQUE NOT NULL,
+            brand TEXT NOT NULL,
+            domain TEXT DEFAULT '',
+            contact TEXT DEFAULT '',
+            balance REAL DEFAULT 0,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            members INTEGER DEFAULT 0,
+            month_revenue REAL DEFAULT 0,
+            share_mode TEXT DEFAULT 'revenue',
+            share_rate REAL DEFAULT 40
+        );
+
+        CREATE TABLE IF NOT EXISTS members (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            member_id TEXT UNIQUE NOT NULL,
+            username TEXT NOT NULL,
+            agent TEXT DEFAULT '',
+            vip INTEGER DEFAULT 0,
+            balance REAL DEFAULT 0,
+            status TEXT DEFAULT 'active',
+            registered TEXT DEFAULT '',
+            last_login TEXT DEFAULT '',
+            total_deposit REAL DEFAULT 0,
+            total_withdraw REAL DEFAULT 0,
+            tags TEXT DEFAULT '[]'
+        );
+
+        CREATE TABLE IF NOT EXISTS deposit_orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT UNIQUE NOT NULL,
+            member TEXT NOT NULL,
+            agent TEXT DEFAULT '',
+            amount REAL NOT NULL,
+            channel TEXT DEFAULT '',
+            status TEXT DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            tx_hash TEXT DEFAULT ''
+        );
+
+        CREATE TABLE IF NOT EXISTS withdrawal_orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT UNIQUE NOT NULL,
+            member TEXT NOT NULL,
+            agent TEXT DEFAULT '',
+            amount REAL NOT NULL,
+            channel TEXT DEFAULT '',
+            status TEXT DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            address TEXT DEFAULT '',
+            risk_level TEXT DEFAULT 'low'
+        );
+
+        CREATE TABLE IF NOT EXISTS games_list (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            game_id TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            provider TEXT DEFAULT '',
+            category TEXT DEFAULT '',
+            status TEXT DEFAULT 'active',
+            rtp REAL DEFAULT 96.0,
+            is_hot INTEGER DEFAULT 0,
+            is_new INTEGER DEFAULT 0,
+            bets INTEGER DEFAULT 0,
+            revenue REAL DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS game_providers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            provider_id TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            category TEXT DEFAULT '',
+            games INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'active',
+            api_health REAL DEFAULT 0,
+            balance REAL DEFAULT 0,
+            response_time TEXT DEFAULT ''
+        );
+
+        CREATE TABLE IF NOT EXISTS betting_records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bet_id TEXT UNIQUE NOT NULL,
+            member TEXT NOT NULL,
+            game TEXT DEFAULT '',
+            provider TEXT DEFAULT '',
+            bet_amount REAL DEFAULT 0,
+            win_amount REAL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            status TEXT DEFAULT 'settled'
+        );
+
+        CREATE TABLE IF NOT EXISTS risk_rules (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            threshold REAL DEFAULT 0,
+            status TEXT DEFAULT 'active',
+            triggers INTEGER DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS ip_blacklist (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT UNIQUE NOT NULL,
+            reason TEXT DEFAULT '',
+            added_by TEXT DEFAULT '',
+            added_time TEXT DEFAULT '',
+            hit_count INTEGER DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            id INTEGER PRIMARY KEY,
+            operator TEXT NOT NULL,
+            action TEXT DEFAULT '',
+            target TEXT DEFAULT '',
+            detail TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            ip TEXT DEFAULT ''
+        );
+
+        CREATE TABLE IF NOT EXISTS admin_announcements (
+            id INTEGER PRIMARY KEY,
+            title TEXT NOT NULL,
+            content TEXT DEFAULT '',
+            target TEXT DEFAULT '',
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS activities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            activity_id TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            type TEXT DEFAULT '',
+            status TEXT DEFAULT 'active',
+            start_time TEXT DEFAULT '',
+            end_time TEXT DEFAULT '',
+            min_deposit REAL DEFAULT 0,
+            bonus_rate REAL DEFAULT 0,
+            wagering REAL DEFAULT 0,
+            max_bonus REAL DEFAULT 0,
+            participants INTEGER DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS payment_channels (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            type TEXT DEFAULT '',
+            status TEXT DEFAULT 'active',
+            fee REAL DEFAULT 0,
+            min_amount REAL DEFAULT 0,
+            max_amount REAL DEFAULT 0,
+            today_volume REAL DEFAULT 0,
+            wallet_count INTEGER DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS settlement_records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            settlement_id TEXT UNIQUE NOT NULL,
+            agent TEXT NOT NULL,
+            period TEXT DEFAULT '',
+            ggr REAL DEFAULT 0,
+            share_rate REAL DEFAULT 0,
+            amount REAL DEFAULT 0,
+            status TEXT DEFAULT 'pending',
+            paid_time TEXT DEFAULT ''
+        );
+
+        CREATE TABLE IF NOT EXISTS financial_summary (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT UNIQUE NOT NULL,
+            deposit REAL DEFAULT 0,
+            withdrawal REAL DEFAULT 0,
+            bonus REAL DEFAULT 0,
+            ggr REAL DEFAULT 0,
+            ngr REAL DEFAULT 0
         );
     """)
 

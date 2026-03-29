@@ -67,14 +67,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { getMembers } from '@/api/members'
 import { membersList } from '@/mock/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const activeTab = ref('deposits')
 const member = ref(membersList.find(m => m.id === route.params.id) || membersList[0])
+
+onMounted(async () => {
+  try {
+    const data = await getMembers()
+    if (data?.length) {
+      const found = data.find(m => m.id === route.params.id)
+      if (found) member.value = found
+    }
+  } catch (e) { console.warn('Member detail API failed, using mock data', e) }
+})
 
 const deposits = ref([
   { id: 'D202603071001', amount: 5000, channel: 'USDT-TRC20', status: '已完成', time: '2026-03-07 10:01' },

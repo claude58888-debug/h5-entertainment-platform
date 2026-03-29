@@ -47,13 +47,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getGames } from '@/api/games'
 import { gamesList } from '@/mock/data'
 
 const search = ref('')
 const providerFilter = ref('')
 const categoryFilter = ref('')
 const games = ref(gamesList.map((g, i) => ({ ...g, sort: i + 1 })))
+
+onMounted(async () => {
+  try {
+    const data = await getGames()
+    if (data?.length) games.value = data.map((g, i) => ({ ...g, sort: i + 1 }))
+  } catch (e) { console.warn('Games API failed, using mock data', e) }
+})
 
 const filteredGames = computed(() => games.value.filter(g => {
   if (search.value && !g.name.includes(search.value)) return false

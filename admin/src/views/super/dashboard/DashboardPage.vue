@@ -69,12 +69,29 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
-import { superDashboardKPI, revenueTrend, topGamesGGR, depositByChannel, realtimeAlerts } from '@/mock/data'
+import { getDashboard } from '@/api/dashboard'
+import { superDashboardKPI, revenueTrend as mockRevenueTrend, topGamesGGR as mockTopGames, depositByChannel as mockDepositChannel, realtimeAlerts as mockAlerts } from '@/mock/data'
 
-const kpi = superDashboardKPI
-const alerts = realtimeAlerts
+const kpi = ref({ ...superDashboardKPI })
+const alerts = ref([...mockAlerts])
+const revenueTrendData = ref([...mockRevenueTrend])
+const topGamesData = ref([...mockTopGames])
+const depositChannelData = ref([...mockDepositChannel])
+
+onMounted(async () => {
+  try {
+    const data = await getDashboard()
+    if (data.kpi) kpi.value = data.kpi
+    if (data.revenueTrend?.length) revenueTrendData.value = data.revenueTrend
+    if (data.topGamesGGR?.length) topGamesData.value = data.topGamesGGR
+    if (data.depositByChannel?.length) depositChannelData.value = data.depositByChannel
+    if (data.realtimeAlerts?.length) alerts.value = data.realtimeAlerts
+  } catch (e) {
+    console.warn('Dashboard API failed, using mock data', e)
+  }
+})
 
 function formatNum(n) { return n?.toLocaleString() || '0' }
 function formatMoney(n) { return (n / 10000).toFixed(1) + '万' }
@@ -83,12 +100,12 @@ const lineOption = computed(() => ({
   tooltip: { trigger: 'axis' },
   legend: { data: ['收入', '充值', '提现'], textStyle: { color: '#a0a0b0' } },
   grid: { left: 60, right: 20, top: 40, bottom: 30 },
-  xAxis: { type: 'category', data: revenueTrend.map(i => i.date), axisLabel: { color: '#888' }, axisLine: { lineStyle: { color: '#333' } } },
+  xAxis: { type: 'category', data: revenueTrendData.value.map(i => i.date), axisLabel: { color: '#888' }, axisLine: { lineStyle: { color: '#333' } } },
   yAxis: { type: 'value', axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
   series: [
-    { name: '收入', type: 'line', data: revenueTrend.map(i => i.revenue), smooth: true, itemStyle: { color: '#f56c6c' } },
-    { name: '充值', type: 'line', data: revenueTrend.map(i => i.deposit), smooth: true, itemStyle: { color: '#409eff' } },
-    { name: '提现', type: 'line', data: revenueTrend.map(i => i.withdrawal), smooth: true, itemStyle: { color: '#e6a23c' } }
+    { name: '收入', type: 'line', data: revenueTrendData.value.map(i => i.revenue), smooth: true, itemStyle: { color: '#f56c6c' } },
+    { name: '充值', type: 'line', data: revenueTrendData.value.map(i => i.deposit), smooth: true, itemStyle: { color: '#409eff' } },
+    { name: '提现', type: 'line', data: revenueTrendData.value.map(i => i.withdrawal), smooth: true, itemStyle: { color: '#e6a23c' } }
   ]
 }))
 
@@ -96,8 +113,8 @@ const barOption = computed(() => ({
   tooltip: { trigger: 'axis' },
   grid: { left: 100, right: 20, top: 10, bottom: 30 },
   xAxis: { type: 'value', axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
-  yAxis: { type: 'category', data: topGamesGGR.map(i => i.name).reverse(), axisLabel: { color: '#e0e0e0' } },
-  series: [{ type: 'bar', data: topGamesGGR.map(i => i.ggr).reverse(), itemStyle: { color: '#e6a23c', borderRadius: [0, 4, 4, 0] } }]
+  yAxis: { type: 'category', data: topGamesData.value.map(i => i.name).reverse(), axisLabel: { color: '#e0e0e0' } },
+  series: [{ type: 'bar', data: topGamesData.value.map(i => i.ggr).reverse(), itemStyle: { color: '#e6a23c', borderRadius: [0, 4, 4, 0] } }]
 }))
 
 const pieOption = computed(() => ({
@@ -105,7 +122,7 @@ const pieOption = computed(() => ({
   legend: { orient: 'vertical', right: 20, top: 'center', textStyle: { color: '#a0a0b0' } },
   series: [{
     type: 'pie', radius: ['40%', '70%'], center: ['40%', '50%'],
-    data: depositByChannel,
+    data: depositChannelData.value,
     label: { show: false },
     itemStyle: { borderRadius: 6, borderColor: '#1e1e2e', borderWidth: 2 }
   }]

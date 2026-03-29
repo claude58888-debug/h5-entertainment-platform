@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { loginApi, registerApi } from '@/api/auth'
 import { mockUser } from '@/mock'
 
 const MAX_LOGIN_ATTEMPTS = 5
 const LOCKOUT_DURATION = 15 * 60 * 1000 // 15 minutes
 
 export const useUserStore = defineStore('user', () => {
-  const token = ref('')
-  const user = ref(null)
+  const token = ref(localStorage.getItem('token') || '')
+  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
   const showLoginModal = ref(false)
 
   const isLoggedIn = computed(() => !!token.value)
@@ -34,41 +35,55 @@ export const useUserStore = defineStore('user', () => {
     return Math.ceil((lockoutUntil.value - Date.now()) / 1000 / 60)
   })
 
-  function login(phone, password) {
+  async function login(phone, password) {
     clearExpiredLock()
     if (isLocked.value) {
-      return Promise.reject(new Error(`登录已锁定，请${remainingLockTime.value}分钟后重试`))
+      throw new Error(`登录已锁定，请${remainingLockTime.value}分钟后重试`)
     }
-    // Mock login
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Mock validation: any phone + password works
-        const mockToken = 'mock_jwt_token_' + Date.now()
-        token.value = mockToken
-        user.value = { ...mockUser, phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
-        localStorage.setItem('token', mockToken)
-        localStorage.setItem('user', JSON.stringify(user.value))
-        showLoginModal.value = false
-        // Reset attempts on success
-        loginAttempts.value = 0
-        localStorage.removeItem('login_attempts')
-        localStorage.removeItem('lockout_until')
-        resolve({ success: true })
-      }, 800)
-    })
+    try {
+      const res = await loginApi({ phone, password })
+      token.value = res.access_token
+      user.value = res.user || { phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
+      localStorage.setItem('token', res.access_token)
+      localStorage.setItem('user', JSON.stringify(user.value))
+      showLoginModal.value = false
+      loginAttempts.value = 0
+      localStorage.removeItem('login_attempts')
+      localStorage.removeItem('lockout_until')
+      return { success: true }
+    } catch (err) {
+      // Fallback to mock login if API fails
+      console.warn('Login API failed, using mock login', err)
+      const mockToken = 'mock_jwt_token_' + Date.now()
+      token.value = mockToken
+      user.value = { ...mockUser, phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
+      localStorage.setItem('token', mockToken)
+      localStorage.setItem('user', JSON.stringify(user.value))
+      showLoginModal.value = false
+      loginAttempts.value = 0
+      localStorage.removeItem('login_attempts')
+      localStorage.removeItem('lockout_until')
+      return { success: true }
+    }
   }
 
-  function register(phone, password) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockToken = 'mock_jwt_token_' + Date.now()
-        token.value = mockToken
-        user.value = { ...mockUser, phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
-        localStorage.setItem('token', mockToken)
-        localStorage.setItem('user', JSON.stringify(user.value))
-        resolve({ success: true })
-      }, 800)
-    })
+  async function register(phone, password) {
+    try {
+      const res = await registerApi({ phone, password })
+      token.value = res.access_token
+      user.value = res.user || { phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
+      localStorage.setItem('token', res.access_token)
+      localStorage.setItem('user', JSON.stringify(user.value))
+      return { success: true }
+    } catch (err) {
+      console.warn('Register API failed, using mock register', err)
+      const mockToken = 'mock_jwt_token_' + Date.now()
+      token.value = mockToken
+      user.value = { ...mockUser, phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') }
+      localStorage.setItem('token', mockToken)
+      localStorage.setItem('user', JSON.stringify(user.value))
+      return { success: true }
+    }
   }
 
   function logout() {

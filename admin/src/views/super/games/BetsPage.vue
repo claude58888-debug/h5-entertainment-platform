@@ -41,7 +41,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getBets } from '@/api/games'
 import { bettingRecords } from '@/mock/data'
 
 const search = ref('')
@@ -49,6 +50,13 @@ const providerFilter = ref('')
 const categoryFilter = ref('')
 const dateRange = ref(null)
 const bets = ref([...bettingRecords])
+
+onMounted(async () => {
+  try {
+    const data = await getBets()
+    if (data?.length) bets.value = data
+  } catch (e) { console.warn('Bets API failed, using mock data', e) }
+})
 
 const filteredBets = computed(() => bets.value.filter(b => {
   if (search.value && !b.member.includes(search.value) && !b.id.includes(search.value)) return false

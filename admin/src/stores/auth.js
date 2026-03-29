@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { adminLogin } from '@/api/auth'
 
 const MAX_LOGIN_ATTEMPTS = 5
 const LOCKOUT_DURATION = 15 * 60 * 1000 // 15 minutes
@@ -33,14 +34,31 @@ export const useAuthStore = defineStore('auth', () => {
     return Math.ceil((lockoutUntil.value - Date.now()) / 1000 / 60)
   })
 
-  function login(username, password, selectedRole) {
+  async function login(username, password, selectedRole) {
     clearExpiredLock()
     if (isLocked.value) {
       return { success: false, locked: true, remainingMinutes: remainingLockTime.value }
     }
 
-    // Mock validation: admin/123456
-    if (username !== 'admin' || password !== '123456') {
+    try {
+      const res = await adminLogin(username, password, selectedRole)
+
+      // Success - reset attempts
+      loginAttempts.value = 0
+      lockoutUntil.value = 0
+      localStorage.removeItem('admin_login_attempts')
+      localStorage.removeItem('admin_lockout_until')
+
+      user.value = {
+        ...res.user,
+        token: res.access_token,
+        role: selectedRole,
+        agentName: selectedRole === 'agent' ? '金沙娱乐' : '总平台',
+        loginTime: new Date().toISOString()
+      }
+      localStorage.setItem('admin_user', JSON.stringify(user.value))
+      return { success: true }
+    } catch (err) {
       loginAttempts.value++
       localStorage.setItem('admin_login_attempts', String(loginAttempts.value))
 
@@ -52,21 +70,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       return { success: false, locked: false, attemptsLeft: MAX_LOGIN_ATTEMPTS - loginAttempts.value }
     }
-
-    // Success - reset attempts
-    loginAttempts.value = 0
-    lockoutUntil.value = 0
-    localStorage.removeItem('admin_login_attempts')
-    localStorage.removeItem('admin_lockout_until')
-
-    user.value = {
-      username,
-      role: selectedRole,
-      agentName: selectedRole === 'agent' ? '金沙娱乐' : '总平台',
-      loginTime: new Date().toISOString()
-    }
-    localStorage.setItem('admin_user', JSON.stringify(user.value))
-    return { success: true }
   }
 
   function logout() {

@@ -53,7 +53,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getDashboard } from '@/api/dashboard'
 import { agentDashboardKPI } from '@/mock/data'
 
 const d = agentDashboardKPI
@@ -65,6 +66,23 @@ const kpis = ref([
   { label: '今日提现', value: (d.todayWithdrawal / 10000).toFixed(1) + '万', prefix: '¥', color: '#e6a23c', change: -5 },
   { label: '今日盈利', value: (d.todayProfit / 10000).toFixed(1) + '万', prefix: '¥', color: '#f56c6c', change: 22 }
 ])
+
+onMounted(async () => {
+  try {
+    const data = await getDashboard()
+    if (data?.kpi) {
+      const k = data.kpi
+      kpis.value = [
+        { label: '今日新增', value: k.todayNewMembers || d.todayNewMembers, color: '#409eff', change: 12 },
+        { label: '今日活跃', value: k.todayActiveMembers || d.todayActiveMembers, color: '#67c23a', change: 8 },
+        { label: '当前在线', value: k.onlineCount || d.onlineCount, color: '#67c23a' },
+        { label: '今日充值', value: ((k.todayDeposit || d.todayDeposit) / 10000).toFixed(1) + '万', prefix: '¥', color: '#409eff', change: 15 },
+        { label: '今日提现', value: ((k.todayWithdrawal || d.todayWithdrawal) / 10000).toFixed(1) + '万', prefix: '¥', color: '#e6a23c', change: -5 },
+        { label: '今日盈利', value: ((k.todayProfit || d.todayProfit) / 10000).toFixed(1) + '万', prefix: '¥', color: '#f56c6c', change: 22 }
+      ]
+    }
+  } catch (e) { console.warn('Agent dashboard API failed, using mock data', e) }
+})
 
 const pendingTasks = ref([
   { type: '提现审批', count: 8, amount: '¥125,000', urgent: true },
