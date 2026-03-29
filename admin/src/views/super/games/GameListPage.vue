@@ -1,6 +1,29 @@
 <template>
   <div>
     <h2 class="section-title">游戏列表</h2>
+
+    <!-- Game Statistics Row -->
+    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">游戏总数</div>
+          <div style="font-size: 24px; font-weight: 700; color: #409eff;">{{ gameStats.totalGames }}</div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">活跃游戏</div>
+          <div style="font-size: 24px; font-weight: 700; color: #67c23a;">{{ gameStats.activeGames }}</div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" style="flex: 1;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; color: #909399; margin-bottom: 8px;">厂商总数</div>
+          <div style="font-size: 24px; font-weight: 700; color: #e6a23c;">{{ gameStats.totalProviders }}</div>
+        </div>
+      </el-card>
+    </div>
+
     <div class="table-card">
       <div class="filter-bar">
         <el-input v-model="search" placeholder="搜索游戏名称" style="width: 200px;" clearable prefix-icon="Search" />
@@ -19,9 +42,11 @@
           <el-option label="启用" value="active" />
           <el-option label="停用" value="inactive" />
         </el-select>
-        <el-button :type="sortByHot ? 'warning' : 'default'" @click="toggleHotSort">
-          <el-icon><Sunset /></el-icon>{{ sortByHot ? '热度排序中' : '按热度排序' }}
-        </el-button>
+        <el-select v-model="sortMode" placeholder="排序方式" style="width: 140px;" clearable>
+          <el-option label="按热度排序" value="popularity" />
+          <el-option label="按RTP排序" value="rtp" />
+          <el-option label="按收入排序" value="revenue" />
+        </el-select>
       </div>
       <!-- Loading skeleton -->
       <div v-if="loading" class="skeleton-table">
@@ -88,7 +113,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { getGames, updateHotScore, updateRecommend } from '@/api/games'
 import { ElMessage } from 'element-plus'
-import { Sunset } from '@element-plus/icons-vue'
+// icons not needed for sort dropdown
 
 const search = ref('')
 const providerFilter = ref('')
@@ -98,7 +123,7 @@ const games = ref([])
 const loading = ref(true)
 const currentPage = ref(1)
 const pageSize = ref(20)
-const sortByHot = ref(false)
+const sortMode = ref('')
 
 onMounted(async () => {
   try {
@@ -111,9 +136,15 @@ onMounted(async () => {
 })
 const providerList = ['PG', 'PP', 'CQ9', 'EVO', 'AG', 'JDB', 'JILI', 'FC', 'WM']
 
-function toggleHotSort() {
-  sortByHot.value = !sortByHot.value
-}
+const gameStats = computed(() => {
+  const all = games.value
+  const providers = new Set(all.map(g => g.provider))
+  return {
+    totalGames: all.length,
+    activeGames: all.filter(g => g.status === 'active').length,
+    totalProviders: providers.size
+  }
+})
 
 const filteredGames = computed(() => {
   let result = games.value.filter(g => {
@@ -123,8 +154,12 @@ const filteredGames = computed(() => {
     if (statusFilter.value && g.status !== statusFilter.value) return false
     return true
   })
-  if (sortByHot.value) {
+  if (sortMode.value === 'popularity') {
     result = [...result].sort((a, b) => (b.hotScore || 0) - (a.hotScore || 0))
+  } else if (sortMode.value === 'rtp') {
+    result = [...result].sort((a, b) => (b.rtp || 0) - (a.rtp || 0))
+  } else if (sortMode.value === 'revenue') {
+    result = [...result].sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
   }
   return result
 })
