@@ -1,7 +1,8 @@
 import aiosqlite
 import os
 
-DB_PATH = os.getenv("DB_PATH", "/data/app.db")
+_default_db = "/data/app.db" if os.path.isdir("/data") else os.path.join(os.path.dirname(__file__), "..", "data", "app.db")
+DB_PATH = os.getenv("DB_PATH", _default_db)
 
 async def get_db():
     db = await aiosqlite.connect(DB_PATH)

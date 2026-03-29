@@ -20,7 +20,7 @@ async def seed_data(db_path: str):
     await db.executescript(f"""
         INSERT INTO admin_accounts (username, password_hash, role, status, last_login, created_at)
         VALUES
-        ('superadmin', '{admin_hash}', '超级管理员', 'active', '2026-03-07 16:00', '2025-01-01'),
+        ('admin', '{admin_hash}', '超级管理员', 'active', '2026-03-07 16:00', '2025-01-01'),
         ('admin_finance', '{admin_hash}', '财务管理员', 'active', '2026-03-07 15:30', '2025-03-15'),
         ('admin_cs', '{admin_hash}', '客服管理员', 'active', '2026-03-07 14:00', '2025-06-20'),
         ('admin_risk', '{admin_hash}', '风控管理员', 'active', '2026-03-06 18:00', '2025-08-10'),
