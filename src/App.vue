@@ -1,7 +1,8 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" role="application" :aria-label="$route.meta?.title || '大大娱乐'">
+    <a class="skip-link" href="#main-content">跳转到主要内容</a>
     <AppHeader v-if="showAppHeader" />
-    <main class="app-main" :class="{ 'has-tabbar': showTabBar, 'no-header': !showAppHeader }">
+    <main id="main-content" class="app-main" :class="{ 'has-tabbar': showTabBar, 'no-header': !showAppHeader }" role="main">
       <router-view v-slot="{ Component }">
         <transition name="slide-fade" mode="out-in">
           <component :is="Component" :key="$route.path" />

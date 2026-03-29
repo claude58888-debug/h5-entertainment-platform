@@ -16,7 +16,17 @@
         </el-select>
         <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" style="width: 260px;" />
       </div>
-      <el-table :data="filteredOrders" stripe>
+      <!-- Loading skeleton -->
+      <div v-if="loading" class="skeleton-table">
+        <el-skeleton :rows="6" animated />
+      </div>
+
+      <!-- Empty state -->
+      <div v-else-if="!filteredOrders.length" class="empty-state">
+        <el-empty description="暂无充值订单" />
+      </div>
+
+      <el-table v-else :data="filteredOrders" stripe>
         <el-table-column prop="id" label="订单号" width="160" />
         <el-table-column prop="member" label="会员" width="120" />
         <el-table-column prop="agent" label="代理" width="100" />
@@ -56,12 +66,16 @@ const statusFilter = ref('')
 const channelFilter = ref('')
 const dateRange = ref(null)
 const orders = ref([])
+const loading = ref(true)
 
 onMounted(async () => {
   try {
+    loading.value = true
     const data = await getDeposits()
     orders.value = data || []
-  } catch (e) { console.warn('API request failed', e) }
+  } catch (e) { console.warn('API request failed', e) } finally {
+    loading.value = false
+  }
 })
 
 const filteredOrders = computed(() => {
@@ -74,15 +88,25 @@ const filteredOrders = computed(() => {
 })
 
 function approve(row) {
-  ElMessageBox.confirm(`确认充值订单 ${row.id} 金额 ¥${row.amount.toLocaleString()}?`, '确认到账').then(() => {
-    row.status = 'completed'
-    ElMessage.success('已确认到账')
+  ElMessageBox.confirm(`确认充值订单 ${row.id} 金额 ¥${row.amount.toLocaleString()}?`, '确认到账').then(async () => {
+    try {
+      await updateDeposit(row.id, { status: 'completed' })
+      row.status = 'completed'
+      ElMessage.success('已确认到账')
+    } catch (e) {
+      ElMessage.error(`操作失败: ${e.message || '未知错误'}`)
+    }
   }).catch(() => {})
 }
 function reject(row) {
-  ElMessageBox.confirm(`拒绝充值订单 ${row.id}?`, '拒绝', { type: 'warning' }).then(() => {
-    row.status = 'failed'
-    ElMessage.success('已拒绝')
+  ElMessageBox.confirm(`拒绝充值订单 ${row.id}?`, '拒绝', { type: 'warning' }).then(async () => {
+    try {
+      await updateDeposit(row.id, { status: 'failed' })
+      row.status = 'failed'
+      ElMessage.success('已拒绝')
+    } catch (e) {
+      ElMessage.error(`操作失败: ${e.message || '未知错误'}`)
+    }
   }).catch(() => {})
 }
 </script>

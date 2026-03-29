@@ -7,9 +7,18 @@
       fixed
       :style="{ maxWidth: '480px', margin: '0 auto' }"
     />
+    <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
     <div class="page-content" style="padding-top: 46px;">
+      <!-- Skeleton loading -->
+      <template v-if="loading">
+        <div v-for="i in 3" :key="i" class="promo-skeleton">
+          <van-skeleton title :row="2" />
+        </div>
+      </template>
+
       <div
         v-for="promo in promotions"
+        v-else
         :key="promo.id"
         class="promo-card"
         :style="{ background: promo.gradient }"
@@ -26,12 +35,16 @@
         </div>
       </div>
     </div>
+    </van-pull-refresh>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getPromotionsApi } from '@/api/promo'
+
+const loading = ref(true)
+const refreshing = ref(false)
 
 const defaultGradients = [
   'linear-gradient(135deg, #f0a030, #e67e22)',
@@ -49,7 +62,7 @@ const promotions = ref([
   { id: 5, title: '当周有效投注', description: '最多12888U', gradient: defaultGradients[4] }
 ])
 
-onMounted(async () => {
+async function loadPromotions() {
   try {
     const res = await getPromotionsApi()
     if (Array.isArray(res) && res.length) {
@@ -60,13 +73,30 @@ onMounted(async () => {
     }
   } catch (e) {
     console.warn('Promotions API failed, using default data', e)
+  } finally {
+    loading.value = false
+    refreshing.value = false
   }
-})
+}
+
+async function onRefresh() {
+  await loadPromotions()
+}
+
+onMounted(() => loadPromotions())
 </script>
 
 <style lang="scss" scoped>
 .page-content {
   padding: 16px;
+  min-height: 80vh;
+}
+
+.promo-skeleton {
+  border-radius: 14px;
+  padding: 24px 20px;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .promo-card {

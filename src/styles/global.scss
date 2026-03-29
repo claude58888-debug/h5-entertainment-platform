@@ -134,3 +134,52 @@ img {
   color: #fbbf24;
   text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
 }
+
+// Accessibility: Skip navigation link
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: $accent-purple;
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 9999;
+  font-size: 14px;
+  border-radius: 0 0 8px 0;
+  transition: top 0.2s;
+
+  &:focus {
+    top: 0;
+  }
+}
+
+// Accessibility: Focus visible outlines for keyboard navigation
+*:focus-visible {
+  outline: 2px solid $accent-purple;
+  outline-offset: 2px;
+}
+
+// Accessibility: Reduced motion preference
+@media (prefers-reduced-motion: reduce) {
+  .slide-fade-enter-active,
+  .slide-fade-leave-active {
+    transition: none;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// Screen reader only utility
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

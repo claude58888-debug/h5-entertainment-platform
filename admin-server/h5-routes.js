@@ -5,6 +5,23 @@ import db from './db.js'
 
 const router = Router()
 
+// ==================== IN-MEMORY CACHE ====================
+const h5Cache = new Map()
+
+function h5CacheGet(key) {
+  const entry = h5Cache.get(key)
+  if (!entry) return null
+  if (Date.now() > entry.expiresAt) {
+    h5Cache.delete(key)
+    return null
+  }
+  return entry.data
+}
+
+function h5CacheSet(key, data, ttlMs) {
+  h5Cache.set(key, { data, expiresAt: Date.now() + ttlMs })
+}
+
 // H5 JWT secret - separate from admin
 const H5_JWT_SECRET = process.env.H5_JWT_SECRET || 'dev-only-h5-user-key'
 
@@ -415,6 +432,9 @@ router.post('/games/:id/launch', h5Auth, (req, res) => {
 
 // GET /api/h5/promotions
 router.get('/promotions', (req, res) => {
+  const cached = h5CacheGet('h5:promotions')
+  if (cached) return res.json(cached)
+
   const rows = db.prepare("SELECT * FROM promotions WHERE status = 'active' ORDER BY id").all()
   const gradients = [
     'linear-gradient(135deg, #6c5ce7, #a855f7)',
@@ -425,7 +445,7 @@ router.get('/promotions', (req, res) => {
     'linear-gradient(135deg, #0984e3, #6c5ce7)'
   ]
 
-  res.json(rows.map((r, i) => ({
+  const result = rows.map((r, i) => ({
     id: r.id,
     title: r.name,
     description: `Min deposit: ${r.min_deposit}, Bonus: ${r.bonus_rate}%, Max: ${r.max_bonus}`,
@@ -438,7 +458,9 @@ router.get('/promotions', (req, res) => {
     wagering: r.wagering,
     maxBonus: r.max_bonus,
     participants: r.participants
-  })))
+  }))
+  h5CacheSet('h5:promotions', result, 300000)
+  res.json(result)
 })
 
 // POST /api/h5/promotions/:id/claim
@@ -749,14 +771,19 @@ router.put('/compliance/limits', h5Auth, (req, res) => {
 
 // GET /api/h5/app/banners
 router.get('/app/banners', (req, res) => {
+  const cached = h5CacheGet('h5:banners')
+  if (cached) return res.json(cached)
+
   const rows = db.prepare("SELECT * FROM banners WHERE status = 'active' ORDER BY sort").all()
-  res.json(rows.map(r => ({
+  const result = rows.map(r => ({
     id: r.id,
     title: r.title,
     image: r.image,
     link: r.link || '/promotions',
     gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)'
-  })))
+  }))
+  h5CacheSet('h5:banners', result, 600000)
+  res.json(result)
 })
 
 // GET /api/h5/app/announcements
@@ -770,18 +797,23 @@ router.get('/app/announcements', (req, res) => {
 
 // GET /api/h5/app/config
 router.get('/app/config', (req, res) => {
+  const cached = h5CacheGet('h5:config')
+  if (cached) return res.json(cached)
+
   const rows = db.prepare('SELECT * FROM system_settings').all()
   const settings = {}
   for (const r of rows) {
     settings[r.key] = r.value
   }
-  res.json({
+  const result = {
     siteName: settings.site_name || 'H5 Entertainment',
     customerService: 'https://t.me/support',
     downloadUrl: '#',
     registerEnabled: settings.register_enabled !== 'false',
     maintenanceMode: settings.maintenance_mode === 'true'
-  })
+  }
+  h5CacheSet('h5:config', result, 600000)
+  res.json(result)
 })
 
 // GET /api/h5/app/support
