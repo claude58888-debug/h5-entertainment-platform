@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getGamesApi, getGameDetailApi, getGameCategoriesApi } from '@/api/game'
-import { mockGames, mockProviders, mockCategories } from '@/mock'
 
 export const useGameStore = defineStore('game', () => {
   const games = ref([])
-  const categories = ref(mockCategories)
-  const providers = ref(mockProviders)
+  const categories = ref([])
+  const providers = ref({})
   const loading = ref(false)
 
   const hotGames = computed(() => games.value.filter(g => g.hot))
@@ -44,29 +43,19 @@ export const useGameStore = defineStore('game', () => {
         }
         return result
       }
-      throw new Error('No games data')
+      if (!res?.length) {
+        loading.value = false
+        return []
+      }
     } catch (e) {
-      console.warn('Games API failed, using mock data', e)
-      let result = [...mockGames]
-      if (params.category && params.category !== 'home' && params.category !== 'hot') {
-        result = result.filter(g => g.category === params.category)
-      }
-      if (params.category === 'hot') {
-        result = result.filter(g => g.hot)
-      }
-      if (params.provider) {
-        result = result.filter(g => g.provider === params.provider)
-      }
-      games.value = mockGames
+      console.warn('Games API failed', e)
       loading.value = false
-      return result
+      return []
     }
   }
 
   function getGameById(id) {
-    const found = games.value.find(g => g.id === Number(id))
-    if (found) return found
-    return mockGames.find(g => g.id === Number(id))
+    return games.value.find(g => g.id === Number(id)) || null
   }
 
   return { games, categories, providers, loading, hotGames, getGamesByCategory, getProvidersByCategory, fetchGames, getGameById }
