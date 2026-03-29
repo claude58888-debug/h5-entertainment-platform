@@ -1,6 +1,50 @@
 <template>
   <div>
     <h2 class="section-title">总控仪表盘</h2>
+
+    <!-- Alert notification bar -->
+    <div v-if="alertsLoaded && (alertData.pendingWithdrawals || alertData.pendingKyc || alertData.suspiciousActivities)" class="alert-notification-bar">
+      <div class="alert-notification-item" @click="$router.push('/super/finance/withdrawals')">
+        <el-badge :value="alertData.pendingWithdrawals" :hidden="!alertData.pendingWithdrawals" type="danger">
+          <span class="alert-notification-label">待处理提现</span>
+        </el-badge>
+      </div>
+      <div class="alert-notification-item" @click="$router.push('/super/compliance/kyc')">
+        <el-badge :value="alertData.pendingKyc" :hidden="!alertData.pendingKyc" type="warning">
+          <span class="alert-notification-label">待审核KYC</span>
+        </el-badge>
+      </div>
+      <div class="alert-notification-item" @click="$router.push('/super/risk')">
+        <el-badge :value="alertData.suspiciousActivities" :hidden="!alertData.suspiciousActivities" type="danger">
+          <span class="alert-notification-label">可疑活动</span>
+        </el-badge>
+      </div>
+    </div>
+
+    <!-- Time range filter -->
+    <div class="date-filter-bar">
+      <el-radio-group v-model="dateRange" size="small" @change="onDateRangeChange">
+        <el-radio-button label="today">今日</el-radio-button>
+        <el-radio-button label="yesterday">昨日</el-radio-button>
+        <el-radio-button label="week">本周</el-radio-button>
+        <el-radio-button label="month">本月</el-radio-button>
+        <el-radio-button label="custom">自定义</el-radio-button>
+      </el-radio-group>
+      <el-date-picker
+        v-if="dateRange === 'custom'"
+        v-model="customDateRange"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+        format="YYYY-MM-DD"
+        value-format="YYYY-MM-DD"
+        style="margin-left: 12px;"
+        @change="onCustomDateChange"
+        :shortcuts="dateShortcuts"
+      />
+    </div>
+
     <div class="kpi-row">
       <div class="kpi-card">
         <div class="kpi-label">总会员数</div>
@@ -8,7 +52,7 @@
         <div class="kpi-change up">↑ 2.3% 较昨日</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">今日新增</div>
+        <div class="kpi-label">新增会员</div>
         <div class="kpi-value">{{ kpi.todayNewMembers }}</div>
         <div class="kpi-change up">↑ 15 较昨日</div>
       </div>
@@ -17,25 +61,33 @@
         <div class="kpi-value" style="color: #67c23a;">{{ formatNum(kpi.onlineNow) }}</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">今日充值</div>
+        <div class="kpi-label">充值金额</div>
         <div class="kpi-value" style="color: #409eff;">¥{{ formatMoney(kpi.todayDeposit) }}</div>
         <div class="kpi-change up">↑ 8.2%</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">今日提现</div>
+        <div class="kpi-label">提现金额</div>
         <div class="kpi-value" style="color: #e6a23c;">¥{{ formatMoney(kpi.todayWithdrawal) }}</div>
         <div class="kpi-change down">↓ 3.1%</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">今日盈利</div>
+        <div class="kpi-label">盈利金额</div>
         <div class="kpi-value" style="color: #f56c6c;">¥{{ formatMoney(kpi.todayProfit) }}</div>
         <div class="kpi-change up">↑ 12.5%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">总代理数</div>
+        <div class="kpi-value" style="color: #9b59b6;">{{ formatNum(kpi.totalAgents) }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">活跃代理</div>
+        <div class="kpi-value" style="color: #67c23a;">{{ formatNum(kpi.activeAgents) }}</div>
       </div>
     </div>
 
     <div class="chart-row">
       <div class="chart-container">
-        <div class="chart-title">7日收入趋势</div>
+        <div class="chart-title">收入趋势</div>
         <v-chart :option="lineOption" style="height: 300px;" autoresize />
       </div>
       <div class="chart-container">
@@ -71,17 +123,68 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
-import { getDashboard } from '@/api/dashboard'
+import { getDashboard, getDashboardAlerts } from '@/api/dashboard'
 
 const kpi = ref({})
 const alerts = ref([])
 const revenueTrendData = ref([])
 const topGamesData = ref([])
 const depositChannelData = ref([])
+const alertData = ref({ pendingWithdrawals: 0, pendingKyc: 0, suspiciousActivities: 0 })
+const alertsLoaded = ref(false)
 
-onMounted(async () => {
+const dateRange = ref('today')
+const customDateRange = ref(null)
+
+const dateShortcuts = [
+  { text: '最近7天', value: () => { const e = new Date(); const s = new Date(); s.setDate(s.getDate() - 7); return [s, e] } },
+  { text: '最近30天', value: () => { const e = new Date(); const s = new Date(); s.setDate(s.getDate() - 30); return [s, e] } },
+  { text: '最近90天', value: () => { const e = new Date(); const s = new Date(); s.setDate(s.getDate() - 90); return [s, e] } }
+]
+
+function formatDate(d) {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function getDateParams() {
+  const now = new Date()
+  const today = formatDate(now)
+  switch (dateRange.value) {
+    case 'today':
+      return { startDate: today, endDate: today }
+    case 'yesterday': {
+      const y = new Date(now)
+      y.setDate(y.getDate() - 1)
+      const yd = formatDate(y)
+      return { startDate: yd, endDate: yd }
+    }
+    case 'week': {
+      const w = new Date(now)
+      const day = w.getDay() || 7
+      w.setDate(w.getDate() - day + 1)
+      return { startDate: formatDate(w), endDate: today }
+    }
+    case 'month': {
+      const m = new Date(now.getFullYear(), now.getMonth(), 1)
+      return { startDate: formatDate(m), endDate: today }
+    }
+    case 'custom':
+      if (customDateRange.value && customDateRange.value.length === 2) {
+        return { startDate: customDateRange.value[0], endDate: customDateRange.value[1] }
+      }
+      return {}
+    default:
+      return {}
+  }
+}
+
+async function fetchDashboard() {
   try {
-    const data = await getDashboard()
+    const params = getDateParams()
+    const data = await getDashboard(params)
     if (data.kpi) kpi.value = data.kpi
     revenueTrendData.value = data.revenueTrend || []
     topGamesData.value = data.topGamesGGR || []
@@ -90,6 +193,33 @@ onMounted(async () => {
   } catch (e) {
     console.warn('API request failed', e)
   }
+}
+
+async function fetchAlerts() {
+  try {
+    const data = await getDashboardAlerts()
+    alertData.value = data
+    alertsLoaded.value = true
+  } catch (e) {
+    console.warn('Alerts API failed', e)
+  }
+}
+
+function onDateRangeChange() {
+  if (dateRange.value !== 'custom') {
+    fetchDashboard()
+  }
+}
+
+function onCustomDateChange() {
+  if (customDateRange.value && customDateRange.value.length === 2) {
+    fetchDashboard()
+  }
+}
+
+onMounted(() => {
+  fetchDashboard()
+  fetchAlerts()
 })
 
 function formatNum(n) { return n?.toLocaleString() || '0' }
@@ -127,3 +257,33 @@ const pieOption = computed(() => ({
   }]
 }))
 </script>
+
+<style scoped>
+.alert-notification-bar {
+  display: flex;
+  gap: 24px;
+  padding: 12px 20px;
+  background: rgba(245, 108, 108, 0.08);
+  border: 1px solid rgba(245, 108, 108, 0.2);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.alert-notification-item {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.alert-notification-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.alert-notification-label {
+  font-size: 14px;
+  color: #e0e0e0;
+}
+.date-filter-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+</style>
