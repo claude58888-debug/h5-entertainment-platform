@@ -36,7 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Demo credentials for mock login when backend is unavailable
   const DEMO_ACCOUNTS = {
-    admin: { password: '123456', roles: ['superadmin', 'agent'], displayName: '管理员' }
+    admin: { password: 'demo', roles: ['superadmin', 'agent'], displayName: '管理员' }
   }
 
   function tryMockLogin(username, password, selectedRole) {
