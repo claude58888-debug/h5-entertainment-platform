@@ -304,6 +304,25 @@ export function initDB() {
       created_at TEXT NOT NULL DEFAULT (date('now'))
     );
 
+    -- Migrate announcements table: add new columns if missing (for existing DBs)
+  `)
+
+  // Safe ALTER TABLE migrations for announcements (idempotent)
+  const annCols = db.prepare("PRAGMA table_info(announcements)").all().map(c => c.name)
+  const migrations = [
+    { col: 'target_type', sql: "ALTER TABLE announcements ADD COLUMN target_type TEXT DEFAULT 'all'" },
+    { col: 'target_vip_level', sql: "ALTER TABLE announcements ADD COLUMN target_vip_level INTEGER" },
+    { col: 'type', sql: "ALTER TABLE announcements ADD COLUMN type TEXT DEFAULT '普通'" },
+    { col: 'scheduled_at', sql: "ALTER TABLE announcements ADD COLUMN scheduled_at TEXT" },
+    { col: 'published_at', sql: "ALTER TABLE announcements ADD COLUMN published_at TEXT" }
+  ]
+  for (const m of migrations) {
+    if (!annCols.includes(m.col)) {
+      db.prepare(m.sql).run()
+    }
+  }
+
+  db.exec(`
     -- Payment channels
     CREATE TABLE IF NOT EXISTS payment_channels (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
