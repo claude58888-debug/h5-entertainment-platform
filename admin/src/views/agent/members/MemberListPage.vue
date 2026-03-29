@@ -66,7 +66,7 @@ const statusFilter = ref('')
 const vipFilter = ref('')
 const tagFilter = ref('')
 const selectedMembers = ref([])
-const members = ref(membersList.filter(m => m.agent === '金沙娱乐'))
+const members = ref([])
 
 onMounted(async () => {
   try {

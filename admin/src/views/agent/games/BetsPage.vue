@@ -44,7 +44,7 @@ import { getBets } from '@/api/games'
 const search = ref('')
 const providerFilter = ref('')
 const dateRange = ref(null)
-const bets = ref(bettingRecords.filter(b => b.agent === '金沙娱乐'))
+const bets = ref([])
 
 onMounted(async () => {
   try {

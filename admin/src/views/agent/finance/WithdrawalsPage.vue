@@ -52,12 +52,12 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 const search = ref('')
 const statusFilter = ref('')
 const selectedRows = ref([])
-const orders = ref(withdrawalOrders.filter(o => o.agent === '金沙娱乐').map(o => ({ ...o, amlCheck: Math.random() > 0.2 ? 'pass' : 'fail' })))
+const orders = ref([])
 
 onMounted(async () => {
   try {
     const data = await getWithdrawals()
-    orders.value = data || [].map(o => ({ ...o, amlCheck: Math.random() > 0.2 ? 'pass' : 'fail' }))
+    orders.value = (data || []).map(o => ({ ...o, amlCheck: Math.random() > 0.2 ? 'pass' : 'fail' }))
   } catch (e) { console.warn('API request failed', e) }
 })
 

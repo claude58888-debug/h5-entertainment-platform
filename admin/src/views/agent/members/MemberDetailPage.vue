@@ -74,7 +74,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const activeTab = ref('deposits')
-const member = ref(membersList.find(m => m.id === route.params.id) || membersList[0])
+const member = ref({ id: '', username: '', vip: 0, balance: 0, totalDeposit: 0, totalWithdraw: 0, registered: '', lastLogin: '', status: 'active' })
 
 onMounted(async () => {
   try {

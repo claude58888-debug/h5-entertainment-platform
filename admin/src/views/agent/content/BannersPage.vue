@@ -60,7 +60,7 @@
 import { ref, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-const bannerList = ref(banners.map((b, i) => ({ ...b, sort: i + 1 })))
+const bannerList = ref([])
 const addDialog = ref(false)
 const newBanner = reactive({ title: '', link: '', schedule: null })
 

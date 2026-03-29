@@ -51,7 +51,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 const search = ref('')
 const statusFilter = ref('')
 const dateRange = ref(null)
-const orders = ref(depositOrders.filter(o => o.agent === '金沙娱乐'))
+const orders = ref([])
 
 onMounted(async () => {
   try {

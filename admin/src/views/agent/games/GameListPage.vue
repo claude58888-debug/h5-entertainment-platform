@@ -53,12 +53,12 @@ import { getGames } from '@/api/games'
 const search = ref('')
 const providerFilter = ref('')
 const categoryFilter = ref('')
-const games = ref(gamesList.map((g, i) => ({ ...g, sort: i + 1 })))
+const games = ref([])
 
 onMounted(async () => {
   try {
     const data = await getGames()
-    games.value = data || [].map((g, i) => ({ ...g, sort: i + 1 }))
+    games.value = (data || []).map((g, i) => ({ ...g, sort: i + 1 }))
   } catch (e) { console.warn('API request failed', e) }
 })
 
