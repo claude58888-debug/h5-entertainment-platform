@@ -302,6 +302,63 @@ export function initDB() {
       end_time TEXT
     );
 
+    -- KYC Documents
+    CREATE TABLE IF NOT EXISTS kyc_documents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      document_type TEXT NOT NULL DEFAULT 'id_card',
+      document_url TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'pending',
+      reject_reason TEXT DEFAULT '',
+      submitted_at TEXT NOT NULL DEFAULT (datetime('now')),
+      reviewed_at TEXT,
+      reviewed_by TEXT
+    );
+
+    -- AML Alerts
+    CREATE TABLE IF NOT EXISTS aml_alerts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      transaction_id TEXT,
+      alert_type TEXT NOT NULL DEFAULT 'large_transaction',
+      amount REAL DEFAULT 0,
+      description TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      resolved_at TEXT,
+      resolved_by TEXT
+    );
+
+    -- Self Exclusions
+    CREATE TABLE IF NOT EXISTS self_exclusions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      exclusion_type TEXT NOT NULL DEFAULT '24h',
+      start_date TEXT NOT NULL DEFAULT (datetime('now')),
+      end_date TEXT,
+      status TEXT NOT NULL DEFAULT 'active',
+      reason TEXT DEFAULT ''
+    );
+
+    -- User Limits
+    CREATE TABLE IF NOT EXISTS user_limits (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      limit_type TEXT NOT NULL DEFAULT 'deposit',
+      period TEXT NOT NULL DEFAULT 'daily',
+      amount REAL NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    -- Responsible Gaming Settings (admin configurable defaults)
+    CREATE TABLE IF NOT EXISTS compliance_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      category TEXT DEFAULT 'responsible_gaming',
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     -- H5 Users (separate auth from admin)
     CREATE TABLE IF NOT EXISTS h5_users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

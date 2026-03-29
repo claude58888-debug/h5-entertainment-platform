@@ -11,6 +11,7 @@
     <BottomTabBar v-if="showTabBar" />
     <LoginModal />
     <BackToTop />
+    <AgeVerificationGate />
   </div>
 </template>
 
@@ -21,6 +22,7 @@ import AppHeader from '@/components/common/AppHeader.vue'
 import BottomTabBar from '@/components/common/BottomTabBar.vue'
 import LoginModal from '@/components/common/LoginModal.vue'
 import BackToTop from '@/components/common/BackToTop.vue'
+import AgeVerificationGate from '@/components/common/AgeVerificationGate.vue'
 
 const route = useRoute()
 
@@ -30,7 +32,7 @@ const showTabBar = computed(() => {
 })
 
 // Sub-pages with their own nav-bar should hide the main app header
-const subPages = ['/deposit', '/withdraw', '/tasks', '/income', '/invite', '/recharge', '/vip', '/safeCenter', '/report', '/transRecord', '/orderRecordSummary', '/prizeRecord', '/buyBit', '/softwareDownload', '/agentCooperation', '/video', '/login', '/register']
+const subPages = ['/deposit', '/withdraw', '/tasks', '/income', '/invite', '/recharge', '/vip', '/safeCenter', '/report', '/transRecord', '/orderRecordSummary', '/prizeRecord', '/buyBit', '/softwareDownload', '/agentCooperation', '/video', '/login', '/register', '/self-exclusion', '/limits', '/privacy', '/terms', '/responsible-gaming']
 const subPagePrefixes = ['/games/', '/game/']
 const showAppHeader = computed(() => {
   const path = route.path

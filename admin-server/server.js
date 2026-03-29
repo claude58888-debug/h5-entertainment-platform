@@ -717,6 +717,229 @@ app.put('/api/admin/settings', authMiddleware, (req, res) => {
   res.json({ success: true })
 })
 
+// ==================== COMPLIANCE ====================
+
+// GET /api/admin/compliance/dashboard - Compliance KPIs
+app.get('/api/admin/compliance/dashboard', authMiddleware, (req, res) => {
+  const kycPending = db.prepare("SELECT COUNT(*) as count FROM kyc_documents WHERE status = 'pending'").get().count
+  const kycApproved = db.prepare("SELECT COUNT(*) as count FROM kyc_documents WHERE status = 'approved'").get().count
+  const kycRejected = db.prepare("SELECT COUNT(*) as count FROM kyc_documents WHERE status = 'rejected'").get().count
+  const kycTotal = db.prepare("SELECT COUNT(*) as count FROM kyc_documents").get().count
+  const amlOpen = db.prepare("SELECT COUNT(*) as count FROM aml_alerts WHERE status = 'open'").get().count
+  const amlTotal = db.prepare("SELECT COUNT(*) as count FROM aml_alerts").get().count
+  const selfExcludedActive = db.prepare("SELECT COUNT(*) as count FROM self_exclusions WHERE status = 'active'").get().count
+  const selfExcludedTotal = db.prepare("SELECT COUNT(*) as count FROM self_exclusions").get().count
+  const usersWithLimits = db.prepare("SELECT COUNT(DISTINCT user_id) as count FROM user_limits").get().count
+
+  // Recent AML alerts
+  const recentAlerts = db.prepare("SELECT * FROM aml_alerts ORDER BY created_at DESC LIMIT 5").all()
+
+  // Recent KYC submissions
+  const recentKyc = db.prepare("SELECT * FROM kyc_documents ORDER BY submitted_at DESC LIMIT 5").all()
+
+  res.json({
+    kpi: {
+      kycPending,
+      kycApproved,
+      kycRejected,
+      kycTotal,
+      amlOpenAlerts: amlOpen,
+      amlTotalAlerts: amlTotal,
+      selfExcludedUsers: selfExcludedActive,
+      selfExcludedTotal,
+      usersWithLimits
+    },
+    recentAlerts: recentAlerts.map(a => ({
+      ...a,
+      createdAt: a.created_at,
+      resolvedAt: a.resolved_at,
+      resolvedBy: a.resolved_by,
+      alertType: a.alert_type,
+      userId: a.user_id,
+      transactionId: a.transaction_id
+    })),
+    recentKyc: recentKyc.map(k => ({
+      ...k,
+      userId: k.user_id,
+      documentType: k.document_type,
+      documentUrl: k.document_url,
+      rejectReason: k.reject_reason,
+      submittedAt: k.submitted_at,
+      reviewedAt: k.reviewed_at,
+      reviewedBy: k.reviewed_by
+    }))
+  })
+})
+
+// GET /api/admin/compliance/kyc - List KYC documents
+app.get('/api/admin/compliance/kyc', authMiddleware, (req, res) => {
+  const status = req.query.status
+  let query = 'SELECT k.*, m.username FROM kyc_documents k LEFT JOIN members m ON k.user_id = m.id'
+  const params = []
+  if (status) {
+    query += ' WHERE k.status = ?'
+    params.push(status)
+  }
+  query += ' ORDER BY k.submitted_at DESC'
+  const rows = db.prepare(query).all(...params)
+  res.json(rows.map(r => ({
+    id: r.id,
+    userId: r.user_id,
+    username: r.username || r.user_id,
+    documentType: r.document_type,
+    documentUrl: r.document_url,
+    status: r.status,
+    rejectReason: r.reject_reason,
+    submittedAt: r.submitted_at,
+    reviewedAt: r.reviewed_at,
+    reviewedBy: r.reviewed_by
+  })))
+})
+
+// PUT /api/admin/compliance/kyc/:id - Approve/Reject KYC
+app.put('/api/admin/compliance/kyc/:id', authMiddleware, (req, res) => {
+  const { action, rejectReason } = req.body
+  const kyc = db.prepare('SELECT * FROM kyc_documents WHERE id = ?').get(req.params.id)
+  if (!kyc) return res.status(404).json({ error: 'KYC document not found' })
+
+  const newStatus = action === 'approve' ? 'approved' : 'rejected'
+  db.prepare(`UPDATE kyc_documents SET status = ?, reject_reason = ?, reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`).run(
+    newStatus, action === 'reject' ? (rejectReason || '') : '', req.user.username, req.params.id
+  )
+
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
+    req.user.username, action === 'approve' ? 'KYC审批通过' : 'KYC审批拒绝', kyc.user_id, `KYC ${action} for ${kyc.user_id}`, req.ip || '10.0.0.1'
+  )
+
+  res.json({ success: true, status: newStatus })
+})
+
+// GET /api/admin/compliance/aml/alerts - AML alerts list
+app.get('/api/admin/compliance/aml/alerts', authMiddleware, (req, res) => {
+  const status = req.query.status
+  let query = 'SELECT a.*, m.username FROM aml_alerts a LEFT JOIN members m ON a.user_id = m.id'
+  const params = []
+  if (status) {
+    query += ' WHERE a.status = ?'
+    params.push(status)
+  }
+  query += ' ORDER BY a.created_at DESC'
+  const rows = db.prepare(query).all(...params)
+  res.json(rows.map(r => ({
+    id: r.id,
+    userId: r.user_id,
+    username: r.username || r.user_id,
+    transactionId: r.transaction_id,
+    alertType: r.alert_type,
+    amount: r.amount,
+    description: r.description,
+    status: r.status,
+    createdAt: r.created_at,
+    resolvedAt: r.resolved_at,
+    resolvedBy: r.resolved_by
+  })))
+})
+
+// PUT /api/admin/compliance/aml/alerts/:id - Resolve AML alert
+app.put('/api/admin/compliance/aml/alerts/:id', authMiddleware, (req, res) => {
+  const { action } = req.body
+  const alert = db.prepare('SELECT * FROM aml_alerts WHERE id = ?').get(req.params.id)
+  if (!alert) return res.status(404).json({ error: 'AML alert not found' })
+
+  const newStatus = action === 'dismiss' ? 'dismissed' : action === 'escalate' ? 'escalated' : 'resolved'
+  db.prepare(`UPDATE aml_alerts SET status = ?, resolved_at = datetime('now'), resolved_by = ? WHERE id = ?`).run(
+    newStatus, req.user.username, req.params.id
+  )
+
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
+    req.user.username, 'AML处理', String(alert.id), `AML alert ${action}: ${alert.alert_type} for ${alert.user_id}`, req.ip || '10.0.0.1'
+  )
+
+  res.json({ success: true, status: newStatus })
+})
+
+// GET /api/admin/compliance/exclusions - Self-exclusion list
+app.get('/api/admin/compliance/exclusions', authMiddleware, (req, res) => {
+  const rows = db.prepare('SELECT e.*, m.username FROM self_exclusions e LEFT JOIN members m ON e.user_id = m.id ORDER BY e.start_date DESC').all()
+  res.json(rows.map(r => ({
+    id: r.id,
+    userId: r.user_id,
+    username: r.username || r.user_id,
+    exclusionType: r.exclusion_type,
+    startDate: r.start_date,
+    endDate: r.end_date,
+    status: r.status,
+    reason: r.reason
+  })))
+})
+
+// PUT /api/admin/compliance/exclusions/:id - Manage exclusion (revoke)
+app.put('/api/admin/compliance/exclusions/:id', authMiddleware, (req, res) => {
+  const { action } = req.body
+  const exclusion = db.prepare('SELECT * FROM self_exclusions WHERE id = ?').get(req.params.id)
+  if (!exclusion) return res.status(404).json({ error: 'Exclusion not found' })
+
+  if (action === 'revoke') {
+    db.prepare("UPDATE self_exclusions SET status = 'revoked' WHERE id = ?").run(req.params.id)
+    // Reactivate member account
+    db.prepare("UPDATE members SET status = 'active' WHERE id = ?").run(exclusion.user_id)
+  }
+
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
+    req.user.username, '自我排除管理', exclusion.user_id, `${action} exclusion for ${exclusion.user_id}`, req.ip || '10.0.0.1'
+  )
+
+  res.json({ success: true })
+})
+
+// GET /api/admin/compliance/settings - Compliance/responsible gaming settings
+app.get('/api/admin/compliance/settings', authMiddleware, (req, res) => {
+  const rows = db.prepare('SELECT * FROM compliance_settings ORDER BY category, key').all()
+  const settings = {}
+  for (const r of rows) {
+    if (!settings[r.category]) settings[r.category] = {}
+    settings[r.category][r.key] = r.value
+  }
+
+  // Return defaults if no settings exist
+  if (!settings.responsible_gaming) {
+    settings.responsible_gaming = {
+      default_daily_deposit_limit: '50000',
+      default_weekly_deposit_limit: '200000',
+      default_monthly_deposit_limit: '500000',
+      default_daily_bet_limit: '100000',
+      default_weekly_bet_limit: '500000',
+      default_monthly_bet_limit: '1000000',
+      cooling_off_periods: '24h,7d,30d,6m,permanent',
+      age_verification_required: 'true',
+      minimum_age: '18',
+      aml_threshold: '10000'
+    }
+  }
+
+  res.json(settings)
+})
+
+// PUT /api/admin/compliance/settings - Update compliance settings
+app.put('/api/admin/compliance/settings', authMiddleware, (req, res) => {
+  const updates = req.body
+  const stmt = db.prepare("INSERT OR REPLACE INTO compliance_settings (key, value, category, updated_at) VALUES (?,?,?,datetime('now'))")
+  const tx = db.transaction((data) => {
+    for (const [category, entries] of Object.entries(data)) {
+      for (const [key, value] of Object.entries(entries)) {
+        stmt.run(key, String(value), category)
+      }
+    }
+  })
+  tx(updates)
+
+  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
+    req.user.username, '合规设置更新', 'compliance_settings', 'Updated compliance settings', req.ip || '10.0.0.1'
+  )
+
+  res.json({ success: true })
+})
+
 // ==================== BANNERS ====================
 app.get('/api/admin/banners', authMiddleware, (req, res) => {
   const rows = db.prepare('SELECT * FROM banners ORDER BY sort').all()
