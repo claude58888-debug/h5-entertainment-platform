@@ -11,7 +11,7 @@
 
       <div style="margin-bottom: 16px; padding: 12px; background: #252538; border-radius: 8px; color: #a0a0b0; font-size: 13px;">
         <el-icon><InfoFilled /></el-icon>
-        返水公式：投注金额 x 游戏抽水比例 x VIP返水比例
+        返水公式：投注金额 x 游戏抽水比例(House Edge) x VIP返水比例 | 每日自动结算 | 最低 1 CNY 起发放
       </div>
 
       <el-row :gutter="20">
@@ -85,23 +85,25 @@
       </div>
       <div class="filter-bar">
         <el-input v-model="search" placeholder="搜索用户名" style="width: 200px;" clearable prefix-icon="Search" />
-        <el-select v-model="gameTypeFilter" placeholder="游戏类型" style="width: 140px;" clearable>
-          <el-option label="电子游戏" value="slots" />
-          <el-option label="真人视讯" value="live" />
-          <el-option label="体育竞猜" value="sports" />
-          <el-option label="棋牌游戏" value="chess" />
+        <el-select v-model="statusFilter" placeholder="状态" style="width: 120px;" clearable>
+          <el-option label="待结算" value="pending" />
+          <el-option label="已结算" value="settled" />
         </el-select>
-        <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" style="width: 260px;" />
       </div>
       <el-table :data="filteredRecords" stripe>
-        <el-table-column prop="id" label="ID" width="100" />
-        <el-table-column prop="username" label="用户" width="130" />
-        <el-table-column label="投注金额" width="130" sortable sort-by="betAmount">
-          <template #default="{ row }">¥{{ row.betAmount.toLocaleString() }}</template>
-        </el-table-column>
-        <el-table-column label="返水金额" width="120" sortable sort-by="rakebackAmount">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="member" label="用户" width="130" />
+        <el-table-column label="VIP等级" width="90">
           <template #default="{ row }">
-            <span style="color: #e6a23c;">¥{{ row.rakebackAmount.toFixed(2) }}</span>
+            <el-tag size="small">VIP{{ row.vipLevel || 0 }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="总投注" width="130">
+          <template #default="{ row }">¥{{ (row.totalBets || row.betAmount || 0).toLocaleString() }}</template>
+        </el-table-column>
+        <el-table-column label="返水金额" width="120">
+          <template #default="{ row }">
+            <span style="color: #e6a23c;">¥{{ (row.calculatedRakeback || row.rakebackAmount || 0).toFixed(2) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="游戏类型" width="110">
@@ -109,7 +111,7 @@
             <el-tag size="small" :type="gameTagType(row.gameType)">{{ gameTypeLabel(row.gameType) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="settledAt" label="结算时间" width="170" />
+        <el-table-column prop="date" label="结算日期" width="120" />
         <el-table-column label="状态" width="90">
           <template #default="{ row }">
             <el-tag :type="row.status === 'settled' ? 'success' : 'warning'" size="small">
@@ -137,25 +139,36 @@ const config = ref({
     sports: { min: 3.0, max: 4.0 },
     chess: { min: 2.0, max: 3.0 }
   },
-  vipRakebackRates: [],
+  vipRakebackRates: [
+    { level: 0, rate: 0.5 },
+    { level: 1, rate: 0.7 },
+    { level: 2, rate: 0.9 },
+    { level: 3, rate: 1.1 },
+    { level: 4, rate: 1.3 },
+    { level: 5, rate: 1.5 }
+  ],
   minAmount: 1,
   autoDailySettle: true
 })
 
 const search = ref('')
-const gameTypeFilter = ref('')
-const dateRange = ref(null)
+const statusFilter = ref('')
 const records = ref([])
 
 onMounted(async () => {
   try {
     const [configData, recordsData] = await Promise.all([getRakebackConfig(), getRakebackRecords()])
-    if (configData?.length) {
-      config.value.vipRakebackRates = configData.map(c => ({ level: c.vipLevel, rate: c.rakebackRate }))
-      const first = configData[0]
-      if (first) {
-        config.value.minAmount = first.minBet || 1
-        config.value.autoDailySettle = first.status === 'active'
+    if (configData && configData.length) {
+      for (const c of configData) {
+        if (c.gameType === 'slots') {
+          config.value.houseEdge.slots = { min: c.houseEdgeMin || 4.0, max: c.houseEdgeMax || 5.0 }
+        } else if (c.gameType === 'live') {
+          config.value.houseEdge.live = { min: c.houseEdgeMin || 1.5, max: c.houseEdgeMax || 2.5 }
+        } else if (c.gameType === 'sports') {
+          config.value.houseEdge.sports = { min: c.houseEdgeMin || 3.0, max: c.houseEdgeMax || 4.0 }
+        } else if (c.gameType === 'chess') {
+          config.value.houseEdge.chess = { min: c.houseEdgeMin || 2.0, max: c.houseEdgeMax || 3.0 }
+        }
       }
     }
     records.value = recordsData || []
@@ -164,8 +177,8 @@ onMounted(async () => {
 
 const filteredRecords = computed(() => {
   return records.value.filter(r => {
-    if (search.value && !r.username.includes(search.value)) return false
-    if (gameTypeFilter.value && r.gameType !== gameTypeFilter.value) return false
+    if (search.value && !(r.member || '').includes(search.value)) return false
+    if (statusFilter.value && r.status !== statusFilter.value) return false
     return true
   })
 })
@@ -182,8 +195,20 @@ function gameTagType(type) {
 
 async function saveConfig() {
   try {
-    for (const rate of config.value.vipRakebackRates) {
-      await updateRakebackConfig(rate.level, { rakebackRate: rate.rate, minBet: config.value.minAmount, status: config.value.autoDailySettle ? 'active' : 'inactive' })
+    const gameTypes = [
+      { type: 'slots', edge: config.value.houseEdge.slots },
+      { type: 'live', edge: config.value.houseEdge.live },
+      { type: 'sports', edge: config.value.houseEdge.sports },
+      { type: 'chess', edge: config.value.houseEdge.chess }
+    ]
+    for (const gt of gameTypes) {
+      await updateRakebackConfig(gt.type, {
+        houseEdgeMin: gt.edge.min,
+        houseEdgeMax: gt.edge.max,
+        defaultEdge: (gt.edge.min + gt.edge.max) / 2,
+        minBet: config.value.minAmount,
+        status: config.value.autoDailySettle ? 'active' : 'inactive'
+      })
     }
     ElMessage.success('返水配置已保存')
   } catch (e) {

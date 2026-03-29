@@ -47,3 +47,11 @@ export function getSettings() {
 export function updateSettings(data) {
   return api.put('/api/admin/settings', data)
 }
+
+export function getPermissions(role) {
+  return api.get('/api/admin/system/permissions', { params: { role } })
+}
+
+export function updatePermissions(role, permissions) {
+  return api.put(`/api/admin/system/permissions/${role}`, { permissions })
+}

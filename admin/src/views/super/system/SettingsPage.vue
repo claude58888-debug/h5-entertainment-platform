@@ -20,6 +20,36 @@
             <el-form-item label="时区">
               <el-select v-model="settings.timezone"><el-option label="Asia/Shanghai (UTC+8)" value="Asia/Shanghai" /><el-option label="UTC" value="UTC" /></el-select>
             </el-form-item>
+            <el-divider />
+            <el-form-item label="USDT刷新频率">
+              <el-select v-model="settings.usdtRefreshInterval" style="width: 200px;">
+                <el-option label="手动刷新" value="manual" />
+                <el-option label="每小时" value="hourly" />
+                <el-option label="每天" value="daily" />
+              </el-select>
+              <span v-if="settings.lastUsdtRefresh" style="margin-left: 12px; color: #a0a0b0; font-size: 12px;">
+                上次刷新: {{ settings.lastUsdtRefresh }}
+              </span>
+            </el-form-item>
+            <el-form-item label="提现审核阈值">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <el-input-number v-model="settings.withdrawalReviewThreshold" :min="0" :step="1000" style="width: 200px;" />
+                <span style="color: #a0a0b0;">CNY (超过此金额需人工审核)</span>
+              </div>
+            </el-form-item>
+            <el-divider />
+            <el-form-item label="VIP积分规则">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="color: #a0a0b0;">每投注 10 CNY = 1 积分 | 6个VIP等级</span>
+                <el-button type="primary" text size="small" @click="$router.push('/super/vip')">前往VIP管理</el-button>
+              </div>
+            </el-form-item>
+            <el-form-item label="返水设置">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="color: #a0a0b0;">VIP0: 0.5% ~ VIP5: 1.5% | 每日自动结算</span>
+                <el-button type="primary" text size="small" @click="$router.push('/super/rakeback')">前往返水管理</el-button>
+              </div>
+            </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="save">保存设置</el-button>
             </el-form-item>
@@ -68,6 +98,47 @@
           </div>
         </div>
       </el-tab-pane>
+
+      <el-tab-pane label="权限管理" name="permissions">
+        <div class="table-card">
+          <div style="margin-bottom: 16px; padding: 12px; background: #252538; border-radius: 8px; color: #a0a0b0; font-size: 13px;">
+            <el-icon><InfoFilled /></el-icon>
+            RBAC权限管理：为不同角色分配模块访问权限。superadmin拥有所有权限。
+          </div>
+          <el-tabs v-model="selectedRole" type="card">
+            <el-tab-pane v-for="role in roles" :key="role.key" :label="role.label" :name="role.key">
+              <el-table :data="rolePermissions[role.key] || []" stripe size="small">
+                <el-table-column prop="module" label="模块" width="150">
+                  <template #default="{ row }">{{ moduleLabel(row.module) }}</template>
+                </el-table-column>
+                <el-table-column label="查看" width="100" align="center">
+                  <template #default="{ row }">
+                    <el-checkbox v-model="row.canView" :disabled="role.key === 'superadmin'" />
+                  </template>
+                </el-table-column>
+                <el-table-column label="创建" width="100" align="center">
+                  <template #default="{ row }">
+                    <el-checkbox v-model="row.canCreate" :disabled="role.key === 'superadmin'" />
+                  </template>
+                </el-table-column>
+                <el-table-column label="编辑" width="100" align="center">
+                  <template #default="{ row }">
+                    <el-checkbox v-model="row.canEdit" :disabled="role.key === 'superadmin'" />
+                  </template>
+                </el-table-column>
+                <el-table-column label="删除" width="100" align="center">
+                  <template #default="{ row }">
+                    <el-checkbox v-model="row.canDelete" :disabled="role.key === 'superadmin'" />
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div style="margin-top: 16px;">
+                <el-button type="primary" size="small" @click="savePermissions(role.key)" :disabled="role.key === 'superadmin'">保存权限</el-button>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </div>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -75,9 +146,10 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getSettings, updateSettings } from '@/api/system'
+import { getSettings, updateSettings, getPermissions, updatePermissions } from '@/api/system'
 
 const activeTab = ref('global')
+const selectedRole = ref('admin')
 const settings = reactive({
   platformName: '',
   maintenance: false,
@@ -88,8 +160,41 @@ const settings = reactive({
   maxLoginAttempts: 5,
   sessionTimeout: 120,
   force2FA: false,
-  adminIpWhitelist: ''
+  adminIpWhitelist: '',
+  usdtRefreshInterval: 'manual',
+  lastUsdtRefresh: '',
+  withdrawalReviewThreshold: 50000
 })
+
+const roles = [
+  { key: 'superadmin', label: '超级管理员' },
+  { key: 'admin', label: '管理员' },
+  { key: 'finance', label: '财务' },
+  { key: 'cs', label: '客服' },
+  { key: 'risk', label: '风控' }
+]
+
+const permModules = ['dashboard', 'members', 'agents', 'finance', 'games', 'risk', 'system', 'compliance', 'vip', 'rakeback', 'messages']
+
+const rolePermissions = reactive({})
+
+const defaultPerms = {
+  superadmin: permModules.map(m => ({ module: m, canView: true, canCreate: true, canEdit: true, canDelete: true })),
+  admin: permModules.map(m => ({ module: m, canView: true, canCreate: m !== 'system', canEdit: m !== 'system', canDelete: false })),
+  finance: permModules.map(m => ({ module: m, canView: ['dashboard', 'finance', 'members'].includes(m), canCreate: m === 'finance', canEdit: m === 'finance', canDelete: false })),
+  cs: permModules.map(m => ({ module: m, canView: ['dashboard', 'members', 'messages'].includes(m), canCreate: ['messages'].includes(m), canEdit: ['members', 'messages'].includes(m), canDelete: false })),
+  risk: permModules.map(m => ({ module: m, canView: ['dashboard', 'risk', 'compliance', 'members'].includes(m), canCreate: ['risk'].includes(m), canEdit: ['risk', 'compliance'].includes(m), canDelete: false }))
+}
+
+function moduleLabel(mod) {
+  const map = {
+    dashboard: '仪表盘', members: '会员管理', agents: '代理管理',
+    finance: '财务管理', games: '游戏管理', risk: '风控管理',
+    system: '系统设置', compliance: '合规管理', vip: 'VIP管理',
+    rakeback: '返水管理', messages: '消息管理'
+  }
+  return map[mod] || mod
+}
 
 function applySettings(data) {
   if (!data || typeof data !== 'object') return
@@ -123,6 +228,29 @@ onMounted(async () => {
     const data = await getSettings()
     applySettings(data)
   } catch (e) { console.warn('API request failed', e) }
+
+  // Load RBAC permissions
+  try {
+    for (const role of roles) {
+      const perms = await getPermissions(role.key)
+      if (perms && perms.length > 0) {
+        rolePermissions[role.key] = perms.map(p => ({
+          module: p.module,
+          canView: Boolean(p.canView),
+          canCreate: Boolean(p.canCreate),
+          canEdit: Boolean(p.canEdit),
+          canDelete: Boolean(p.canDelete)
+        }))
+      } else {
+        rolePermissions[role.key] = defaultPerms[role.key] || []
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load permissions, using defaults', e)
+    for (const role of roles) {
+      rolePermissions[role.key] = defaultPerms[role.key] || []
+    }
+  }
 })
 
 const assets = ref([
@@ -138,6 +266,16 @@ async function save() {
   try {
     await updateSettings(settings)
     ElMessage.success('设置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
+
+async function savePermissions(role) {
+  try {
+    const perms = rolePermissions[role]
+    await updatePermissions(role, perms)
+    ElMessage.success('权限已保存')
   } catch (e) {
     ElMessage.error('保存失败')
   }
