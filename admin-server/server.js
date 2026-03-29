@@ -22,6 +22,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-admin-server-key'
 // Initialize database
 initDB()
 
+// Trust proxy for correct IP detection behind reverse proxies (needed for rate limiting)
+app.set('trust proxy', 1)
+
 // ==================== SECURITY MIDDLEWARE ====================
 
 // Helmet security headers
