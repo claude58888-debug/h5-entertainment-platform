@@ -202,11 +202,15 @@ insertChannel.run('USDT-ERC20', 'crypto', 'active', 0.5, 500, 500000, 650000, 3)
 insertChannel.run('银行转账', 'bank', 'active', 0, 200, 200000, 356000, 0)
 
 // ===== Settlement Records =====
-const insertSettlement = db.prepare(`INSERT INTO settlements (id, agent, period, ggr, share_rate, amount, status, paid_time) VALUES (?,?,?,?,?,?,?,?)`)
-insertSettlement.run('STL001', '金沙娱乐', '2026-02-24 ~ 2026-03-02', 1250000, 45, 562500, 'paid', '2026-03-03 10:00')
-insertSettlement.run('STL002', '皇冠体育', '2026-02-24 ~ 2026-03-02', 850000, 40, 340000, 'paid', '2026-03-03 10:00')
-insertSettlement.run('STL003', '新濠天地', '2026-02-24 ~ 2026-03-02', 620000, 8, 49600, 'pending', '')
-insertSettlement.run('STL004', '澳门威尼斯', '2026-02-24 ~ 2026-03-02', 780000, 38, 296400, 'approved', '')
+const insertSettlement = db.prepare(`INSERT INTO settlements (id, agent, month, subordinates, total_bets, commission_rate, commission_amount, upstream_deduction, status, paid_time) VALUES (?,?,?,?,?,?,?,?,?,?)`)
+insertSettlement.run('STL001', '金沙娱乐', '2026-03', 156, 18500000, 45, 8325000, 0, 'pending', '')
+insertSettlement.run('STL002', '皇冠体育', '2026-03', 45, 8900000, 30, 2670000, 133500, 'pending', '')
+insertSettlement.run('STL003', '新濠天地', '2026-03', 28, 6200000, 30, 1860000, 93000, 'pending', '')
+insertSettlement.run('STL004', '永利娱乐', '2026-03', 85, 12000000, 35, 4200000, 0, 'pending', '')
+insertSettlement.run('STL005', '澳门威尼斯', '2026-03', 32, 4500000, 30, 1350000, 67500, 'pending', '')
+insertSettlement.run('STL006', '金沙娱乐', '2026-02', 148, 16800000, 45, 7560000, 0, 'paid', '2026-03-03 10:00')
+insertSettlement.run('STL007', '皇冠体育', '2026-02', 42, 8200000, 30, 2460000, 123000, 'paid', '2026-03-03 10:00')
+insertSettlement.run('STL008', '新濠天地', '2026-02', 25, 5800000, 30, 1740000, 87000, 'settled', '')
 
 // ===== Financial Summary =====
 const insertFinancial = db.prepare(`INSERT INTO financial_summary (date, deposit, withdrawal, bonus, ggr, ngr) VALUES (?,?,?,?,?,?)`)

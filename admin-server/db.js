@@ -255,10 +255,12 @@ export function initDB() {
     CREATE TABLE IF NOT EXISTS settlements (
       id TEXT PRIMARY KEY,
       agent TEXT NOT NULL,
-      period TEXT,
-      ggr REAL DEFAULT 0,
-      share_rate REAL DEFAULT 0,
-      amount REAL DEFAULT 0,
+      month TEXT,
+      subordinates INTEGER DEFAULT 0,
+      total_bets REAL DEFAULT 0,
+      commission_rate REAL DEFAULT 0,
+      commission_amount REAL DEFAULT 0,
+      upstream_deduction REAL DEFAULT 0,
       status TEXT DEFAULT 'pending',
       paid_time TEXT DEFAULT ''
     );

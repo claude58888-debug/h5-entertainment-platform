@@ -91,23 +91,37 @@ const settings = reactive({
   adminIpWhitelist: ''
 })
 
+function applySettings(data) {
+  if (!data || typeof data !== 'object') return
+  // Handle grouped format: { global: {...}, security: {...}, finance: {...} }
+  const flat = {}
+  for (const [category, entries] of Object.entries(data)) {
+    if (typeof entries === 'object' && entries !== null) {
+      Object.assign(flat, entries)
+    }
+  }
+  if (flat.site_name) settings.platformName = flat.site_name
+  if (flat.platformName) settings.platformName = flat.platformName
+  if (flat.maintenance_mode !== undefined) settings.maintenance = flat.maintenance_mode === 'true'
+  if (flat.maintenance !== undefined) settings.maintenance = flat.maintenance === 'true'
+  if (flat.maintenanceMsg) settings.maintenanceMsg = flat.maintenanceMsg
+  if (flat.register_enabled !== undefined) settings.allowRegister = flat.register_enabled === 'true'
+  if (flat.allowRegister !== undefined) settings.allowRegister = flat.allowRegister === 'true'
+  if (flat.currency) settings.currency = flat.currency
+  if (flat.timezone) settings.timezone = flat.timezone
+  if (flat.maxLoginAttempts) settings.maxLoginAttempts = parseInt(flat.maxLoginAttempts) || 5
+  if (flat.session_timeout) settings.sessionTimeout = parseInt(flat.session_timeout) || 120
+  if (flat.sessionTimeout) settings.sessionTimeout = parseInt(flat.sessionTimeout) || 120
+  if (flat.two_factor_enabled !== undefined) settings.force2FA = flat.two_factor_enabled === 'true'
+  if (flat.force2FA !== undefined) settings.force2FA = flat.force2FA === 'true'
+  if (flat.ip_whitelist_enabled !== undefined) settings.adminIpWhitelist = flat.adminIpWhitelist || ''
+  if (flat.adminIpWhitelist) settings.adminIpWhitelist = flat.adminIpWhitelist
+}
+
 onMounted(async () => {
   try {
     const data = await getSettings()
-    if (data && Array.isArray(data)) {
-      for (const item of data) {
-        if (item.key === 'platformName') settings.platformName = item.value
-        else if (item.key === 'maintenance') settings.maintenance = item.value === 'true'
-        else if (item.key === 'maintenanceMsg') settings.maintenanceMsg = item.value
-        else if (item.key === 'allowRegister') settings.allowRegister = item.value === 'true'
-        else if (item.key === 'currency') settings.currency = item.value
-        else if (item.key === 'timezone') settings.timezone = item.value
-        else if (item.key === 'maxLoginAttempts') settings.maxLoginAttempts = parseInt(item.value) || 5
-        else if (item.key === 'sessionTimeout') settings.sessionTimeout = parseInt(item.value) || 120
-        else if (item.key === 'force2FA') settings.force2FA = item.value === 'true'
-        else if (item.key === 'adminIpWhitelist') settings.adminIpWhitelist = item.value
-      }
-    }
+    applySettings(data)
   } catch (e) { console.warn('API request failed', e) }
 })
 
