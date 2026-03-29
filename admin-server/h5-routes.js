@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 import db from './db.js'
 
 const router = Router()
@@ -29,7 +30,7 @@ function h5Auth(req, res, next) {
 // ==================== AUTH ====================
 
 // POST /api/h5/auth/register
-router.post('/auth/register', (req, res) => {
+router.post('/auth/register', async (req, res) => {
   const { username, password, phone } = req.body
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password required' })
@@ -56,9 +57,10 @@ router.post('/auth/register', (req, res) => {
     db.prepare(`INSERT INTO members (id, username, agent, vip, balance, status, registered, last_login, total_deposit, total_withdraw, tags)
       VALUES (?, ?, '', 0, 0, 'active', datetime('now'), datetime('now'), 0, 0, '["H5"]')`).run(memberId, username)
 
-    // Insert into h5_users table
+    // Insert into h5_users table with hashed password
+    const hashedPassword = await bcrypt.hash(password, 10)
     db.prepare(`INSERT INTO h5_users (username, password, phone, nickname, member_id, last_login)
-      VALUES (?, ?, ?, ?, ?, datetime('now'))`).run(username, password, phone || '', username, memberId)
+      VALUES (?, ?, ?, ?, ?, datetime('now'))`).run(username, hashedPassword, phone || '', username, memberId)
 
     const h5user = db.prepare('SELECT * FROM h5_users WHERE username = ?').get(username)
 
@@ -90,7 +92,7 @@ router.post('/auth/register', (req, res) => {
 })
 
 // POST /api/h5/auth/login
-router.post('/auth/login', (req, res) => {
+router.post('/auth/login', async (req, res) => {
   const { phone, password, username } = req.body
   const loginName = username || phone
   if (!loginName || !password) {
@@ -98,7 +100,11 @@ router.post('/auth/login', (req, res) => {
   }
 
   const h5user = db.prepare('SELECT * FROM h5_users WHERE username = ? OR phone = ?').get(loginName, loginName)
-  if (!h5user || h5user.password !== password) {
+  if (!h5user) {
+    return res.status(401).json({ error: 'Invalid credentials' })
+  }
+  const pwdMatch = await bcrypt.compare(password, h5user.password)
+  if (!pwdMatch) {
     return res.status(401).json({ error: 'Invalid credentials' })
   }
   if (h5user.status !== 'active') {
@@ -168,7 +174,7 @@ router.put('/user/profile', h5Auth, (req, res) => {
 })
 
 // PUT /api/h5/user/password
-router.put('/user/password', h5Auth, (req, res) => {
+router.put('/user/password', h5Auth, async (req, res) => {
   const { oldPassword, newPassword } = req.body
   if (!oldPassword || !newPassword) {
     return res.status(400).json({ error: 'Old and new password required' })
@@ -178,11 +184,13 @@ router.put('/user/password', h5Auth, (req, res) => {
   }
 
   const h5user = db.prepare('SELECT * FROM h5_users WHERE id = ?').get(req.h5user.id)
-  if (h5user.password !== oldPassword) {
+  const oldPwdMatch = await bcrypt.compare(oldPassword, h5user.password)
+  if (!oldPwdMatch) {
     return res.status(400).json({ error: 'Old password incorrect' })
   }
 
-  db.prepare('UPDATE h5_users SET password = ? WHERE id = ?').run(newPassword, req.h5user.id)
+  const hashedNewPassword = await bcrypt.hash(newPassword, 10)
+  db.prepare('UPDATE h5_users SET password = ? WHERE id = ?').run(hashedNewPassword, req.h5user.id)
   res.json({ success: true })
 })
 

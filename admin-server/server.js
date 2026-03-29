@@ -1,32 +1,140 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
+import compression from 'compression'
+import bcrypt from 'bcrypt'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import db, { initDB } from './db.js'
 import h5Routes from './h5-routes.js'
+import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, handleValidationErrors } from './validation.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = process.env.PORT || 3001
+const NODE_ENV = process.env.NODE_ENV || 'development'
 // JWT_SECRET must be set via environment variable in production
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-admin-server-key'
 
 // Initialize database
 initDB()
 
-// Middleware
-app.use(cors())
-app.use(express.json())
+// ==================== SECURITY MIDDLEWARE ====================
 
-// Serve admin frontend static files
+// Helmet security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:', '*'],
+      connectSrc: ["'self'", '*'],
+      fontSrc: ["'self'", 'data:'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}))
+
+// Remove X-Powered-By header
+app.disable('x-powered-by')
+
+// Gzip compression
+app.use(compression())
+
+// CORS configuration
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
+  : ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:3000']
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true)
+    }
+    return callback(new Error('Not allowed by CORS'))
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400
+}))
+
+app.use(express.json({ limit: '10mb' }))
+
+// General rate limiter: 100 requests per 15 minutes
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: '请求过于频繁，请稍后再试。' },
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
+// Strict rate limiter for auth endpoints: 5 attempts per 15 minutes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: '登录尝试过于频繁，请15分钟后再试。' },
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
+// Apply general rate limiter to all API endpoints
+app.use('/api', generalLimiter)
+
+// Apply strict rate limiter to auth endpoints
+app.use('/api/auth/login', authLimiter)
+app.use('/api/auth/admin-login', authLimiter)
+app.use('/api/h5/auth/login', authLimiter)
+
+// ==================== STATIC FILES ====================
+
 const adminDist = path.join(__dirname, '..', 'admin', 'dist')
-app.use('/admin', express.static(adminDist))
+app.use('/admin', express.static(adminDist, {
+  maxAge: NODE_ENV === 'production' ? '1d' : 0,
+  etag: true
+}))
 
-// Serve H5 frontend static files
 const h5Dist = path.join(__dirname, '..', 'dist')
-app.use('/assets', express.static(path.join(h5Dist, 'assets')))
-app.use('/img', express.static(path.join(h5Dist, 'img')))
+app.use('/assets', express.static(path.join(h5Dist, 'assets'), {
+  maxAge: NODE_ENV === 'production' ? '7d' : 0,
+  immutable: NODE_ENV === 'production',
+  etag: true
+}))
+app.use('/img', express.static(path.join(h5Dist, 'img'), {
+  maxAge: NODE_ENV === 'production' ? '7d' : 0,
+  etag: true
+}))
+
+// ==================== AUDIT LOGGING HELPER ====================
+
+function auditLog(operator, action, target, detail, ip) {
+  try {
+    db.prepare("INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)").run(
+      operator, action, target || '', detail || '', ip || '0.0.0.0'
+    )
+  } catch (err) {
+    console.error('[' + new Date().toISOString() + '] Audit log error:', err.message)
+  }
+}
+
+function logLoginAttempt(username, success, ip) {
+  const action = success ? '登录成功' : '登录失败'
+  const detail = success ? '管理员 ' + username + ' 登录成功' : '管理员 ' + username + ' 登录失败'
+  auditLog(username || 'unknown', action, 'auth', detail, ip)
+}
 
 // Mount H5 API routes
 app.use('/api/h5', h5Routes)
@@ -48,35 +156,45 @@ function authMiddleware(req, res, next) {
 }
 
 // ==================== AUTH ====================
-app.post('/api/auth/admin-login', (req, res) => {
-  const { username, password, role } = req.body
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required' })
+app.post('/api/auth/admin-login', validateAdminLogin, handleValidationErrors, async (req, res, next) => {
+  try {
+    const { username, password, role } = req.body
+    const clientIp = req.ip || req.connection.remoteAddress || '0.0.0.0'
+
+    const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username)
+    if (!admin) {
+      logLoginAttempt(username, false, clientIp)
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+
+    const pwdMatch = await bcrypt.compare(password, admin.password)
+    if (!pwdMatch) {
+      logLoginAttempt(username, false, clientIp)
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+    if (admin.status !== 'active') {
+      logLoginAttempt(username, false, clientIp)
+      return res.status(403).json({ error: 'Account disabled' })
+    }
+
+    db.prepare(`UPDATE admins SET last_login = datetime('now') WHERE id = ?`).run(admin.id)
+
+    logLoginAttempt(username, true, clientIp)
+
+    const tokenRole = role || admin.role
+    const token = jwt.sign(
+      { id: admin.id, username: admin.username, role: tokenRole, displayName: admin.display_name },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    )
+
+    res.json({
+      user: { username: admin.username, displayName: admin.display_name },
+      access_token: token
+    })
+  } catch (err) {
+    next(err)
   }
-
-  const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username)
-  const pwdMatch = admin && admin.password === password
-  if (!pwdMatch) {
-    return res.status(401).json({ error: 'Invalid credentials' })
-  }
-  if (admin.status !== 'active') {
-    return res.status(403).json({ error: 'Account disabled' })
-  }
-
-  // Update last login
-  db.prepare(`UPDATE admins SET last_login = datetime('now') WHERE id = ?`).run(admin.id)
-
-  const tokenRole = role || admin.role
-  const token = jwt.sign(
-    { id: admin.id, username: admin.username, role: tokenRole, displayName: admin.display_name },
-    JWT_SECRET,
-    { expiresIn: '24h' }
-  )
-
-  res.json({
-    user: { username: admin.username, displayName: admin.display_name },
-    access_token: token
-  })
 })
 
 // ==================== DASHBOARD ====================
@@ -143,21 +261,23 @@ app.put('/api/admin/members/:id/action', authMiddleware, (req, res) => {
   const newStatus = action === 'freeze' ? 'frozen' : 'active'
   db.prepare('UPDATE members SET status = ? WHERE id = ?').run(newStatus, req.params.id)
 
-  // Audit log
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, action === 'freeze' ? '冻结账户' : '解冻账户', req.params.id, `${action} member`, req.ip || '10.0.0.1'
-  )
+  auditLog(req.user.username, action === 'freeze' ? '冻结账户' : '解冻账户', req.params.id, action + ' member', req.ip || '0.0.0.0')
 
   res.json({ success: true, status: newStatus })
 })
 
-app.post('/api/admin/members', authMiddleware, (req, res) => {
-  const { username, agent, vip, balance, status } = req.body
-  const id = 'M' + (10000 + db.prepare('SELECT COUNT(*) as c FROM members').get().c + 1)
-  db.prepare('INSERT INTO members (id, username, agent, vip, balance, status, tags) VALUES (?,?,?,?,?,?,?)').run(
-    id, username, agent || '', vip || 0, balance || 0, status || 'active', '[]'
-  )
-  res.json({ success: true, id })
+app.post('/api/admin/members', authMiddleware, validateCreateMember, handleValidationErrors, (req, res, next) => {
+  try {
+    const { username, agent, vip, balance, status } = req.body
+    const id = 'M' + (10000 + db.prepare('SELECT COUNT(*) as c FROM members').get().c + 1)
+    db.prepare('INSERT INTO members (id, username, agent, vip, balance, status, tags) VALUES (?,?,?,?,?,?,?)').run(
+      id, username, agent || '', vip || 0, balance || 0, status || 'active', '[]'
+    )
+    auditLog(req.user.username, '创建会员', id, '创建会员 ' + username, req.ip || '0.0.0.0')
+    res.json({ success: true, id })
+  } catch (err) {
+    next(err)
+  }
 })
 
 // ==================== AGENTS ====================
@@ -192,7 +312,7 @@ app.get('/api/admin/agents/:id', authMiddleware, (req, res) => {
   res.json(row)
 })
 
-app.post('/api/admin/agents', authMiddleware, (req, res) => {
+app.post('/api/admin/agents', authMiddleware, validateCreateAgent, handleValidationErrors, (req, res, next) => {
   const { brand, domain, contact, balance, shareMode, shareRate } = req.body
   const count = db.prepare('SELECT COUNT(*) as c FROM agents').get().c
   const id = 'AG' + String(count + 1).padStart(3, '0')
@@ -200,14 +320,12 @@ app.post('/api/admin/agents', authMiddleware, (req, res) => {
     id, brand, domain || '', contact || '', balance || 0, shareMode || 'revenue', shareRate || 40
   )
 
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, '创建代理', id, `创建代理 ${brand}`, req.ip || '10.0.0.1'
-  )
+  auditLog(req.user.username, '创建代理', id, '创建代理 ' + brand, req.ip || '0.0.0.0')
 
   res.json({ success: true, id })
 })
 
-app.put('/api/admin/agents/:id', authMiddleware, (req, res) => {
+app.put('/api/admin/agents/:id', authMiddleware, validateUpdateAgent, handleValidationErrors, (req, res, next) => {
   const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(req.params.id)
   if (!agent) return res.status(404).json({ error: 'Agent not found' })
 
@@ -249,10 +367,8 @@ app.put('/api/admin/deposits/:id', authMiddleware, (req, res) => {
   const newStatus = action === 'approve' ? 'completed' : 'failed'
   db.prepare('UPDATE deposits SET status = ? WHERE id = ?').run(newStatus, req.params.id)
 
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, action === 'approve' ? '充值确认' : '充值拒绝', req.params.id,
-    `${action === 'approve' ? '确认到账' : '拒绝'} ¥${order.amount.toLocaleString()}`, req.ip || '10.0.0.1'
-  )
+  auditLog(req.user.username, action === 'approve' ? '充值确认' : '充值拒绝', req.params.id,
+    (action === 'approve' ? '确认到账' : '拒绝') + ' ¥' + order.amount, req.ip || '0.0.0.0')
 
   res.json({ success: true, status: newStatus })
 })
@@ -279,9 +395,7 @@ app.put('/api/admin/withdrawals/:id', authMiddleware, (req, res) => {
 
   db.prepare('UPDATE withdrawals SET status = ? WHERE id = ?').run(newStatus, req.params.id)
 
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, '审批提现', req.params.id, `${action} ¥${order.amount}`, req.ip || '10.0.0.1'
-  )
+  auditLog(req.user.username, '审批提现', req.params.id, action + ' ¥' + order.amount, req.ip || '0.0.0.0')
 
   res.json({ success: true, status: newStatus })
 })
@@ -327,17 +441,18 @@ app.get('/api/admin/games', authMiddleware, (req, res) => {
   res.json(games)
 })
 
-app.post('/api/admin/games', authMiddleware, (req, res) => {
+app.post('/api/admin/games', authMiddleware, validateCreateGame, handleValidationErrors, (req, res, next) => {
   const { name, provider, category, status, rtp, isHot, isNew } = req.body
   const count = db.prepare('SELECT COUNT(*) as c FROM games').get().c
   const id = 'G' + String(count + 1).padStart(3, '0')
   db.prepare('INSERT INTO games (id, name, provider, category, status, rtp, is_hot, is_new) VALUES (?,?,?,?,?,?,?,?)').run(
     id, name, provider || '', category || '', status || 'active', rtp || 96.0, isHot ? 1 : 0, isNew ? 1 : 0
   )
+  auditLog(req.user.username, '创建游戏', id, '创建游戏 ' + name, req.ip || '0.0.0.0')
   res.json({ success: true, id })
 })
 
-app.put('/api/admin/games/:id', authMiddleware, (req, res) => {
+app.put('/api/admin/games/:id', authMiddleware, validateUpdateGame, handleValidationErrors, (req, res, next) => {
   const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id)
   if (!game) return res.status(404).json({ error: 'Game not found' })
 
@@ -381,12 +496,17 @@ app.get('/api/admin/providers', authMiddleware, (req, res) => {
   res.json(providers)
 })
 
-app.post('/api/admin/providers', authMiddleware, (req, res) => {
-  const { id, name, category, games, status } = req.body
-  db.prepare('INSERT INTO providers (id, name, category, games, status) VALUES (?,?,?,?,?)').run(
-    id, name, category || '', games || 0, status || 'active'
-  )
-  res.json({ success: true })
+app.post('/api/admin/providers', authMiddleware, validateCreateProvider, handleValidationErrors, (req, res, next) => {
+  try {
+    const { id, name, category, games, status } = req.body
+    db.prepare('INSERT INTO providers (id, name, category, games, status) VALUES (?,?,?,?,?)').run(
+      id, name, category || '', games || 0, status || 'active'
+    )
+    auditLog(req.user.username, '创建供应商', id, '创建供应商 ' + name, req.ip || '0.0.0.0')
+    res.json({ success: true })
+  } catch (err) {
+    next(err)
+  }
 })
 
 app.put('/api/admin/providers/:id', authMiddleware, (req, res) => {
@@ -488,17 +608,22 @@ app.get('/api/admin/activities', authMiddleware, (req, res) => {
   res.json(activities)
 })
 
-app.post('/api/admin/activities', authMiddleware, (req, res) => {
-  const { name, type, status, startTime, endTime, minDeposit, bonusRate, wagering, maxBonus } = req.body
-  const count = db.prepare('SELECT COUNT(*) as c FROM promotions').get().c
-  const id = 'ACT' + String(count + 1).padStart(3, '0')
-  db.prepare('INSERT INTO promotions (id, name, type, status, start_time, end_time, min_deposit, bonus_rate, wagering, max_bonus) VALUES (?,?,?,?,?,?,?,?,?,?)').run(
-    id, name, type || '', status || 'active', startTime || '', endTime || '', minDeposit || 0, bonusRate || 0, wagering || 0, maxBonus || 0
-  )
-  res.json({ success: true, id })
+app.post('/api/admin/activities', authMiddleware, validateCreateActivity, handleValidationErrors, (req, res, next) => {
+  try {
+    const { name, type, status, startTime, endTime, minDeposit, bonusRate, wagering, maxBonus } = req.body
+    const count = db.prepare('SELECT COUNT(*) as c FROM promotions').get().c
+    const id = 'ACT' + String(count + 1).padStart(3, '0')
+    db.prepare('INSERT INTO promotions (id, name, type, status, start_time, end_time, min_deposit, bonus_rate, wagering, max_bonus) VALUES (?,?,?,?,?,?,?,?,?,?)').run(
+      id, name, type || '', status || 'active', startTime || '', endTime || '', minDeposit || 0, bonusRate || 0, wagering || 0, maxBonus || 0
+    )
+    auditLog(req.user.username, '创建活动', id, '创建活动 ' + name, req.ip || '0.0.0.0')
+    res.json({ success: true, id })
+  } catch (err) {
+    next(err)
+  }
 })
 
-app.put('/api/admin/activities/:id', authMiddleware, (req, res) => {
+app.put('/api/admin/activities/:id', authMiddleware, validateUpdateActivity, handleValidationErrors, (req, res, next) => {
   const promo = db.prepare('SELECT * FROM promotions WHERE id = ?').get(req.params.id)
   if (!promo) return res.status(404).json({ error: 'Activity not found' })
 
@@ -533,12 +658,17 @@ app.get('/api/admin/messages', authMiddleware, (req, res) => {
   res.json(mapped)
 })
 
-app.post('/api/admin/messages', authMiddleware, (req, res) => {
-  const { title, target, targetType, type, content } = req.body
-  db.prepare('INSERT INTO messages (title, target, target_type, type, status, content) VALUES (?,?,?,?,?,?)').run(
-    title, target || '全部用户', targetType || 'all', type || 'mail', 'sent', content || ''
-  )
-  res.json({ success: true })
+app.post('/api/admin/messages', authMiddleware, validateCreateMessage, handleValidationErrors, (req, res, next) => {
+  try {
+    const { title, target, targetType, type, content } = req.body
+    db.prepare('INSERT INTO messages (title, target, target_type, type, status, content) VALUES (?,?,?,?,?,?)').run(
+      title, target || '全部用户', targetType || 'all', type || 'mail', 'sent', content || ''
+    )
+    auditLog(req.user.username, '发送消息', title, '发送消息: ' + title, req.ip || '0.0.0.0')
+    res.json({ success: true })
+  } catch (err) {
+    next(err)
+  }
 })
 
 app.delete('/api/admin/messages/:id', authMiddleware, (req, res) => {
@@ -586,12 +716,17 @@ app.put('/api/admin/risk/rules/:id', authMiddleware, (req, res) => {
   res.json({ success: true, status: newStatus })
 })
 
-app.post('/api/admin/risk/rules', authMiddleware, (req, res) => {
-  const { name, description, threshold, status } = req.body
-  db.prepare('INSERT INTO risk_rules (name, description, threshold, status) VALUES (?,?,?,?)').run(
-    name, description || '', threshold || 0, status || 'active'
-  )
-  res.json({ success: true })
+app.post('/api/admin/risk/rules', authMiddleware, validateCreateRiskRule, handleValidationErrors, (req, res, next) => {
+  try {
+    const { name, description, threshold, status } = req.body
+    db.prepare('INSERT INTO risk_rules (name, description, threshold, status) VALUES (?,?,?,?)').run(
+      name, description || '', threshold || 0, status || 'active'
+    )
+    auditLog(req.user.username, '创建风控规则', name, '创建风控规则: ' + name, req.ip || '0.0.0.0')
+    res.json({ success: true })
+  } catch (err) {
+    next(err)
+  }
 })
 
 app.get('/api/admin/risk/blacklist', authMiddleware, (req, res) => {
@@ -605,17 +740,17 @@ app.get('/api/admin/risk/blacklist', authMiddleware, (req, res) => {
   res.json(blacklist)
 })
 
-app.post('/api/admin/risk/blacklist', authMiddleware, (req, res) => {
-  const { ip, reason } = req.body
-  db.prepare('INSERT INTO ip_blacklist (ip, reason, added_by) VALUES (?,?,?)').run(
-    ip, reason || '', req.user.username
-  )
-
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, '添加IP黑名单', ip, reason || '', req.ip || '10.0.0.1'
-  )
-
-  res.json({ success: true })
+app.post('/api/admin/risk/blacklist', authMiddleware, validateAddBlacklistIP, handleValidationErrors, (req, res, next) => {
+  try {
+    const { ip, reason } = req.body
+    db.prepare('INSERT INTO ip_blacklist (ip, reason, added_by) VALUES (?,?,?)').run(
+      ip, reason || '', req.user.username
+    )
+    auditLog(req.user.username, '添加IP黑名单', ip, reason || '', req.ip || '0.0.0.0')
+    res.json({ success: true })
+  } catch (err) {
+    next(err)
+  }
 })
 
 app.delete('/api/admin/risk/blacklist/:ip', authMiddleware, (req, res) => {
@@ -635,19 +770,21 @@ app.get('/api/admin/admins', authMiddleware, (req, res) => {
   res.json(admins)
 })
 
-app.post('/api/admin/admins', authMiddleware, (req, res) => {
-  const { username, role, displayName } = req.body
-  const pwd = req.body.password
-  if (!username || !pwd) {
-    return res.status(400).json({ error: 'Username and password are required' })
-  }
+app.post('/api/admin/admins', authMiddleware, validateCreateAdmin, handleValidationErrors, async (req, res, next) => {
   try {
+    const { username, role, displayName } = req.body
+    const pwd = req.body.password
+    const hashedPassword = await bcrypt.hash(pwd, 10)
     db.prepare('INSERT INTO admins (username, password, role, display_name) VALUES (?,?,?,?)').run(
-      username, pwd, role || 'admin', displayName || username
+      username, hashedPassword, role || 'admin', displayName || username
     )
+    auditLog(req.user.username, '创建管理员', username, '创建管理员 ' + username, req.ip || '0.0.0.0')
     res.json({ success: true })
   } catch (err) {
-    res.status(400).json({ error: 'Username already exists' })
+    if (err.message && err.message.includes('UNIQUE')) {
+      return res.status(400).json({ error: 'Username already exists' })
+    }
+    next(err)
   }
 })
 
@@ -679,12 +816,17 @@ app.get('/api/admin/announcements', authMiddleware, (req, res) => {
   res.json(announcements)
 })
 
-app.post('/api/admin/announcements', authMiddleware, (req, res) => {
-  const { title, content, target, status } = req.body
-  db.prepare('INSERT INTO announcements (title, content, target, status) VALUES (?,?,?,?)').run(
-    title, content || '', target || '全部代理', status || 'active'
-  )
-  res.json({ success: true })
+app.post('/api/admin/announcements', authMiddleware, validateCreateAnnouncement, handleValidationErrors, (req, res, next) => {
+  try {
+    const { title, content, target, status } = req.body
+    db.prepare('INSERT INTO announcements (title, content, target, status) VALUES (?,?,?,?)').run(
+      title, content || '', target || '全部代理', status || 'active'
+    )
+    auditLog(req.user.username, '创建公告', title, '创建公告: ' + title, req.ip || '0.0.0.0')
+    res.json({ success: true })
+  } catch (err) {
+    next(err)
+  }
 })
 
 app.delete('/api/admin/announcements/:id', authMiddleware, (req, res) => {
@@ -807,9 +949,7 @@ app.put('/api/admin/compliance/kyc/:id', authMiddleware, (req, res) => {
     newStatus, action === 'reject' ? (rejectReason || '') : '', req.user.username, req.params.id
   )
 
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, action === 'approve' ? 'KYC审批通过' : 'KYC审批拒绝', kyc.user_id, `KYC ${action} for ${kyc.user_id}`, req.ip || '10.0.0.1'
-  )
+  auditLog(req.user.username, action === 'approve' ? 'KYC审批通过' : 'KYC审批拒绝', kyc.user_id, 'KYC ' + action + ' for ' + kyc.user_id, req.ip || '0.0.0.0')
 
   res.json({ success: true, status: newStatus })
 })
@@ -851,9 +991,7 @@ app.put('/api/admin/compliance/aml/alerts/:id', authMiddleware, (req, res) => {
     newStatus, req.user.username, req.params.id
   )
 
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, 'AML处理', String(alert.id), `AML alert ${action}: ${alert.alert_type} for ${alert.user_id}`, req.ip || '10.0.0.1'
-  )
+  auditLog(req.user.username, 'AML处理', String(alert.id), 'AML alert ' + action + ': ' + alert.alert_type + ' for ' + alert.user_id, req.ip || '0.0.0.0')
 
   res.json({ success: true, status: newStatus })
 })
@@ -885,9 +1023,7 @@ app.put('/api/admin/compliance/exclusions/:id', authMiddleware, (req, res) => {
     db.prepare("UPDATE members SET status = 'active' WHERE id = ?").run(exclusion.user_id)
   }
 
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, '自我排除管理', exclusion.user_id, `${action} exclusion for ${exclusion.user_id}`, req.ip || '10.0.0.1'
-  )
+  auditLog(req.user.username, '自我排除管理', exclusion.user_id, action + ' exclusion for ' + exclusion.user_id, req.ip || '0.0.0.0')
 
   res.json({ success: true })
 })
@@ -933,9 +1069,7 @@ app.put('/api/admin/compliance/settings', authMiddleware, (req, res) => {
   })
   tx(updates)
 
-  db.prepare(`INSERT INTO audit_logs (operator, action, target, detail, time, ip) VALUES (?,?,?,?,datetime('now'),?)`).run(
-    req.user.username, '合规设置更新', 'compliance_settings', 'Updated compliance settings', req.ip || '10.0.0.1'
-  )
+  auditLog(req.user.username, '合规设置更新', 'compliance_settings', 'Updated compliance settings', req.ip || '0.0.0.0')
 
   res.json({ success: true })
 })
@@ -971,7 +1105,25 @@ app.get('*', (req, res) => {
   })
 })
 
+// ==================== GLOBAL ERROR HANDLER ====================
+app.use((err, req, res, _next) => {
+  const timestamp = new Date().toISOString()
+  console.error('[' + timestamp + '] Error:', err.message)
+  if (NODE_ENV !== 'production') {
+    console.error(err.stack)
+  }
+
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({ error: 'CORS not allowed' })
+  }
+
+  const statusCode = err.statusCode || err.status || 500
+  res.status(statusCode).json({
+    error: NODE_ENV === 'production' ? '服务器内部错误' : err.message
+  })
+})
+
 app.listen(PORT, () => {
-  console.log(`Admin API server running on port ${PORT}`)
-  console.log(`H5 API available at /api/h5/*`)
+  console.log('[' + new Date().toISOString() + '] Admin API server running on port ' + PORT + ' (' + NODE_ENV + ')')
+  console.log('H5 API available at /api/h5/*')
 })
