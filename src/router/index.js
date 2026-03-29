@@ -204,6 +204,21 @@ const routes = [
     name: 'ResponsibleGaming',
     component: () => import('@/views/ResponsibleGamingPage.vue')
   },
+  {
+    path: '/network-error',
+    name: 'NetworkError',
+    component: () => import('@/views/NetworkErrorPage.vue')
+  },
+  {
+    path: '/server-error',
+    name: 'ServerError',
+    component: () => import('@/views/ServerErrorPage.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFoundPage.vue')
+  },
 ]
 
 

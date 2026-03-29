@@ -23,6 +23,7 @@
     "postcss-px-to-viewport-8-plugin": "^1.2.5",
     "sass": "^1.70.0",
     "unplugin-vue-components": "^0.26.0",
-    "vite": "^5.1.0"
+    "vite": "^5.1.0",
+    "vite-plugin-compression2": "^2.5.3"
   }
 }

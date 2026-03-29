@@ -20,7 +20,17 @@
           <el-option label="停用" value="inactive" />
         </el-select>
       </div>
-      <el-table :data="filteredGames" stripe>
+      <!-- Loading skeleton -->
+      <div v-if="loading" class="skeleton-table">
+        <el-skeleton :rows="8" animated />
+      </div>
+
+      <!-- Empty state -->
+      <div v-else-if="!filteredGames.length" class="empty-state">
+        <el-empty description="暂无游戏数据" />
+      </div>
+
+      <el-table v-else :data="paginatedGames" stripe>
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="name" label="游戏名称" width="160" />
         <el-table-column prop="provider" label="厂商" width="80" />
@@ -48,7 +58,13 @@
         </el-table-column>
       </el-table>
       <div style="margin-top: 16px; text-align: right;">
-        <el-pagination layout="total, prev, pager, next" :total="filteredGames.length" :page-size="20" />
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="filteredGames.length"
+        />
       </div>
     </div>
   </div>
@@ -63,12 +79,18 @@ const providerFilter = ref('')
 const categoryFilter = ref('')
 const statusFilter = ref('')
 const games = ref([])
+const loading = ref(true)
+const currentPage = ref(1)
+const pageSize = ref(20)
 
 onMounted(async () => {
   try {
+    loading.value = true
     const data = await getGames()
     games.value = data || []
-  } catch (e) { console.warn('API request failed', e) }
+  } catch (e) { console.warn('API request failed', e) } finally {
+    loading.value = false
+  }
 })
 const providerList = ['PG', 'PP', 'CQ9', 'EVO', 'AG', 'JDB', 'JILI', 'FC', 'WM']
 
@@ -79,4 +101,9 @@ const filteredGames = computed(() => games.value.filter(g => {
   if (statusFilter.value && g.status !== statusFilter.value) return false
   return true
 }))
+
+const paginatedGames = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredGames.value.slice(start, start + pageSize.value)
+})
 </script>

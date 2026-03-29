@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import { VantResolver } from '@vant/auto-import-resolver'
+import { compression } from 'vite-plugin-compression2'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
@@ -9,7 +10,9 @@ export default defineConfig({
     vue(),
     Components({
       resolvers: [VantResolver()]
-    })
+    }),
+    compression({ algorithm: 'gzip', threshold: 1024 }),
+    compression({ algorithm: 'brotliCompress', threshold: 1024 })
   ],
   resolve: {
     alias: {

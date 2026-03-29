@@ -16,7 +16,17 @@
           <el-option label="高" value="high" />
         </el-select>
       </div>
-      <el-table :data="filteredOrders" stripe>
+      <!-- Loading skeleton -->
+      <div v-if="loading" class="skeleton-table">
+        <el-skeleton :rows="6" animated />
+      </div>
+
+      <!-- Empty state -->
+      <div v-else-if="!filteredOrders.length" class="empty-state">
+        <el-empty description="暂无提现订单" />
+      </div>
+
+      <el-table v-else :data="filteredOrders" stripe>
         <el-table-column prop="id" label="订单号" width="160" />
         <el-table-column prop="member" label="会员" width="120" />
         <el-table-column prop="agent" label="代理" width="100" />
@@ -62,12 +72,16 @@ const search = ref('')
 const statusFilter = ref('')
 const riskFilter = ref('')
 const orders = ref([])
+const loading = ref(true)
 
 onMounted(async () => {
   try {
+    loading.value = true
     const data = await getWithdrawals()
     orders.value = data || []
-  } catch (e) { console.warn('API request failed', e) }
+  } catch (e) { console.warn('API request failed', e) } finally {
+    loading.value = false
+  }
 })
 
 const filteredOrders = computed(() => orders.value.filter(o => {
@@ -81,15 +95,25 @@ function statusType(s) { return { pending: 'info', review: 'warning', approved: 
 function statusLabel(s) { return { pending: '待审核', review: '审核中', approved: '已批准', completed: '已完成' }[s] || s }
 
 function approve(row) {
-  ElMessageBox.confirm(`批准提现 ¥${row.amount.toLocaleString()} 给 ${row.member}?`, '确认批准').then(() => {
-    row.status = 'approved'
-    ElMessage.success('已批准')
+  ElMessageBox.confirm(`批准提现 ¥${row.amount.toLocaleString()} 给 ${row.member}?`, '确认批准').then(async () => {
+    try {
+      await updateWithdrawal(row.id, { status: 'approved' })
+      row.status = 'approved'
+      ElMessage.success('已批准')
+    } catch (e) {
+      ElMessage.error(`操作失败: ${e.message || '未知错误'}`)
+    }
   }).catch(() => {})
 }
 function reject(row) {
-  ElMessageBox.confirm(`拒绝提现订单 ${row.id}?`, '拒绝', { type: 'warning' }).then(() => {
-    row.status = 'rejected'
-    ElMessage.success('已拒绝')
+  ElMessageBox.confirm(`拒绝提现订单 ${row.id}?`, '拒绝', { type: 'warning' }).then(async () => {
+    try {
+      await updateWithdrawal(row.id, { status: 'rejected' })
+      row.status = 'rejected'
+      ElMessage.success('已拒绝')
+    } catch (e) {
+      ElMessage.error(`操作失败: ${e.message || '未知错误'}`)
+    }
   }).catch(() => {})
 }
 </script>

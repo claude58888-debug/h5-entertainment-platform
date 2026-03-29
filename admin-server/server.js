@@ -19,6 +19,29 @@ const NODE_ENV = process.env.NODE_ENV || 'development'
 // JWT_SECRET must be set via environment variable in production
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-admin-server-key'
 
+// ==================== IN-MEMORY CACHE ====================
+const cache = new Map()
+
+function cacheGet(key) {
+  const entry = cache.get(key)
+  if (!entry) return null
+  if (Date.now() > entry.expiresAt) {
+    cache.delete(key)
+    return null
+  }
+  return entry.data
+}
+
+function cacheSet(key, data, ttlMs) {
+  cache.set(key, { data, expiresAt: Date.now() + ttlMs })
+}
+
+function cacheInvalidate(prefix) {
+  for (const key of cache.keys()) {
+    if (key.startsWith(prefix)) cache.delete(key)
+  }
+}
+
 // Initialize database
 initDB()
 
@@ -202,6 +225,10 @@ app.post('/api/auth/admin-login', validateAdminLogin, handleValidationErrors, as
 
 // ==================== DASHBOARD ====================
 app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
+  // Cache dashboard stats for 30 seconds
+  const cached = cacheGet('dashboard')
+  if (cached) return res.json(cached)
+
   const totalMembers = db.prepare('SELECT COUNT(*) as count FROM members').get().count
   const todayNewMembers = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now', '-1 day')").get().count || 342
   const onlineNow = 1893 // simulated
@@ -230,7 +257,9 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     { id: 5, type: 'warning', text: '会员 user_5521 连续提现3次，累计 ¥80,000', time: '25分钟前', level: 'high' }
   ]
 
-  res.json({ kpi, revenueTrend, topGamesGGR, depositByChannel, realtimeAlerts })
+  const result = { kpi, revenueTrend, topGamesGGR, depositByChannel, realtimeAlerts }
+  cacheSet('dashboard', result, 30000)
+  res.json(result)
 })
 
 // ==================== MEMBERS ====================
@@ -435,12 +464,16 @@ app.get('/api/admin/financial-summary', authMiddleware, (req, res) => {
 
 // ==================== GAMES ====================
 app.get('/api/admin/games', authMiddleware, (req, res) => {
+  const cached = cacheGet('admin:games')
+  if (cached) return res.json(cached)
+
   const rows = db.prepare('SELECT * FROM games ORDER BY revenue DESC').all()
   const games = rows.map(r => ({
     ...r,
     isHot: !!r.is_hot,
     isNew: !!r.is_new
   }))
+  cacheSet('admin:games', games, 60000)
   res.json(games)
 })
 
@@ -452,6 +485,8 @@ app.post('/api/admin/games', authMiddleware, validateCreateGame, handleValidatio
     id, name, provider || '', category || '', status || 'active', rtp || 96.0, isHot ? 1 : 0, isNew ? 1 : 0
   )
   auditLog(req.user.username, '创建游戏', id, '创建游戏 ' + name, req.ip || '0.0.0.0')
+  cacheInvalidate('admin:games')
+  cacheInvalidate('h5:games')
   res.json({ success: true, id })
 })
 
@@ -474,11 +509,15 @@ app.put('/api/admin/games/:id', authMiddleware, validateUpdateGame, handleValida
     isNew !== undefined ? (isNew ? 1 : 0) : null,
     req.params.id
   )
+  cacheInvalidate('admin:games')
+  cacheInvalidate('h5:games')
   res.json({ success: true })
 })
 
 app.delete('/api/admin/games/:id', authMiddleware, (req, res) => {
   db.prepare('DELETE FROM games WHERE id = ?').run(req.params.id)
+  cacheInvalidate('admin:games')
+  cacheInvalidate('h5:games')
   res.json({ success: true })
 })
 
@@ -538,6 +577,9 @@ app.get('/api/admin/bets', authMiddleware, (req, res) => {
 
 // ==================== VIP ====================
 app.get('/api/admin/vip-levels', authMiddleware, (req, res) => {
+  const cached = cacheGet('admin:vip-levels')
+  if (cached) return res.json(cached)
+
   const rows = db.prepare('SELECT * FROM vip_levels ORDER BY level').all()
   const levels = rows.map(r => ({
     level: r.level,
@@ -548,6 +590,7 @@ app.get('/api/admin/vip-levels', authMiddleware, (req, res) => {
     birthdayBonus: r.birthday_bonus,
     withdrawLimit: r.withdraw_limit === 'unlimited' ? 'unlimited' : Number(r.withdraw_limit)
   }))
+  cacheSet('admin:vip-levels', levels, 120000)
   res.json(levels)
 })
 

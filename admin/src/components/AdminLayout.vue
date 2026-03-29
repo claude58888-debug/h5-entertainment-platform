@@ -1,6 +1,6 @@
 <template>
-  <div class="admin-layout" :class="{ dark: true }">
-    <div class="sidebar" :style="{ width: isCollapsed ? '64px' : '220px' }">
+  <div class="admin-layout" :class="{ dark: isDarkMode }">
+    <aside class="sidebar" :class="{ 'sidebar-hidden': isMobileMenuHidden }" :style="{ width: isCollapsed ? '64px' : '220px' }" role="navigation" aria-label="管理导航">
       <div class="logo-container">
         <span v-if="!isCollapsed" class="logo-text">🎮 大大娱乐</span>
         <span v-else class="logo-icon">🎮</span>
@@ -155,7 +155,10 @@
           </el-menu-item>
         </template>
       </el-menu>
-    </div>
+    </aside>
+
+    <!-- Mobile sidebar overlay -->
+    <div v-if="!isMobileMenuHidden" class="sidebar-overlay" @click="isMobileMenuHidden = true"></div>
 
     <div class="main-area">
       <div class="header">
@@ -170,6 +173,9 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
+          <el-button text @click="isDarkMode = !isDarkMode" :title="isDarkMode ? '切换亮色' : '切换暗色'">
+            <el-icon><component :is="isDarkMode ? 'Sunny' : 'Moon'" /></el-icon>
+          </el-button>
           <el-tag :type="isSuperAdmin ? 'danger' : 'warning'" size="small">
             {{ isSuperAdmin ? '超级管理员' : '代理管理员' }}
           </el-tag>
@@ -198,7 +204,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -207,9 +213,28 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const isCollapsed = ref(false)
+const isDarkMode = ref(true)
+const isMobileMenuHidden = ref(true)
 const isSuperAdmin = computed(() => authStore.isSuperAdmin)
 const currentRoute = computed(() => route)
 const activeMenu = computed(() => route.path)
+
+// Auto-collapse sidebar on small screens
+function handleResize() {
+  if (window.innerWidth < 768) {
+    isCollapsed.value = true
+    isMobileMenuHidden.value = true
+  } else {
+    isMobileMenuHidden.value = false
+  }
+}
+onMounted(() => {
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 
 function getParentTitle() {
   const parentName = route.meta?.parent
@@ -224,4 +249,54 @@ function handleCommand(cmd) {
     router.push('/login')
   }
 }
+
+function toggleMobileMenu() {
+  isMobileMenuHidden.value = !isMobileMenuHidden.value
+}
 </script>
+
+<style scoped>
+.sidebar-hidden {
+  transform: translateX(-100%);
+}
+.sidebar-overlay {
+  display: none;
+}
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed !important;
+    z-index: 1001;
+    height: 100vh;
+    transition: transform 0.3s ease;
+  }
+  .sidebar-hidden {
+    transform: translateX(-100%);
+  }
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+  .main-area {
+    margin-left: 0 !important;
+  }
+}
+
+/* Light mode overrides */
+.admin-layout:not(.dark) {
+  background: #f5f5f5;
+}
+.admin-layout:not(.dark) .sidebar {
+  background: #fff;
+  border-right: 1px solid #e0e0e0;
+}
+.admin-layout:not(.dark) .header {
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+}
+.admin-layout:not(.dark) .main-content {
+  background: #f5f5f5;
+}
+</style>

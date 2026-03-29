@@ -405,6 +405,73 @@ export function initDB() {
       is_read INTEGER DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    -- ==================== PERFORMANCE INDEXES ====================
+
+    -- Members: frequently queried by status, agent, username
+    CREATE INDEX IF NOT EXISTS idx_members_status ON members(status);
+    CREATE INDEX IF NOT EXISTS idx_members_agent ON members(agent);
+    CREATE INDEX IF NOT EXISTS idx_members_registered ON members(registered);
+    CREATE INDEX IF NOT EXISTS idx_members_username ON members(username);
+
+    -- Deposits: queried by status, member, time
+    CREATE INDEX IF NOT EXISTS idx_deposits_status ON deposits(status);
+    CREATE INDEX IF NOT EXISTS idx_deposits_member ON deposits(member);
+    CREATE INDEX IF NOT EXISTS idx_deposits_time ON deposits(time DESC);
+
+    -- Withdrawals: queried by status, member, time
+    CREATE INDEX IF NOT EXISTS idx_withdrawals_status ON withdrawals(status);
+    CREATE INDEX IF NOT EXISTS idx_withdrawals_member ON withdrawals(member);
+    CREATE INDEX IF NOT EXISTS idx_withdrawals_time ON withdrawals(time DESC);
+
+    -- Games: queried by status, category, provider, revenue
+    CREATE INDEX IF NOT EXISTS idx_games_status ON games(status);
+    CREATE INDEX IF NOT EXISTS idx_games_category ON games(category);
+    CREATE INDEX IF NOT EXISTS idx_games_provider ON games(provider);
+    CREATE INDEX IF NOT EXISTS idx_games_revenue ON games(revenue DESC);
+
+    -- Bets: queried by member, game, time
+    CREATE INDEX IF NOT EXISTS idx_bets_member ON bets(member);
+    CREATE INDEX IF NOT EXISTS idx_bets_game ON bets(game);
+    CREATE INDEX IF NOT EXISTS idx_bets_time ON bets(time DESC);
+
+    -- Audit logs: queried by time, operator
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_time ON audit_logs(time DESC);
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_operator ON audit_logs(operator);
+
+    -- H5 transactions: queried by member_id, type, created_at
+    CREATE INDEX IF NOT EXISTS idx_h5_transactions_member ON h5_transactions(member_id);
+    CREATE INDEX IF NOT EXISTS idx_h5_transactions_type ON h5_transactions(member_id, type);
+    CREATE INDEX IF NOT EXISTS idx_h5_transactions_time ON h5_transactions(created_at DESC);
+
+    -- H5 user messages: queried by member_id, is_read
+    CREATE INDEX IF NOT EXISTS idx_h5_messages_member ON h5_user_messages(member_id);
+    CREATE INDEX IF NOT EXISTS idx_h5_messages_unread ON h5_user_messages(member_id, is_read);
+
+    -- KYC documents: queried by user_id, status
+    CREATE INDEX IF NOT EXISTS idx_kyc_user ON kyc_documents(user_id);
+    CREATE INDEX IF NOT EXISTS idx_kyc_status ON kyc_documents(status);
+
+    -- AML alerts: queried by status, user_id
+    CREATE INDEX IF NOT EXISTS idx_aml_status ON aml_alerts(status);
+    CREATE INDEX IF NOT EXISTS idx_aml_user ON aml_alerts(user_id);
+
+    -- Self exclusions: queried by user_id, status
+    CREATE INDEX IF NOT EXISTS idx_exclusions_user ON self_exclusions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_exclusions_status ON self_exclusions(status);
+
+    -- User limits: queried by user_id
+    CREATE INDEX IF NOT EXISTS idx_user_limits_user ON user_limits(user_id);
+
+    -- H5 users: queried by phone, member_id
+    CREATE INDEX IF NOT EXISTS idx_h5_users_phone ON h5_users(phone);
+    CREATE INDEX IF NOT EXISTS idx_h5_users_member ON h5_users(member_id);
+
+    -- Rakeback records: queried by member
+    CREATE INDEX IF NOT EXISTS idx_rakeback_member ON rakeback_records(member);
+
+    -- Promotion claims: queried by member_id
+    CREATE INDEX IF NOT EXISTS idx_promo_claims_member ON h5_promotion_claims(member_id);
   `)
 }
 

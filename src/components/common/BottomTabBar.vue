@@ -1,22 +1,49 @@
 <template>
-  <nav class="bottom-tab-bar">
+  <nav class="bottom-tab-bar" role="navigation" aria-label="主导航" @touchstart="onTouchStart" @touchend="onTouchEnd">
     <router-link
       v-for="tab in tabs"
       :key="tab.path"
       :to="tab.path"
       class="tab-item"
       :class="{ active: isActive(tab.path) }"
+      :aria-label="$t(tab.labelKey)"
+      :aria-current="isActive(tab.path) ? 'page' : undefined"
+      role="tab"
     >
-      <span class="tab-icon" v-html="tab.svg"></span>
+      <span class="tab-icon" v-html="tab.svg" aria-hidden="true"></span>
       <span class="tab-label">{{ $t(tab.labelKey) }}</span>
     </router-link>
   </nav>
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
+
+// Touch gesture support for swiping between tabs
+const touchStartX = ref(0)
+const SWIPE_THRESHOLD = 60
+
+function onTouchStart(e) {
+  touchStartX.value = e.touches[0].clientX
+}
+
+function onTouchEnd(e) {
+  const deltaX = e.changedTouches[0].clientX - touchStartX.value
+  if (Math.abs(deltaX) < SWIPE_THRESHOLD) return
+
+  const currentIndex = tabs.findIndex(t => isActive(t.path))
+  if (currentIndex === -1) return
+
+  if (deltaX < 0 && currentIndex < tabs.length - 1) {
+    router.push(tabs[currentIndex + 1].path)
+  } else if (deltaX > 0 && currentIndex > 0) {
+    router.push(tabs[currentIndex - 1].path)
+  }
+}
 
 const tabs = [
   {
@@ -47,7 +74,7 @@ const tabs = [
 ]
 
 function isActive(path) {
-  return route.path === path
+  return route.path === path || route.path === path + '/'
 }
 </script>
 
