@@ -73,14 +73,15 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { getSettings, updateSettings } from '@/api/system'
 
 const activeTab = ref('global')
 const settings = reactive({
-  platformName: '大大娱乐管理平台',
+  platformName: '',
   maintenance: false,
-  maintenanceMsg: '系统正在维护升级中，请稍后再试...',
+  maintenanceMsg: '',
   allowRegister: true,
   currency: 'CNY',
   timezone: 'Asia/Shanghai',
@@ -88,6 +89,40 @@ const settings = reactive({
   sessionTimeout: 120,
   force2FA: false,
   adminIpWhitelist: ''
+})
+
+function applySettings(data) {
+  if (!data || typeof data !== 'object') return
+  // Handle grouped format: { global: {...}, security: {...}, finance: {...} }
+  const flat = {}
+  for (const [category, entries] of Object.entries(data)) {
+    if (typeof entries === 'object' && entries !== null) {
+      Object.assign(flat, entries)
+    }
+  }
+  if (flat.site_name) settings.platformName = flat.site_name
+  if (flat.platformName) settings.platformName = flat.platformName
+  if (flat.maintenance_mode !== undefined) settings.maintenance = flat.maintenance_mode === 'true'
+  if (flat.maintenance !== undefined) settings.maintenance = flat.maintenance === 'true'
+  if (flat.maintenanceMsg) settings.maintenanceMsg = flat.maintenanceMsg
+  if (flat.register_enabled !== undefined) settings.allowRegister = flat.register_enabled === 'true'
+  if (flat.allowRegister !== undefined) settings.allowRegister = flat.allowRegister === 'true'
+  if (flat.currency) settings.currency = flat.currency
+  if (flat.timezone) settings.timezone = flat.timezone
+  if (flat.maxLoginAttempts) settings.maxLoginAttempts = parseInt(flat.maxLoginAttempts) || 5
+  if (flat.session_timeout) settings.sessionTimeout = parseInt(flat.session_timeout) || 120
+  if (flat.sessionTimeout) settings.sessionTimeout = parseInt(flat.sessionTimeout) || 120
+  if (flat.two_factor_enabled !== undefined) settings.force2FA = flat.two_factor_enabled === 'true'
+  if (flat.force2FA !== undefined) settings.force2FA = flat.force2FA === 'true'
+  if (flat.ip_whitelist_enabled !== undefined) settings.adminIpWhitelist = flat.adminIpWhitelist || ''
+  if (flat.adminIpWhitelist) settings.adminIpWhitelist = flat.adminIpWhitelist
+}
+
+onMounted(async () => {
+  try {
+    const data = await getSettings()
+    applySettings(data)
+  } catch (e) { console.warn('API request failed', e) }
 })
 
 const assets = ref([
@@ -99,7 +134,14 @@ const assets = ref([
   { name: '节日活动模板', size: '1920x600', color: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' }
 ])
 
-function save() { ElMessage.success('设置已保存') }
+async function save() {
+  try {
+    await updateSettings(settings)
+    ElMessage.success('设置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
 </script>
 
 <style scoped>

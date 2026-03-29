@@ -126,8 +126,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { getRakebackConfig, updateRakebackConfig, getRakebackRecords } from '@/api/rakeback'
 
 const config = ref({
   houseEdge: {
@@ -136,14 +137,7 @@ const config = ref({
     sports: { min: 3.0, max: 4.0 },
     chess: { min: 2.0, max: 3.0 }
   },
-  vipRakebackRates: [
-    { level: 0, rate: 0.5 },
-    { level: 1, rate: 0.6 },
-    { level: 2, rate: 0.8 },
-    { level: 3, rate: 1.0 },
-    { level: 4, rate: 1.2 },
-    { level: 5, rate: 1.5 }
-  ],
+  vipRakebackRates: [],
   minAmount: 1,
   autoDailySettle: true
 })
@@ -151,17 +145,22 @@ const config = ref({
 const search = ref('')
 const gameTypeFilter = ref('')
 const dateRange = ref(null)
+const records = ref([])
 
-const records = ref([
-  { id: 'RB001', username: 'player_wang', betAmount: 125000, rakebackAmount: 562.50, gameType: 'slots', settledAt: '2026-03-07 00:00:00', status: 'settled' },
-  { id: 'RB002', username: 'dragon_888', betAmount: 280000, rakebackAmount: 840.00, gameType: 'live', settledAt: '2026-03-07 00:00:00', status: 'settled' },
-  { id: 'RB003', username: 'slot_queen', betAmount: 95000, rakebackAmount: 427.50, gameType: 'slots', settledAt: '2026-03-07 00:00:00', status: 'settled' },
-  { id: 'RB004', username: 'king_poker', betAmount: 68000, rakebackAmount: 204.00, gameType: 'chess', settledAt: '2026-03-07 00:00:00', status: 'settled' },
-  { id: 'RB005', username: 'lucky_star88', betAmount: 45000, rakebackAmount: 135.00, gameType: 'sports', settledAt: '2026-03-07 00:00:00', status: 'settled' },
-  { id: 'RB006', username: 'fish_lover', betAmount: 32000, rakebackAmount: 128.00, gameType: 'slots', settledAt: '2026-03-07 00:00:00', status: 'settled' },
-  { id: 'RB007', username: 'player_wang', betAmount: 88000, rakebackAmount: 396.00, gameType: 'live', settledAt: '2026-03-06 00:00:00', status: 'settled' },
-  { id: 'RB008', username: 'newbie_2026', betAmount: 5000, rakebackAmount: 22.50, gameType: 'slots', settledAt: '2026-03-08 00:00:00', status: 'pending' }
-])
+onMounted(async () => {
+  try {
+    const [configData, recordsData] = await Promise.all([getRakebackConfig(), getRakebackRecords()])
+    if (configData?.length) {
+      config.value.vipRakebackRates = configData.map(c => ({ level: c.vipLevel, rate: c.rakebackRate }))
+      const first = configData[0]
+      if (first) {
+        config.value.minAmount = first.minBet || 1
+        config.value.autoDailySettle = first.status === 'active'
+      }
+    }
+    records.value = recordsData || []
+  } catch (e) { console.warn('API request failed', e) }
+})
 
 const filteredRecords = computed(() => {
   return records.value.filter(r => {
@@ -181,7 +180,14 @@ function gameTagType(type) {
   return map[type] || 'info'
 }
 
-function saveConfig() {
-  ElMessage.success('返水配置已保存')
+async function saveConfig() {
+  try {
+    for (const rate of config.value.vipRakebackRates) {
+      await updateRakebackConfig(rate.level, { rakebackRate: rate.rate, minBet: config.value.minAmount, status: config.value.autoDailySettle ? 'active' : 'inactive' })
+    }
+    ElMessage.success('返水配置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
 }
 </script>

@@ -73,10 +73,15 @@ onMounted(async () => {
 const addDialog = ref(false)
 const newAdmin = reactive({ username: '', realName: '', password: '', role: '运营管理员' })
 
-function addAdmin() {
-  admins.value.push({ id: admins.value.length + 1, ...newAdmin, status: 'active', lastLogin: '-', loginIp: '-', created: '2026-03-07' })
-  addDialog.value = false
-  ElMessage.success('管理员已创建')
+async function addAdmin() {
+  try {
+    const result = await apiCreateAdmin(newAdmin)
+    admins.value.push({ id: result?.id || admins.value.length + 1, ...newAdmin, status: 'active', lastLogin: '-', loginIp: '-', created: new Date().toISOString().slice(0, 10) })
+    addDialog.value = false
+    ElMessage.success('管理员已创建')
+  } catch (e) {
+    ElMessage.error('创建失败')
+  }
 }
 
 function resetPwd(row) {
@@ -87,9 +92,14 @@ function resetPwd(row) {
 
 function toggleStatus(row) {
   const action = row.status === 'active' ? '禁用' : '启用'
-  ElMessageBox.confirm(`确定${action} ${row.username}?`, '确认').then(() => {
-    row.status = row.status === 'active' ? 'disabled' : 'active'
-    ElMessage.success(`已${action}`)
+  ElMessageBox.confirm(`确定${action} ${row.username}?`, '确认').then(async () => {
+    try {
+      await toggleAdmin(row.id)
+      row.status = row.status === 'active' ? 'disabled' : 'active'
+      ElMessage.success(`已${action}`)
+    } catch (e) {
+      ElMessage.error('操作失败')
+    }
   }).catch(() => {})
 }
 </script>

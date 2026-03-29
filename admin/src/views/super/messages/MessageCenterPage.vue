@@ -171,44 +171,34 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getMessages, sendMessage as apiSendMessage, deleteMessage as apiDeleteMessage, getSystemNotifications, getChatSessions, updateChatSession } from '@/api/messages'
 
 const activeTab = ref('inbox')
 
 // Inbox state
 const inboxSearch = ref('')
 const inboxStatusFilter = ref('')
-const inboxMessages = ref([
-  { id: 1, title: '欢迎加入平台', target: '全部用户', targetType: 'all', type: 'mail', status: 'sent', sentAt: '2026-03-07 10:00:00', content: '感谢您注册成为我们的会员，祝您游戏愉快！' },
-  { id: 2, title: 'VIP升级通知', target: 'VIP3+', targetType: 'vip', type: 'notification', status: 'read', sentAt: '2026-03-06 15:30:00', content: '恭喜您升级为VIP3会员，可享受更多专属权益。' },
-  { id: 3, title: '首充活动提醒', target: '全部用户', targetType: 'all', type: 'promotion', status: 'sent', sentAt: '2026-03-05 09:00:00', content: '首充100%奖励活动进行中，充值即享双倍！' },
-  { id: 4, title: '提现审核通知', target: 'player_wang', targetType: 'user', type: 'notification', status: 'read', sentAt: '2026-03-07 16:30:00', content: '您的提现申请 ¥30,000 正在审核中，请耐心等待。' },
-  { id: 5, title: '系统维护通知', target: '全部用户', targetType: 'all', type: 'mail', status: 'sent', sentAt: '2026-03-04 18:00:00', content: '3月8日凌晨2:00-4:00系统维护，届时无法使用。' },
-  { id: 6, title: 'VIP月度红包到账', target: 'VIP5+', targetType: 'vip', type: 'promotion', status: 'unread', sentAt: '2026-03-01 00:00:00', content: '尊敬的VIP会员，您的月度红包已发放，请查收。' }
-])
+const inboxMessages = ref([])
 
 // System notifications state
 const systemSearch = ref('')
-const systemNotifications = ref([
-  { id: 1, title: '大额提现预警', level: 'warning', content: '会员 user_8823 发起大额提现 ¥50,000', createdAt: '2026-03-07 16:28:00' },
-  { id: 2, title: '疑似多开账号', level: 'error', content: '检测到疑似多开账号 IP: 103.45.67.89，涉及3个账户', createdAt: '2026-03-07 16:25:00' },
-  { id: 3, title: '代理余额不足', level: 'warning', content: '代理 "金沙娱乐" 余额不足 ¥10,000，请及时充值', createdAt: '2026-03-07 16:18:00' },
-  { id: 4, title: 'API响应延迟', level: 'warning', content: 'PG电子 API 响应延迟升高 (>2s)，请关注', createdAt: '2026-03-07 16:12:00' },
-  { id: 5, title: '每日结算完成', level: 'info', content: '2026-03-06 返水结算已完成，共结算 ¥125,000', createdAt: '2026-03-07 00:05:00' },
-  { id: 6, title: '新代理注册', level: 'info', content: '新代理 "大三元" 已完成注册审核', createdAt: '2026-03-06 14:00:00' }
-])
+const systemNotifications = ref([])
 
 // Chat state
 const chatSearch = ref('')
 const chatStatusFilter = ref('')
-const chatSessions = ref([
-  { id: 'CS001', username: 'player_wang', subject: '提现未到账', status: 'active', lastMessage: '您好，我的提现已经2小时了还没到账', updatedAt: '2026-03-07 16:35:00' },
-  { id: 'CS002', username: 'lucky_star88', subject: 'VIP升级咨询', status: 'active', lastMessage: '请问VIP3需要多少积分？', updatedAt: '2026-03-07 16:20:00' },
-  { id: 'CS003', username: 'dragon_888', subject: '充值优惠', status: 'waiting', lastMessage: '有没有大额充值优惠？', updatedAt: '2026-03-07 15:50:00' },
-  { id: 'CS004', username: 'newbie_2026', subject: '新手引导', status: 'closed', lastMessage: '谢谢客服的帮助！', updatedAt: '2026-03-07 14:00:00' },
-  { id: 'CS005', username: 'fish_lover', subject: '游戏异常', status: 'waiting', lastMessage: '海洋之王游戏卡住了', updatedAt: '2026-03-07 13:30:00' }
-])
+const chatSessions = ref([])
+
+onMounted(async () => {
+  try {
+    const [msgs, notifications, chats] = await Promise.all([getMessages(), getSystemNotifications(), getChatSessions()])
+    inboxMessages.value = msgs || []
+    systemNotifications.value = notifications || []
+    chatSessions.value = chats || []
+  } catch (e) { console.warn('API request failed', e) }
+})
 
 // Send dialog state
 const sendDialogVisible = ref(false)
@@ -263,7 +253,7 @@ function onTargetTypeChange() {
   sendForm.value.targetVip = 0
 }
 
-function sendMessage() {
+async function sendMessage() {
   if (!sendForm.value.title || !sendForm.value.content) {
     ElMessage.warning('请填写标题和内容')
     return
@@ -272,19 +262,24 @@ function sendMessage() {
   if (sendForm.value.targetType === 'vip') target = `VIP${sendForm.value.targetVip}+`
   if (sendForm.value.targetType === 'user') target = sendForm.value.targetUser
 
-  const now = new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
-  inboxMessages.value.unshift({
-    id: Math.max(...inboxMessages.value.map(m => m.id)) + 1,
-    title: sendForm.value.title,
-    target,
-    targetType: sendForm.value.targetType,
-    type: sendForm.value.type,
-    status: 'sent',
-    sentAt: now,
-    content: sendForm.value.content
-  })
-  sendDialogVisible.value = false
-  ElMessage.success('消息已发送')
+  try {
+    const result = await apiSendMessage({ ...sendForm.value, target })
+    const now = new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
+    inboxMessages.value.unshift({
+      id: result?.id || Date.now(),
+      title: sendForm.value.title,
+      target,
+      targetType: sendForm.value.targetType,
+      type: sendForm.value.type,
+      status: 'sent',
+      sentAt: now,
+      content: sendForm.value.content
+    })
+    sendDialogVisible.value = false
+    ElMessage.success('消息已发送')
+  } catch (e) {
+    ElMessage.error('发送失败')
+  }
 }
 
 function viewMessage(row) {
@@ -298,11 +293,16 @@ function viewNotification(row) {
 }
 
 function deleteMessage(row, source) {
-  ElMessageBox.confirm(`确定删除消息 "${row.title}" 吗?`, '确认', { type: 'warning' }).then(() => {
-    if (source === 'inbox') {
-      inboxMessages.value = inboxMessages.value.filter(m => m.id !== row.id)
+  ElMessageBox.confirm(`确定删除消息 "${row.title}" 吗?`, '确认', { type: 'warning' }).then(async () => {
+    try {
+      await apiDeleteMessage(row.id)
+      if (source === 'inbox') {
+        inboxMessages.value = inboxMessages.value.filter(m => m.id !== row.id)
+      }
+      ElMessage.success('消息已删除')
+    } catch (e) {
+      ElMessage.error('删除失败')
     }
-    ElMessage.success('消息已删除')
   }).catch(() => {})
 }
 
@@ -311,9 +311,14 @@ function replyChat(row) {
 }
 
 function closeChat(row) {
-  ElMessageBox.confirm(`确定关闭与 "${row.username}" 的会话吗?`, '确认', { type: 'warning' }).then(() => {
-    row.status = 'closed'
-    ElMessage.success('会话已关闭')
+  ElMessageBox.confirm(`确定关闭与 "${row.username}" 的会话吗?`, '确认', { type: 'warning' }).then(async () => {
+    try {
+      await updateChatSession(row.id, { status: 'closed' })
+      row.status = 'closed'
+      ElMessage.success('会话已关闭')
+    } catch (e) {
+      ElMessage.error('操作失败')
+    }
   }).catch(() => {})
 }
 </script>

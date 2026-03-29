@@ -64,17 +64,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { getVipLevels, updateVipLevel } from '@/api/vip'
 
-const vipLevels = ref([
-  { level: 0, name: '普通会员', pointsRequired: 0, benefits: '基础游戏权限', upgradeCondition: '注册即可', status: 'active' },
-  { level: 1, name: '青铜VIP', pointsRequired: 1000, benefits: '0.5%返水、每月红包88元、专属客服', upgradeCondition: '累计充值 ≥ 10,000 CNY', status: 'active' },
-  { level: 2, name: '白银VIP', pointsRequired: 10000, benefits: '0.8%返水、每月红包288元、生日礼金588元', upgradeCondition: '累计充值 ≥ 100,000 CNY', status: 'active' },
-  { level: 3, name: '黄金VIP', pointsRequired: 50000, benefits: '1.0%返水、每月红包588元、生日礼金1288元、优先提现', upgradeCondition: '累计充值 ≥ 500,000 CNY', status: 'active' },
-  { level: 4, name: '铂金VIP', pointsRequired: 200000, benefits: '1.2%返水、每月红包1288元、生日礼金2888元、专属活动', upgradeCondition: '累计充值 ≥ 2,000,000 CNY', status: 'active' },
-  { level: 5, name: '钻石VIP', pointsRequired: 500000, benefits: '1.5%返水、每月红包2888元、生日礼金5888元、1对1管家', upgradeCondition: '累计充值 ≥ 5,000,000 CNY', status: 'active' }
-])
+const vipLevels = ref([])
+
+onMounted(async () => {
+  try {
+    const data = await getVipLevels()
+    vipLevels.value = data || []
+  } catch (e) { console.warn('API request failed', e) }
+})
 
 const editDialogVisible = ref(false)
 const editForm = ref({})
@@ -89,12 +90,17 @@ function handleEdit(row) {
   editDialogVisible.value = true
 }
 
-function saveEdit() {
-  const idx = vipLevels.value.findIndex(v => v.level === editForm.value.level)
-  if (idx !== -1) {
-    vipLevels.value[idx] = { ...editForm.value }
+async function saveEdit() {
+  try {
+    await updateVipLevel(editForm.value.level, editForm.value)
+    const idx = vipLevels.value.findIndex(v => v.level === editForm.value.level)
+    if (idx !== -1) {
+      vipLevels.value[idx] = { ...editForm.value }
+    }
+    editDialogVisible.value = false
+    ElMessage.success('VIP等级配置已更新')
+  } catch (e) {
+    ElMessage.error('保存失败')
   }
-  editDialogVisible.value = false
-  ElMessage.success('VIP等级配置已更新')
 }
 </script>
