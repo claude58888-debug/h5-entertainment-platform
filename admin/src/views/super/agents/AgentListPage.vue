@@ -299,16 +299,6 @@ function toggleStatus(row) {
   }).catch(() => {})
 }
 
-function commissionLevelType(level) {
-  const map = { gold: 'warning', silver: '', bronze: 'info', diamond: 'danger' }
-  return map[level] || ''
-}
-
-function commissionLevelLabel(level) {
-  const map = { gold: '金牌', silver: '银牌', bronze: '铜牌', diamond: '钻石' }
-  return map[level] || level || '-'
-}
-
 async function showAgentDetail(row) {
   detailTab.value = 'info'
   detailAgent.value = row
