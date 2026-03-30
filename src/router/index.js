@@ -83,6 +83,12 @@ const routes = [
     component: () => import('@/views/PromotionsPage.vue')
   },
   {
+    path: '/activities',
+    name: 'Activities',
+    component: () => import('@/views/ActivitiesPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/views/ProfilePage.vue'),

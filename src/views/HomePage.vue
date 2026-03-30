@@ -39,11 +39,11 @@
 
       <!-- Main Content -->
       <template v-else>
-        <!-- Notice -->
-        <AppNotice />
-
         <!-- Banner -->
         <BannerSwiper />
+
+        <!-- Scrolling Announcement Bar (below banner) -->
+        <AppNotice />
 
         <!-- Quick Actions -->
         <QuickActions />

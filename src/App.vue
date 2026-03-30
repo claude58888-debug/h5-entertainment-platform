@@ -31,7 +31,7 @@ const router = useRouter()
 const transitionName = ref('slide-fade')
 
 router.beforeEach((to, from) => {
-  const mainPages = ['/', '/home', '/promotions', '/support', '/download', '/profile']
+  const mainPages = ['/', '/home', '/promotions', '/activities', '/support', '/download', '/profile']
   const toIsMain = mainPages.includes(to.path)
   const fromIsMain = mainPages.includes(from.path)
   if (toIsMain && fromIsMain) {
@@ -45,13 +45,13 @@ router.beforeEach((to, from) => {
   }
 })
 
-const tabBarPages = ['/', '/home', '/promotions', '/support', '/download', '/profile']
+const tabBarPages = ['/', '/home', '/promotions', '/activities', '/support', '/download', '/profile']
 const showTabBar = computed(() => {
   return tabBarPages.some(p => route.path === p || route.path === p + '/')
 })
 
 // Sub-pages with their own nav-bar should hide the main app header
-const subPages = ['/deposit', '/withdraw', '/tasks', '/income', '/invite', '/recharge', '/vip', '/safeCenter', '/report', '/transRecord', '/orderRecordSummary', '/prizeRecord', '/buyBit', '/softwareDownload', '/agentCooperation', '/video', '/login', '/register', '/self-exclusion', '/limits', '/privacy', '/terms', '/responsible-gaming']
+const subPages = ['/deposit', '/withdraw', '/tasks', '/income', '/invite', '/activities', '/recharge', '/vip', '/safeCenter', '/report', '/transRecord', '/orderRecordSummary', '/prizeRecord', '/buyBit', '/softwareDownload', '/agentCooperation', '/video', '/login', '/register', '/self-exclusion', '/limits', '/privacy', '/terms', '/responsible-gaming']
 const subPagePrefixes = ['/games/', '/game/']
 const showAppHeader = computed(() => {
   const path = route.path
