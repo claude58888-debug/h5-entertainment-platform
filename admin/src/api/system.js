@@ -20,6 +20,10 @@ export function getLogs() {
   return api.get('/api/admin/logs')
 }
 
+export function getLoginLogs() {
+  return api.get('/api/admin/login-logs')
+}
+
 export function getAnnouncements() {
   return api.get('/api/admin/announcements')
 }
