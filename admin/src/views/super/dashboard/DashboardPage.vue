@@ -49,12 +49,12 @@
       <div class="kpi-card">
         <div class="kpi-label">总会员数</div>
         <div class="kpi-value">{{ formatNum(kpi.totalMembers) }}</div>
-        <div class="kpi-change up">↑ 2.3% 较昨日</div>
+        <div class="kpi-change" :class="changeClass(kpiChanges.totalMembers)">{{ changeArrow(kpiChanges.totalMembers) }} {{ Math.abs(kpiChanges.totalMembers || 0) }}% 较上期</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">新增会员</div>
         <div class="kpi-value">{{ kpi.todayNewMembers }}</div>
-        <div class="kpi-change up">↑ 15 较昨日</div>
+        <div class="kpi-change" :class="changeClass(kpiChanges.todayNewMembers)">{{ changeArrow(kpiChanges.todayNewMembers) }} {{ kpiChanges.todayNewMembers > 0 ? '+' : '' }}{{ kpiChanges.todayNewMembers || 0 }} 较上期</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">当前在线</div>
@@ -63,17 +63,17 @@
       <div class="kpi-card">
         <div class="kpi-label">充值金额</div>
         <div class="kpi-value" style="color: #409eff;">¥{{ formatMoney(kpi.todayDeposit) }}</div>
-        <div class="kpi-change up">↑ 8.2%</div>
+        <div class="kpi-change" :class="changeClass(kpiChanges.todayDeposit)">{{ changeArrow(kpiChanges.todayDeposit) }} {{ Math.abs(kpiChanges.todayDeposit || 0) }}%</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">提现金额</div>
         <div class="kpi-value" style="color: #e6a23c;">¥{{ formatMoney(kpi.todayWithdrawal) }}</div>
-        <div class="kpi-change down">↓ 3.1%</div>
+        <div class="kpi-change" :class="changeClass(-(kpiChanges.todayWithdrawal || 0))">{{ changeArrow(-(kpiChanges.todayWithdrawal || 0)) }} {{ Math.abs(kpiChanges.todayWithdrawal || 0) }}%</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">盈利金额</div>
         <div class="kpi-value" style="color: #f56c6c;">¥{{ formatMoney(kpi.todayProfit) }}</div>
-        <div class="kpi-change up">↑ 12.5%</div>
+        <div class="kpi-change" :class="changeClass(kpiChanges.todayProfit)">{{ changeArrow(kpiChanges.todayProfit) }} {{ Math.abs(kpiChanges.todayProfit || 0) }}%</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">总代理数</div>
@@ -126,6 +126,7 @@ import VChart from 'vue-echarts'
 import { getDashboard, getDashboardAlerts } from '@/api/dashboard'
 
 const kpi = ref({})
+const kpiChanges = ref({})
 const alerts = ref([])
 const revenueTrendData = ref([])
 const topGamesData = ref([])
@@ -185,7 +186,10 @@ async function fetchDashboard() {
   try {
     const params = getDateParams()
     const data = await getDashboard(params)
-    if (data.kpi) kpi.value = data.kpi
+    if (data.kpi) {
+      kpi.value = data.kpi
+      kpiChanges.value = data.kpi.changes || {}
+    }
     revenueTrendData.value = data.revenueTrend || []
     topGamesData.value = data.topGamesGGR || []
     depositChannelData.value = data.depositByChannel || []
@@ -224,6 +228,8 @@ onMounted(() => {
 
 function formatNum(n) { return n?.toLocaleString() || '0' }
 function formatMoney(n) { return ((n || 0) / 10000).toFixed(1) + '万' }
+function changeClass(val) { return val > 0 ? 'up' : val < 0 ? 'down' : '' }
+function changeArrow(val) { return val > 0 ? '↑' : val < 0 ? '↓' : '→' }
 
 const lineOption = computed(() => ({
   tooltip: { trigger: 'axis' },

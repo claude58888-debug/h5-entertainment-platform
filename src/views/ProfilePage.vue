@@ -106,6 +106,12 @@
           </div>
           <span>{{ t('profile.prizeDetails') }}</span>
         </div>
+        <div class="quick-menu-item" @click="$router.push('/safeCenter')">
+          <div class="menu-icon-wrapper">
+            <van-icon name="setting-o" />
+          </div>
+          <span>{{ t('profile.settings') }}</span>
+        </div>
       </div>
     </div>
 
@@ -114,6 +120,30 @@
       <div class="invite-banner" @click="$router.push('/invite')">
         <span class="invite-text">👥 {{ t('profile.inviteBanner') }}</span>
         <span class="detail-link">{{ t('profile.details') }} &gt;</span>
+      </div>
+    </div>
+
+    <!-- Buy Crypto Quick Entry -->
+    <div class="crypto-entry-section">
+      <div class="crypto-entry" @click="$router.push('/buyBit')">
+        <div class="crypto-entry-left">
+          <van-icon name="gold-coin-o" size="20" color="#fbbf24" />
+          <div>
+            <span class="crypto-entry-title">{{ t('profile.buyCrypto') }}</span>
+            <span class="crypto-entry-desc">火币 · 币安 · 欧易</span>
+          </div>
+        </div>
+        <van-icon name="arrow" color="rgba(255,255,255,0.3)" />
+      </div>
+      <div class="crypto-entry" @click="$router.push('/softwareDownload')">
+        <div class="crypto-entry-left">
+          <van-icon name="shield-o" size="20" color="#a78bfa" />
+          <div>
+            <span class="crypto-entry-title">VPN推荐</span>
+            <span class="crypto-entry-desc">安全访问交易所</span>
+          </div>
+        </div>
+        <van-icon name="arrow" color="rgba(255,255,255,0.3)" />
       </div>
     </div>
 
@@ -562,6 +592,49 @@ onMounted(() => {
       color: $text-secondary;
     }
   }
+}
+
+/* Crypto Entry Section */
+.crypto-entry-section {
+  padding: 0 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crypto-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $bg-card;
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.crypto-entry-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.crypto-entry-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.crypto-entry-desc {
+  display: block;
+  font-size: 11px;
+  color: $text-muted;
+  margin-top: 2px;
 }
 
 .logout-section {

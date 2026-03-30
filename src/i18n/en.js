@@ -42,7 +42,7 @@ export default {
     lottery: 'Lottery',
     sports: 'Sports',
     chess: 'Chess & Cards',
-    video: 'DD Video',
+    video: 'RR Video',
     buyCrypto: 'Buy Crypto',
     recommendVPN: 'VPN',
     gamePartners: 'Game Partners',

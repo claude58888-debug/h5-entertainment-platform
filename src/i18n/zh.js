@@ -42,7 +42,7 @@ export default {
     lottery: '彩票',
     sports: '体育竞猜',
     chess: '棋牌游戏',
-    video: '大大影视',
+    video: '人人影视',
     buyCrypto: '购买虚拟币',
     recommendVPN: '推荐VPN',
     gamePartners: '游戏事业',
