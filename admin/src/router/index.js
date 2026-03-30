@@ -30,6 +30,7 @@ const routes = [
       { path: 'games/providers', name: 'GameProviders', component: () => import('@/views/super/games/ProvidersPage.vue'), meta: { title: '游戏厂商', icon: 'GameController' } },
       { path: 'games/list', name: 'GameList', component: () => import('@/views/super/games/GameListPage.vue'), meta: { title: '游戏列表' } },
       { path: 'games/bets', name: 'BettingRecords', component: () => import('@/views/super/games/BetsPage.vue'), meta: { title: '投注记录' } },
+      { path: 'games/stats', name: 'GameStats', component: () => import('@/views/super/games/GameStatsPage.vue'), meta: { title: '游戏统计' } },
       { path: 'vip', name: 'VipManage', component: () => import('@/views/super/vip/VipManagePage.vue'), meta: { title: 'VIP管理', icon: 'Trophy' } },
       { path: 'rakeback', name: 'RakebackManage', component: () => import('@/views/super/rakeback/RakebackPage.vue'), meta: { title: '返水管理', icon: 'Coin' } },
       { path: 'promotions', name: 'SuperPromotions', component: () => import('@/views/super/promotions/PromotionsPage.vue'), meta: { title: '活动管理', icon: 'Present' } },
