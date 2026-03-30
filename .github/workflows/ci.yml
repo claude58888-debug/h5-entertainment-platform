@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-build-h5:
+    name: Build H5 Frontend
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Build H5 frontend
+        run: npm run build
+
+  lint-and-build-admin:
+    name: Build Admin Frontend
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - name: Install dependencies
+        working-directory: admin
+        run: npm install
+      - name: Build admin frontend
+        working-directory: admin
+        run: npm run build
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: admin-server/package-lock.json
+      - name: Install dependencies
+        working-directory: admin-server
+        run: npm install
+      - name: Start server and health check
+        working-directory: admin-server
+        run: |
+          node server.js &
+          SERVER_PID=$!
+          echo "Server started with PID $SERVER_PID"
+          sleep 5
+          for i in 1 2 3 4 5; do
+            if curl -sf http://localhost:3001/api/health > /dev/null 2>&1; then
+              echo "Health check passed"
+              kill $SERVER_PID
+              exit 0
+            fi
+            echo "Attempt $i: waiting for server..."
+            sleep 2
+          done
+          echo "Health check failed"
+          kill $SERVER_PID 2>/dev/null
+          exit 1
