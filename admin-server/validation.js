@@ -244,6 +244,31 @@ export const validateCreateAnnouncement = [
     .isIn(['active', 'inactive', 'published', 'draft', 'scheduled']).withMessage('Invalid status')
 ]
 
+export const validateUpdateAnnouncement = [
+  body('title')
+    .optional()
+    .isLength({ min: 1, max: 200 }).withMessage('Title must be 1-200 characters')
+    .trim(),
+  body('content')
+    .optional()
+    .isLength({ max: 5000 }).withMessage('Content must be under 5000 characters'),
+  body('targetType')
+    .optional()
+    .isIn(['all', 'vip_only', 'vip_level']).withMessage('Invalid target type'),
+  body('targetVipLevel')
+    .optional()
+    .isInt({ min: 0, max: 10 }).withMessage('VIP level must be 0-10'),
+  body('type')
+    .optional()
+    .isIn(['普通', '紧急', '活动', '维护']).withMessage('Invalid announcement type'),
+  body('scheduledAt')
+    .optional({ values: 'null' })
+    .isISO8601().withMessage('Invalid date format'),
+  body('status')
+    .optional()
+    .isIn(['active', 'inactive', 'published', 'draft', 'scheduled']).withMessage('Invalid status')
+]
+
 // ==================== RISK ====================
 
 export const validateCreateRiskRule = [

@@ -10,7 +10,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import db, { initDB } from './db.js'
 import h5Routes from './h5-routes.js'
-import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, validateManualDeposit, validateBatchWithdrawal, validateAutoReviewRule, validateHotScore, validateRecommend, validateVipAdjust, validateTagsUpdate, validateBalanceAdjust, handleValidationErrors } from './validation.js'
+import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateUpdateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, validateManualDeposit, validateBatchWithdrawal, validateAutoReviewRule, validateHotScore, validateRecommend, validateVipAdjust, validateTagsUpdate, validateBalanceAdjust, handleValidationErrors } from './validation.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -1347,7 +1347,7 @@ app.post('/api/admin/announcements', authMiddleware, validateCreateAnnouncement,
   }
 })
 
-app.put('/api/admin/announcements/:id', authMiddleware, (req, res) => {
+app.put('/api/admin/announcements/:id', authMiddleware, validateUpdateAnnouncement, handleValidationErrors, (req, res) => {
   const ann = db.prepare('SELECT * FROM announcements WHERE id = ?').get(req.params.id)
   if (!ann) return res.status(404).json({ error: 'Announcement not found' })
 
