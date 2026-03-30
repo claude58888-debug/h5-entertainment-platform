@@ -49,6 +49,7 @@
             <el-menu-item index="/super/games/providers">游戏厂商</el-menu-item>
             <el-menu-item index="/super/games/list">游戏列表</el-menu-item>
             <el-menu-item index="/super/games/bets">投注记录</el-menu-item>
+            <el-menu-item index="/super/games/stats">游戏统计</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="/super/vip">
             <el-icon><Trophy /></el-icon>
