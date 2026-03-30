@@ -139,6 +139,18 @@ const routes = [
     meta: { requiresAuth: true, title: 'Security Center' }
   },
   {
+    path: '/messages',
+    name: 'Messages',
+    component: () => import('@/views/MessagesPage.vue'),
+    meta: { title: 'Messages' }
+  },
+  {
+    path: '/bets',
+    name: 'Bets',
+    component: () => import('@/views/BetsPage.vue'),
+    meta: { requiresAuth: true, title: 'Betting History' }
+  },
+  {
     path: '/monthka',
     name: 'ActivityDetail',
     component: () => import('@/views/ActivityDetailPage.vue'),

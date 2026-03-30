@@ -34,6 +34,10 @@
         </button>
         <router-link to="/deposit" class="btn-deposit">{{ $t('actions.deposit') }}</router-link>
       </template>
+      <router-link to="/messages" class="btn-bell">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span v-if="notificationStore.unreadCount > 0" class="bell-badge">{{ notificationStore.unreadCount }}</span>
+      </router-link>
       <button class="btn-lang" @click="toggleLocale">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
       </button>
@@ -45,10 +49,12 @@
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { useWalletStore } from '@/stores/wallet'
+import { useNotificationStore } from '@/stores/notification'
 
 const { locale } = useI18n()
 const userStore = useUserStore()
 const walletStore = useWalletStore()
+const notificationStore = useNotificationStore()
 
 function toggleLocale() {
   const locales = ['zh', 'en']
@@ -181,6 +187,43 @@ function toggleLocale() {
   border-radius: 16px;
   font-size: 13px;
   font-weight: 600;
+}
+
+.btn-bell {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid $border-color;
+  background: transparent;
+  color: $text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $accent-purple-light;
+  }
+}
+
+.bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: $accent-red;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
 }
 
 .btn-lang {
