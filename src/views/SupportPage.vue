@@ -7,33 +7,33 @@
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
       </div>
       <h2>{{ t('support.title') }}</h2>
-      <p class="hero-sub">7×24小时在线客服</p>
+      <p class="hero-sub">{{ t('support.heroSub') }}</p>
     </div>
 
     <!-- Working Hours -->
     <div class="hours-card">
       <div class="hours-status">
         <span class="status-dot online"></span>
-        <span class="status-text">当前在线</span>
+        <span class="status-text">{{ t('support.currentOnline') }}</span>
       </div>
       <div class="hours-info">
         <div class="hours-row">
-          <span class="hours-label">在线客服</span>
-          <span class="hours-value">7×24小时</span>
+          <span class="hours-label">{{ t('support.onlineChat') }}</span>
+          <span class="hours-value">{{ t('support.online247') }}</span>
         </div>
         <div class="hours-row">
           <span class="hours-label">Telegram</span>
-          <span class="hours-value">09:00 - 次日02:00</span>
+          <span class="hours-value">{{ t('support.telegramHours') }}</span>
         </div>
         <div class="hours-row">
-          <span class="hours-label">邮件回复</span>
-          <span class="hours-value">24小时内</span>
+          <span class="hours-label">{{ t('support.emailReply') }}</span>
+          <span class="hours-value">{{ t('support.within24h') }}</span>
         </div>
       </div>
     </div>
 
     <!-- Contact Options -->
-    <div class="section-label">联系方式</div>
+    <div class="section-label">{{ t('support.contactMethods') }}</div>
     <div class="support-options">
       <div class="support-card livechat-card" @click="showChatPanel = true">
         <div class="card-icon livechat-icon">
@@ -41,7 +41,7 @@
         </div>
         <div class="support-info">
           <h3>{{ t('support.livechat') }}</h3>
-          <p>即时响应，在线解答</p>
+          <p>{{ t('support.instantResponse') }}</p>
         </div>
         <span class="card-arrow">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -89,7 +89,7 @@
     </div>
 
     <!-- FAQ -->
-    <div class="section-label">常见问题</div>
+    <div class="section-label">{{ t('support.faq') }}</div>
     <div class="faq-section">
       <van-collapse v-model="activeFaq">
         <van-collapse-item v-for="faq in faqs" :key="faq.id" :title="faq.q" :name="faq.id">
@@ -107,22 +107,22 @@
     >
       <div class="chat-panel">
         <div class="chat-header">
-          <h3>在线客服</h3>
+          <h3>{{ t('support.onlineSupport') }}</h3>
           <span class="chat-close" @click="showChatPanel = false">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </span>
         </div>
         <div class="chat-messages">
           <div class="chat-msg system">
-            <div class="msg-bubble">您好！欢迎使用在线客服，请问有什么可以帮您？</div>
+            <div class="msg-bubble">{{ t('support.welcomeMsg') }}</div>
           </div>
           <div class="chat-msg system">
-            <div class="msg-bubble">当前客服在线，预计等待时间 &lt; 1分钟</div>
+            <div class="msg-bubble">{{ t('support.waitTimeMsg') }}</div>
           </div>
         </div>
         <div class="chat-input-area">
-          <input class="chat-input" placeholder="请输入您的问题..." />
-          <button class="chat-send-btn">发送</button>
+          <input class="chat-input" :placeholder="t('support.chatPlaceholder')" />
+          <button class="chat-send-btn">{{ t('support.send') }}</button>
         </div>
       </div>
     </van-popup>
@@ -139,12 +139,12 @@ const activeFaq = ref([])
 const showChatPanel = ref(false)
 
 const faqs = [
-  { id: 1, q: '如何充值？', a: '进入充值页面，选择支付方式，输入金额并提交。余额将即时更新。' },
-  { id: 2, q: '提现需要多久？', a: '提现通常在1-24小时内处理，具体取决于所选方式。' },
-  { id: 3, q: '如何成为VIP？', a: 'VIP等级根据您的总充值和游戏活动自动升级。' },
-  { id: 4, q: '我的数据安全吗？', a: '我们使用行业标准SSL加密，并获得Gaming Curacao许可，确保您的数据安全。' },
-  { id: 5, q: '忘记密码怎么办？', a: '点击登录页面的"忘记密码"链接，通过手机号验证后即可重置密码。' },
-  { id: 6, q: '如何联系人工客服？', a: '您可以通过在线聊天、Telegram(@DDYL666 或 @DDYL555)联系我们的客服团队。' }
+  { id: 1, q: t('support.faqDeposit'), a: t('support.faqDepositAnswer') },
+  { id: 2, q: t('support.faqWithdraw'), a: t('support.faqWithdrawAnswer') },
+  { id: 3, q: t('support.faqVip'), a: t('support.faqVipAnswer') },
+  { id: 4, q: t('support.faqSecurity'), a: t('support.faqSecurityAnswer') },
+  { id: 5, q: t('support.faqPassword'), a: t('support.faqPasswordAnswer') },
+  { id: 6, q: t('support.faqContact'), a: t('support.faqContactAnswer') }
 ]
 
 function openTelegram(handle) {
@@ -154,7 +154,7 @@ function openTelegram(handle) {
 
 function handleContact(type) {
   if (type === 'email') {
-    showToast({ message: '正在打开邮件客户端...', position: 'bottom' })
+    showToast({ message: t('support.openingEmail'), position: 'bottom' })
   }
 }
 </script>

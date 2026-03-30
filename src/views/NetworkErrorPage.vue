@@ -1,5 +1,5 @@
 <template>
-  <div class="error-page" role="main" aria-label="网络错误">
+  <div class="error-page" role="main" :aria-label="t('errors.networkError')">
     <div class="error-icon">
       <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="rgba(124,58,237,0.4)" stroke-width="1.5">
         <path d="M1 1l22 22"/>
@@ -11,19 +11,23 @@
         <line x1="12" y1="20" x2="12.01" y2="20"/>
       </svg>
     </div>
-    <h1 class="error-code">网络错误</h1>
-    <p class="error-title">无法连接到服务器</p>
-    <p class="error-desc">请检查您的网络连接后重试</p>
+    <h1 class="error-code">{{ t('errors.networkError') }}</h1>
+    <p class="error-title">{{ t('errors.cannotConnect') }}</p>
+    <p class="error-desc">{{ t('errors.checkNetwork') }}</p>
     <van-button type="primary" round @click="retry" class="error-btn">
-      重新加载
+      {{ t('common.reload') }}
     </van-button>
     <van-button plain round @click="$router.push('/home')" class="error-btn-secondary">
-      返回首页
+      {{ t('common.backToHome') }}
     </van-button>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 function retry() {
   window.location.reload()
 }

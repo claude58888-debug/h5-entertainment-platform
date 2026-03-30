@@ -5,7 +5,7 @@
         <circle cx="12" cy="12" r="10"/>
         <path d="M12 6v6l4 2"/>
       </svg>
-      <span class="text">即将推出</span>
+      <span class="text">{{ $t('common.comingSoon') }}</span>
     </div>
   </div>
 </template>

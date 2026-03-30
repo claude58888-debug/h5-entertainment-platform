@@ -1,5 +1,5 @@
 <template>
-  <div class="error-page" role="main" aria-label="服务器错误">
+  <div class="error-page" role="main" :aria-label="t('errors.serverError')">
     <div class="error-icon">
       <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="rgba(124,58,237,0.4)" stroke-width="1.5">
         <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
@@ -11,18 +11,22 @@
       </svg>
     </div>
     <h1 class="error-code">500</h1>
-    <p class="error-title">服务器开小差了</p>
-    <p class="error-desc">服务器遇到了一些问题，请稍后再试</p>
+    <p class="error-title">{{ t('errors.serverBusy') }}</p>
+    <p class="error-desc">{{ t('errors.serverErrorDesc') }}</p>
     <van-button type="primary" round @click="retry" class="error-btn">
-      重新加载
+      {{ t('common.reload') }}
     </van-button>
     <van-button plain round @click="$router.push('/home')" class="error-btn-secondary">
-      返回首页
+      {{ t('common.backToHome') }}
     </van-button>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 function retry() {
   window.location.reload()
 }

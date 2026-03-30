@@ -20,7 +20,7 @@
           <div v-if="!bannerHasImage(banner)" class="banner-content">
             <h3 class="banner-title">{{ banner.title }}</h3>
             <p class="banner-subtitle">{{ banner.subtitle }}</p>
-            <span class="banner-btn">了解详情</span>
+            <span class="banner-btn">{{ $t('banner.learnMore') }}</span>
           </div>
           <div v-if="!bannerHasImage(banner)" class="banner-decos">
             <div class="deco-circle d1"></div>

@@ -1,5 +1,5 @@
 <template>
-  <nav class="bottom-tab-bar" role="navigation" aria-label="主导航" @touchstart="onTouchStart" @touchend="onTouchEnd">
+  <nav class="bottom-tab-bar" role="navigation" :aria-label="$t('common.mainNav')" @touchstart="onTouchStart" @touchend="onTouchEnd">
     <a
       v-for="tab in tabs"
       :key="tab.path"
