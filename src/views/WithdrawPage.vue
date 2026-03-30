@@ -41,15 +41,16 @@
         </div>
       </div>
 
-      <!-- USDT Address (when USDT selected) -->
-      <div class="section" v-if="activeMethod === 'usdt'">
-        <h3 class="section-title">收款地址 (TRC20)</h3>
+      <!-- USDT Address (when USDT TRC20 or ERC20 selected) -->
+      <div class="section" v-if="activeMethod === 'usdt' || activeMethod === 'usdt_erc20'">
+        <h3 class="section-title">收款地址 ({{ activeMethod === 'usdt' ? 'TRC20' : 'ERC20' }})</h3>
         <van-field
           v-model="usdtAddress"
-          placeholder="请输入USDT-TRC20钱包地址"
+          :placeholder="activeMethod === 'usdt' ? '请输入USDT-TRC20钱包地址' : '请输入USDT-ERC20钱包地址'"
           class="form-input"
         />
-        <p class="field-tip">请确认地址为TRC20网络，错误的地址将导致资产丢失</p>
+        <p class="field-tip" v-if="activeMethod === 'usdt'">请确认地址为TRC20网络，错误的地址将导致资产丢失</p>
+        <p class="field-tip" v-else>请确认地址为ERC20网络，ERC20提现需额外1 USDT手续费</p>
       </div>
 
       <!-- Bank Card Info (when bank selected) -->
@@ -190,14 +191,18 @@ onMounted(async () => {
 const quickAmounts = [100, 500, 1000, 5000, 10000]
 
 const methods = [
-  { id: 'usdt', name: 'USDT-TRC20', icon: '💎', desc: '免手续费' },
-  { id: 'bank', name: '银行卡', icon: '🏦', desc: '1%手续费' }
+  { id: 'usdt', name: 'USDT-TRC20', icon: '💎', desc: '免手续费', network: 'TRC20' },
+  { id: 'usdt_erc20', name: 'USDT-ERC20', icon: '💠', desc: '1 USDT手续费', network: 'ERC20' },
+  { id: 'bank', name: '银行卡', icon: '🏦', desc: '1%手续费', network: '' }
 ]
 
 const fee = computed(() => {
   const amt = Number(amount.value) || 0
   if (activeMethod.value === 'bank') {
     return amt * 0.01
+  }
+  if (activeMethod.value === 'usdt_erc20') {
+    return 1
   }
   return 0
 })
@@ -221,7 +226,7 @@ async function onSubmit() {
     showToast({ message: '余额不足', type: 'fail' })
     return
   }
-  if (activeMethod.value === 'usdt' && !usdtAddress.value) {
+  if ((activeMethod.value === 'usdt' || activeMethod.value === 'usdt_erc20') && !usdtAddress.value) {
     showToast({ message: '请输入USDT收款地址', type: 'fail' })
     return
   }
@@ -240,10 +245,10 @@ async function onSubmit() {
     const newRecord = {
       id: Date.now(),
       amount: amt,
-      method: activeMethod.value === 'usdt' ? 'USDT-TRC20' : '银行卡',
+      method: activeMethod.value === 'usdt' ? 'USDT-TRC20' : activeMethod.value === 'usdt_erc20' ? 'USDT-ERC20' : '银行卡',
       status: 'pending',
       time: new Date().toLocaleString('zh-CN'),
-      address: activeMethod.value === 'usdt'
+      address: (activeMethod.value === 'usdt' || activeMethod.value === 'usdt_erc20')
         ? usdtAddress.value.slice(0, 4) + '...' + usdtAddress.value.slice(-4)
         : bankName.value + ' ****' + cardNumber.value.slice(-4)
     }

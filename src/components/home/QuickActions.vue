@@ -28,16 +28,6 @@ const actions = [
     image: '/img/icons/deposit.webp',
   },
   {
-    labelKey: 'home.myIncome',
-    path: '/income',
-    image: '/img/icons/income.png',
-  },
-  {
-    labelKey: 'home.inviteFriend',
-    path: '/invite',
-    image: '/img/icons/invite.png',
-  },
-  {
     labelKey: 'home.withdraw',
     path: '/withdraw',
     image: '/img/icons/withdraw.png',
@@ -46,6 +36,16 @@ const actions = [
     labelKey: 'home.task',
     path: '/tasks',
     image: '/img/icons/task.png',
+  },
+  {
+    labelKey: 'home.myIncome',
+    path: '/income',
+    image: '/img/icons/income.png',
+  },
+  {
+    labelKey: 'home.inviteFriend',
+    path: '/invite',
+    image: '/img/icons/invite.png',
   }
 ]
 
