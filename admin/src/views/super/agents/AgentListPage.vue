@@ -73,8 +73,9 @@
         <el-table-column prop="created_at" label="创建时间" width="160" sortable>
           <template #default="{ row }">{{ row.created_at || row.created || '-' }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="250" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" type="primary" text @click="showAgentDetail(row)">快览</el-button>
             <el-button size="small" type="primary" text @click="$router.push('/super/agents/' + row.id)">详情</el-button>
             <el-button size="small" type="warning" text @click="handleTopup(row)">充值</el-button>
             <el-button size="small" :type="row.status === 'active' ? 'danger' : 'success'" text @click="toggleStatus(row)">
@@ -93,12 +94,100 @@
         />
       </div>
     </div>
+
+    <!-- Agent Details Modal -->
+    <el-dialog v-model="detailVisible" :title="'代理详情 - ' + (detailAgent.brand || '')" width="720px" destroy-on-close>
+      <el-tabs v-model="detailTab">
+        <el-tab-pane label="基本信息" name="info">
+          <el-descriptions :column="2" border size="small">
+            <el-descriptions-item label="代理ID">{{ detailAgent.id }}</el-descriptions-item>
+            <el-descriptions-item label="品牌名称">{{ detailAgent.brand }}</el-descriptions-item>
+            <el-descriptions-item label="域名">{{ detailAgent.domain || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="联系人">{{ detailAgent.contact || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="上级代理">{{ detailAgent.parent_agent || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="佣金等级">
+              <el-tag v-if="detailAgent.commission_level" size="small" :type="commissionLevelType(detailAgent.commission_level)">{{ commissionLevelLabel(detailAgent.commission_level) }}</el-tag>
+              <span v-else>-</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="状态">
+              <el-tag :type="detailAgent.status === 'active' ? 'success' : 'danger'" size="small">{{ detailAgent.status === 'active' ? '正常' : '暂停' }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="会员数">{{ detailAgent.members }}</el-descriptions-item>
+            <el-descriptions-item label="余额">¥{{ (detailAgent.balance || 0).toLocaleString() }}</el-descriptions-item>
+            <el-descriptions-item label="月收入">¥{{ ((detailAgent.monthRevenue || 0) / 10000).toFixed(1) }}万</el-descriptions-item>
+            <el-descriptions-item label="分成模式">
+              <el-tag size="small">{{ detailAgent.shareMode === 'revenue' ? '收入分成' : '流水分成' }} {{ detailAgent.shareRate }}%</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="创建时间">{{ detailAgent.created_at || detailAgent.created || '-' }}</el-descriptions-item>
+          </el-descriptions>
+        </el-tab-pane>
+
+        <el-tab-pane label="下属会员" name="members">
+          <el-table :data="detailMembers" stripe size="small" max-height="360">
+            <el-table-column prop="id" label="会员ID" width="90" />
+            <el-table-column prop="username" label="用户名" width="120" />
+            <el-table-column label="VIP" width="60">
+              <template #default="{ row }"><el-tag size="small" type="warning">V{{ row.vip }}</el-tag></template>
+            </el-table-column>
+            <el-table-column label="余额" width="100">
+              <template #default="{ row }">¥{{ (row.balance || 0).toLocaleString() }}</template>
+            </el-table-column>
+            <el-table-column label="总充值" width="110">
+              <template #default="{ row }">¥{{ ((row.totalDeposit || 0) / 10000).toFixed(1) }}万</template>
+            </el-table-column>
+            <el-table-column label="总提现" width="110">
+              <template #default="{ row }">¥{{ ((row.totalWithdraw || 0) / 10000).toFixed(1) }}万</template>
+            </el-table-column>
+            <el-table-column label="状态" width="80">
+              <template #default="{ row }">
+                <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">{{ row.status === 'active' ? '正常' : '冻结' }}</el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div v-if="!detailMembers.length" style="text-align: center; padding: 20px; color: #888;">暂无下属会员</div>
+        </el-tab-pane>
+
+        <el-tab-pane label="佣金配置" name="commission">
+          <el-descriptions :column="1" border size="small" style="max-width: 400px;">
+            <el-descriptions-item label="分成模式">{{ detailAgent.shareMode === 'revenue' ? '收入分成' : '流水分成' }}</el-descriptions-item>
+            <el-descriptions-item label="分成比例">{{ detailAgent.shareRate || 0 }}%</el-descriptions-item>
+            <el-descriptions-item label="佣金等级">{{ commissionLevelLabel(detailAgent.commission_level) || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="月收入">¥{{ ((detailAgent.monthRevenue || 0) / 10000).toFixed(1) }}万</el-descriptions-item>
+          </el-descriptions>
+        </el-tab-pane>
+
+        <el-tab-pane label="结算记录" name="settlement">
+          <el-table :data="detailSettlements" stripe size="small" max-height="360">
+            <el-table-column prop="id" label="结算ID" width="100" />
+            <el-table-column prop="agent_id" label="代理" width="90" />
+            <el-table-column prop="period" label="结算周期" width="200" />
+            <el-table-column label="总投注" width="120">
+              <template #default="{ row }">¥{{ (row.totalBets || 0).toLocaleString() }}</template>
+            </el-table-column>
+            <el-table-column label="佣金率" width="80">
+              <template #default="{ row }">{{ row.commissionRate || 0 }}%</template>
+            </el-table-column>
+            <el-table-column label="佣金金额" width="120">
+              <template #default="{ row }"><span style="color: #e6a23c;">¥{{ (row.commissionAmount || 0).toLocaleString() }}</span></template>
+            </el-table-column>
+            <el-table-column label="状态" width="90">
+              <template #default="{ row }">
+                <el-tag :type="row.status === 'paid' ? 'success' : row.status === 'approved' ? 'warning' : 'info'" size="small">
+                  {{ row.status === 'paid' ? '已付款' : row.status === 'approved' ? '已审批' : '待审批' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div v-if="!detailSettlements.length" style="text-align: center; padding: 20px; color: #888;">暂无结算记录</div>
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { getAgents, updateAgent } from '@/api/agents'
+import { getAgents, getAgent, updateAgent, getAgentSettlements } from '@/api/agents'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const search = ref('')
@@ -108,6 +197,11 @@ const selectedAgents = ref([])
 const tableRef = ref(null)
 const currentPage = ref(1)
 const pageSize = ref(10)
+const detailVisible = ref(false)
+const detailTab = ref('info')
+const detailAgent = ref({})
+const detailMembers = ref([])
+const detailSettlements = ref([])
 
 onMounted(async () => {
   try {
@@ -203,6 +297,25 @@ function toggleStatus(row) {
     row.status = row.status === 'active' ? 'suspended' : 'active'
     ElMessage.success(`已${action} ${row.brand}`)
   }).catch(() => {})
+}
+
+async function showAgentDetail(row) {
+  detailTab.value = 'info'
+  detailAgent.value = row
+  detailMembers.value = []
+  detailSettlements.value = []
+  detailVisible.value = true
+  try {
+    const data = await getAgent(row.id)
+    if (data) {
+      detailAgent.value = { ...row, ...data }
+      detailMembers.value = data.membersList || []
+    }
+  } catch (e) { console.warn('Failed to fetch agent details', e) }
+  try {
+    const settlements = await getAgentSettlements({ agentId: row.id })
+    detailSettlements.value = (settlements || []).filter(s => s.agent_id === row.id)
+  } catch (e) { console.warn('Failed to fetch settlements', e) }
 }
 </script>
 

@@ -257,15 +257,50 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
   const totalAgents = db.prepare('SELECT COUNT(*) as count FROM agents').get().count
   const activeAgents = db.prepare("SELECT COUNT(*) as count FROM agents WHERE status = 'active'").get().count
 
+  // Compute real percentage changes by comparing with previous period
+  let prevMembers = 0, prevDeposit = 0, prevWithdrawal = 0, prevNewMembers = 0
+  if (startDate && endDate) {
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    const diffMs = end.getTime() - start.getTime()
+    const prevEnd = new Date(start.getTime() - 1)
+    const prevStart = new Date(prevEnd.getTime() - diffMs)
+    const prevStartStr = prevStart.toISOString().slice(0, 10)
+    const prevEndStr = prevEnd.toISOString().slice(0, 10)
+    prevNewMembers = db.prepare('SELECT COUNT(*) as count FROM members WHERE registered >= ? AND registered <= ?').get(prevStartStr, prevEndStr).count
+    prevDeposit = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= ? AND time <= ?").get(prevStartStr, prevEndStr + ' 23:59:59').total
+    prevWithdrawal = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= ? AND time <= ?").get(prevStartStr, prevEndStr + ' 23:59:59').total
+    prevMembers = db.prepare('SELECT COUNT(*) as count FROM members WHERE registered < ?').get(startDate).count
+  } else {
+    prevNewMembers = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now', '-2 day') AND registered < date('now', '-1 day')").get().count
+    prevDeposit = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= date('now', '-1 day') AND time < date('now')").get().total
+    prevWithdrawal = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= date('now', '-1 day') AND time < date('now')").get().total
+    prevMembers = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered < date('now', '-1 day')").get().count
+  }
+
+  function calcChange(current, previous) {
+    if (!previous || previous === 0) return current > 0 ? 100 : 0
+    return parseFloat((((current - previous) / previous) * 100).toFixed(1))
+  }
+
+  const prevProfit = (prevDeposit || 0) - (prevWithdrawal || 0)
+
   const kpi = {
-    totalMembers: totalMembers || 128456,
-    todayNewMembers: newMembersQuery || 342,
+    totalMembers: totalMembers,
+    todayNewMembers: newMembersQuery,
     onlineNow,
-    todayDeposit: depositQuery || 2856000,
-    todayWithdrawal: withdrawalQuery || 1245000,
-    todayProfit: todayProfit || 1611000,
-    totalAgents: totalAgents || 0,
-    activeAgents: activeAgents || 0
+    todayDeposit: depositQuery,
+    todayWithdrawal: withdrawalQuery,
+    todayProfit: todayProfit,
+    totalAgents: totalAgents,
+    activeAgents: activeAgents,
+    changes: {
+      totalMembers: calcChange(totalMembers, prevMembers),
+      todayNewMembers: newMembersQuery - prevNewMembers,
+      todayDeposit: calcChange(depositQuery, prevDeposit),
+      todayWithdrawal: calcChange(withdrawalQuery, prevWithdrawal),
+      todayProfit: calcChange(todayProfit, prevProfit)
+    }
   }
 
   const topGamesGGR = db.prepare('SELECT name, revenue as ggr FROM games ORDER BY revenue DESC LIMIT 5').all()

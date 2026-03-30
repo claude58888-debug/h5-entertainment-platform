@@ -101,24 +101,42 @@
           <ProviderCard v-for="p in videoProviders" :key="p.id" :provider="p" category="video" />
         </div>
 
-        <!-- Crypto Section -->
-        <div class="crypto-header">
-          <h3>{{ $t('home.buyCrypto') }}</h3>
-          <button class="vpn-btn" @click="$router.push('/softwareDownload')">{{ $t('home.recommendVPN') }}</button>
-        </div>
-        <div class="crypto-section">
-          <a href="https://www.huobi.com" target="_blank" class="crypto-link">
-            <img src="/img/crypto/huobi.svg" alt="HTX" class="crypto-img" />
-            <span>火币网</span>
-          </a>
-          <a href="https://www.binance.com" target="_blank" class="crypto-link">
-            <img src="/img/crypto/binance.svg" alt="BINANCE" class="crypto-img" />
-            <span>币安</span>
-          </a>
-          <a href="https://www.okx.com" target="_blank" class="crypto-link">
-            <img src="/img/crypto/okex.svg" alt="OKEX" class="crypto-img" />
-            <span>欧易</span>
-          </a>
+        <!-- Purchase Virtual Currency Section -->
+        <div class="crypto-section-wrapper">
+          <div class="crypto-header">
+            <h3>{{ $t('home.buyCrypto') }}</h3>
+            <button class="vpn-btn" @click="$router.push('/softwareDownload')">{{ $t('home.recommendVPN') }}</button>
+          </div>
+          <div class="crypto-section">
+            <a href="https://www.huobi.com" target="_blank" class="crypto-link">
+              <img src="/img/crypto/huobi.svg" alt="HTX" class="crypto-img" />
+              <span class="crypto-name">火币网</span>
+              <span class="crypto-desc">HTX</span>
+            </a>
+            <a href="https://www.binance.com" target="_blank" class="crypto-link">
+              <img src="/img/crypto/binance.svg" alt="BINANCE" class="crypto-img" />
+              <span class="crypto-name">币安</span>
+              <span class="crypto-desc">Binance</span>
+            </a>
+            <a href="https://www.okx.com" target="_blank" class="crypto-link">
+              <img src="/img/crypto/okex.svg" alt="OKEX" class="crypto-img" />
+              <span class="crypto-name">欧易</span>
+              <span class="crypto-desc">OKX</span>
+            </a>
+          </div>
+          <div class="crypto-tip">
+            <span>购买USDT后充值到平台，支持TRC-20网络</span>
+          </div>
+          <div class="vpn-recommend" @click="$router.push('/softwareDownload')">
+            <div class="vpn-recommend-left">
+              <span class="vpn-icon">🔒</span>
+              <div>
+                <span class="vpn-title">推荐VPN下载</span>
+                <span class="vpn-desc">安全访问交易所，保护您的隐私</span>
+              </div>
+            </div>
+            <span class="vpn-arrow">›</span>
+          </div>
         </div>
 
         <!-- Partners -->
@@ -346,11 +364,15 @@ onMounted(() => {
 }
 
 
+.crypto-section-wrapper {
+  padding: 0 12px;
+}
+
 .crypto-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 12px 12px;
+  padding: 24px 0 12px;
 
   h3 {
     font-size: 15px;
@@ -371,7 +393,6 @@ onMounted(() => {
 .crypto-section {
   display: flex;
   justify-content: space-around;
-  padding: 0 12px;
   gap: 12px;
 }
 
@@ -379,19 +400,88 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
   padding: 16px 0;
   border-radius: 12px;
   background: rgba(255,255,255,0.04);
   font-size: 12px;
   color: $text-secondary;
+  transition: background 0.2s;
+
+  &:active {
+    background: rgba(255,255,255,0.08);
+  }
 }
 
 .crypto-img {
   width: 40px;
   height: 40px;
   object-fit: contain;
+}
+
+.crypto-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.crypto-desc {
+  font-size: 10px;
+  color: $text-muted;
+}
+
+.crypto-tip {
+  text-align: center;
+  padding: 10px 0;
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.vpn-recommend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.15), rgba(168, 85, 247, 0.15));
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.vpn-recommend-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vpn-icon {
+  font-size: 20px;
+}
+
+.vpn-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.vpn-desc {
+  display: block;
+  font-size: 11px;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
+.vpn-arrow {
+  font-size: 20px;
+  color: rgba(255,255,255,0.3);
 }
 
 .partners-section {

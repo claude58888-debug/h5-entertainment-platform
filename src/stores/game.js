@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { getGamesApi, getGameDetailApi, getGameCategoriesApi } from '@/api/game'
 const defaultCategories = [
   { id: 'home', labelKey: 'nav.home', icon: 'home' },
-  { id: 'recent', labelKey: 'home.recent', icon: 'recent' },
   { id: 'hot', labelKey: 'home.hot', icon: 'fire' },
   { id: 'slots', labelKey: 'home.slots', icon: 'slots' },
   { id: 'live', labelKey: 'home.live', icon: 'live' },
@@ -26,9 +25,6 @@ export const useGameStore = defineStore('game', () => {
   function getGamesByCategory(category) {
     if (category === 'home' || category === 'hot') {
       return hotGames.value
-    }
-    if (category === 'recent') {
-      return games.value.slice(0, 8)
     }
     return games.value.filter(g => g.category === category)
   }
