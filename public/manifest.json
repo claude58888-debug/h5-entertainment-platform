@@ -1,12 +1,14 @@
 {
-    "name": "大大娱乐 - DD.TOP",
-    "short_name": "大大娱乐",
-    "description": "大大娱乐 - 最安全的在线娱乐平台",
+  "name": "大大娱乐 - DD Entertainment",
+  "short_name": "大大娱乐",
+  "description": "大大娱乐 - 最安全的在线娱乐平台 | DD Entertainment Platform",
   "start_url": "/#/home",
   "display": "standalone",
-  "background_color": "#1a1a2e",
+  "background_color": "#0e0b1f",
   "theme_color": "#7c3aed",
   "orientation": "portrait",
+  "categories": ["entertainment", "games"],
+  "lang": "zh-CN",
   "icons": [
     {
       "src": "/favicon.svg",

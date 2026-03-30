@@ -50,7 +50,7 @@ img {
   }
 }
 
-// Page transitions
+// Page transitions - default fade
 .slide-fade-enter-active {
   transition: all 0.25s ease-out;
 }
@@ -64,6 +64,38 @@ img {
 .slide-fade-leave-to {
   opacity: 0;
   transform: translateX(-20px);
+}
+
+// Slide right - navigating into sub-page
+.slide-right-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-right-leave-active {
+  transition: all 0.25s ease-in;
+}
+.slide-right-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+// Slide left - navigating back to main page
+.slide-left-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-left-leave-active {
+  transition: all 0.25s ease-in;
+}
+.slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+.slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
 }
 
 // Vant overrides for dark theme
@@ -162,7 +194,11 @@ img {
 // Accessibility: Reduced motion preference
 @media (prefers-reduced-motion: reduce) {
   .slide-fade-enter-active,
-  .slide-fade-leave-active {
+  .slide-fade-leave-active,
+  .slide-right-enter-active,
+  .slide-right-leave-active,
+  .slide-left-enter-active,
+  .slide-left-leave-active {
     transition: none;
   }
   * {

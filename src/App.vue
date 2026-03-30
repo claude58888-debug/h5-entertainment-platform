@@ -3,9 +3,9 @@
     <a class="skip-link" href="#main-content">跳转到主要内容</a>
     <AppHeader v-if="showAppHeader" />
     <main id="main-content" class="app-main" :class="{ 'has-tabbar': showTabBar, 'no-header': !showAppHeader }" role="main">
-      <router-view v-slot="{ Component }">
-        <transition name="slide-fade" mode="out-in">
-          <component :is="Component" :key="$route.path" />
+      <router-view v-slot="{ Component, route: viewRoute }">
+        <transition :name="transitionName" mode="out-in">
+          <component :is="Component" :key="viewRoute.path" />
         </transition>
       </router-view>
     </main>
@@ -17,8 +17,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '@/components/common/AppHeader.vue'
 import BottomTabBar from '@/components/common/BottomTabBar.vue'
 import LoginModal from '@/components/common/LoginModal.vue'
@@ -26,6 +26,24 @@ import BackToTop from '@/components/common/BackToTop.vue'
 import AgeVerificationGate from '@/components/common/AgeVerificationGate.vue'
 
 const route = useRoute()
+const router = useRouter()
+
+const transitionName = ref('slide-fade')
+
+router.beforeEach((to, from) => {
+  const mainPages = ['/', '/home', '/promotions', '/support', '/download', '/profile']
+  const toIsMain = mainPages.includes(to.path)
+  const fromIsMain = mainPages.includes(from.path)
+  if (toIsMain && fromIsMain) {
+    transitionName.value = 'slide-fade'
+  } else if (!toIsMain && fromIsMain) {
+    transitionName.value = 'slide-right'
+  } else if (toIsMain && !fromIsMain) {
+    transitionName.value = 'slide-left'
+  } else {
+    transitionName.value = 'slide-fade'
+  }
+})
 
 const tabBarPages = ['/', '/home', '/promotions', '/support', '/download', '/profile']
 const showTabBar = computed(() => {
