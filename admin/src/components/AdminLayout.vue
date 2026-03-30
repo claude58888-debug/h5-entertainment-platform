@@ -37,9 +37,13 @@
               <span>财务管理</span>
             </template>
             <el-menu-item index="/super/finance/deposits">充值订单</el-menu-item>
+            <el-menu-item index="/super/finance/deposit">充值管理</el-menu-item>
             <el-menu-item index="/super/finance/withdrawals">提现订单</el-menu-item>
+            <el-menu-item index="/super/finance/withdraw">提现管理</el-menu-item>
             <el-menu-item index="/super/finance/channels">支付通道</el-menu-item>
             <el-menu-item index="/super/finance/report">财务报表</el-menu-item>
+            <el-menu-item index="/super/finance/report-enhanced">财务报表增强</el-menu-item>
+            <el-menu-item index="/super/finance/balance-adjust">余额调整</el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="games-menu">
             <template #title>
