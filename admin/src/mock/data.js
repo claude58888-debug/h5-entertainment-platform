@@ -60,26 +60,27 @@ export const realtimeAlerts = [
   { id: 5, type: 'warning', text: '会员 user_5521 连续提现3次，累计 ¥80,000', time: '25分钟前', level: 'high' }
 ]
 
-// Agents list
+// Agents list (with hierarchy: parent_id, commission_rate, sub_agents count, phone)
 export const agentsList = [
-  { id: 'AG001', brand: '金沙娱乐', domain: 'jinsha88.com', contact: 'admin_js', balance: 520000, status: 'active', created: '2025-08-15', members: 12500, monthRevenue: 1850000, shareMode: 'revenue', shareRate: 45 },
-  { id: 'AG002', brand: '皇冠体育', domain: 'hg-sport.com', contact: 'admin_hg', balance: 380000, status: 'active', created: '2025-09-20', members: 8900, monthRevenue: 1200000, shareMode: 'revenue', shareRate: 40 },
-  { id: 'AG003', brand: '新濠天地', domain: 'xinhaotd.com', contact: 'admin_xh', balance: 150000, status: 'active', created: '2025-10-05', members: 6200, monthRevenue: 950000, shareMode: 'turnover', shareRate: 8 },
-  { id: 'AG004', brand: '永利娱乐', domain: 'wynn168.com', contact: 'admin_yl', balance: 95000, status: 'suspended', created: '2025-11-12', members: 4500, monthRevenue: 620000, shareMode: 'revenue', shareRate: 42 },
-  { id: 'AG005', brand: '澳门威尼斯', domain: 'venice-mo.com', contact: 'admin_wns', balance: 280000, status: 'active', created: '2025-12-01', members: 7800, monthRevenue: 1100000, shareMode: 'revenue', shareRate: 38 },
-  { id: 'AG006', brand: '大三元', domain: 'dsy888.com', contact: 'admin_dsy', balance: 5000, status: 'banned', created: '2026-01-10', members: 2100, monthRevenue: 0, shareMode: 'revenue', shareRate: 35 }
+  { id: 'AG001', brand: '金沙娱乐', domain: 'jinsha88.com', contact: 'admin_js', phone: '13800001001', balance: 520000, status: 'active', created: '2025-08-15', members: 12500, monthRevenue: 1850000, shareMode: 'revenue', shareRate: 45, parent_id: null, parent_agent: null, commission_level: 'S', commission_rate: 45, sub_agents: ['AG003', 'AG004'], rebate_slots: 1.2, rebate_live: 0.8, rebate_sports: 0.5 },
+  { id: 'AG002', brand: '皇冠体育', domain: 'hg-sport.com', contact: 'admin_hg', phone: '13800001002', balance: 380000, status: 'active', created: '2025-09-20', members: 8900, monthRevenue: 1200000, shareMode: 'revenue', shareRate: 40, parent_id: null, parent_agent: null, commission_level: 'A', commission_rate: 40, sub_agents: ['AG005'], rebate_slots: 1.0, rebate_live: 0.6, rebate_sports: 0.4 },
+  { id: 'AG003', brand: '新濠天地', domain: 'xinhaotd.com', contact: 'admin_xh', phone: '13800001003', balance: 150000, status: 'active', created: '2025-10-05', members: 6200, monthRevenue: 950000, shareMode: 'turnover', shareRate: 8, parent_id: 'AG001', parent_agent: '金沙娱乐', commission_level: 'B', commission_rate: 8, sub_agents: ['AG006'], rebate_slots: 0.8, rebate_live: 0.5, rebate_sports: 0.3 },
+  { id: 'AG004', brand: '永利娱乐', domain: 'wynn168.com', contact: 'admin_yl', phone: '13800001004', balance: 95000, status: 'suspended', created: '2025-11-12', members: 4500, monthRevenue: 620000, shareMode: 'revenue', shareRate: 42, parent_id: 'AG001', parent_agent: '金沙娱乐', commission_level: 'B', commission_rate: 42, sub_agents: [], rebate_slots: 0.8, rebate_live: 0.5, rebate_sports: 0.3 },
+  { id: 'AG005', brand: '澳门威尼斯', domain: 'venice-mo.com', contact: 'admin_wns', phone: '13800001005', balance: 280000, status: 'active', created: '2025-12-01', members: 7800, monthRevenue: 1100000, shareMode: 'revenue', shareRate: 38, parent_id: 'AG002', parent_agent: '皇冠体育', commission_level: 'A', commission_rate: 38, sub_agents: [], rebate_slots: 1.0, rebate_live: 0.6, rebate_sports: 0.4 },
+  { id: 'AG006', brand: '大三元', domain: 'dsy888.com', contact: 'admin_dsy', phone: '13800001006', balance: 5000, status: 'banned', created: '2026-01-10', members: 2100, monthRevenue: 0, shareMode: 'revenue', shareRate: 35, parent_id: 'AG003', parent_agent: '新濠天地', commission_level: 'C', commission_rate: 35, sub_agents: [], rebate_slots: 0.5, rebate_live: 0.3, rebate_sports: 0.2 }
 ]
 
-// Members list
+// Members list (with phone, disabled status support)
 export const membersList = [
-  { id: 'M10001', username: 'player_wang', agent: '金沙娱乐', vip: 6, balance: 125000, status: 'active', registered: '2025-08-20', lastLogin: '2026-03-07 16:30', totalDeposit: 850000, totalWithdraw: 720000, tags: ['高价值'] },
-  { id: 'M10002', username: 'lucky_star88', agent: '皇冠体育', vip: 4, balance: 45000, status: 'active', registered: '2025-09-15', lastLogin: '2026-03-07 15:45', totalDeposit: 320000, totalWithdraw: 275000, tags: ['活跃'] },
-  { id: 'M10003', username: 'dragon_888', agent: '金沙娱乐', vip: 8, balance: 380000, status: 'active', registered: '2025-07-10', lastLogin: '2026-03-07 16:28', totalDeposit: 2500000, totalWithdraw: 2100000, tags: ['高价值', 'VIP'] },
-  { id: 'M10004', username: 'test_user01', agent: '新濠天地', vip: 1, balance: 500, status: 'frozen', registered: '2026-01-20', lastLogin: '2026-02-15 10:00', totalDeposit: 5000, totalWithdraw: 4500, tags: ['风险'] },
-  { id: 'M10005', username: 'king_poker', agent: '永利娱乐', vip: 5, balance: 78000, status: 'active', registered: '2025-10-25', lastLogin: '2026-03-07 14:20', totalDeposit: 560000, totalWithdraw: 480000, tags: ['活跃'] },
-  { id: 'M10006', username: 'fish_lover', agent: '澳门威尼斯', vip: 3, balance: 22000, status: 'active', registered: '2025-11-30', lastLogin: '2026-03-06 22:10', totalDeposit: 180000, totalWithdraw: 158000, tags: [] },
-  { id: 'M10007', username: 'slot_queen', agent: '金沙娱乐', vip: 7, balance: 210000, status: 'active', registered: '2025-08-05', lastLogin: '2026-03-07 16:15', totalDeposit: 1800000, totalWithdraw: 1590000, tags: ['高价值', 'VIP'] },
-  { id: 'M10008', username: 'newbie_2026', agent: '皇冠体育', vip: 1, balance: 2000, status: 'active', registered: '2026-03-01', lastLogin: '2026-03-07 12:00', totalDeposit: 10000, totalWithdraw: 8000, tags: ['新人'] }
+  { id: 'M10001', username: 'player_wang', phone: '138****1001', agent: '金沙娱乐', vip: 6, balance: 125000, status: 'active', registered: '2025-08-20', lastLogin: '2026-03-07 16:30', totalDeposit: 850000, totalWithdraw: 720000, tags: ['高价值'] },
+  { id: 'M10002', username: 'lucky_star88', phone: '139****2002', agent: '皇冠体育', vip: 4, balance: 45000, status: 'active', registered: '2025-09-15', lastLogin: '2026-03-07 15:45', totalDeposit: 320000, totalWithdraw: 275000, tags: ['活跃'] },
+  { id: 'M10003', username: 'dragon_888', phone: '136****3003', agent: '金沙娱乐', vip: 8, balance: 380000, status: 'active', registered: '2025-07-10', lastLogin: '2026-03-07 16:28', totalDeposit: 2500000, totalWithdraw: 2100000, tags: ['高价值', 'VIP'] },
+  { id: 'M10004', username: 'test_user01', phone: '137****4004', agent: '新濠天地', vip: 1, balance: 500, status: 'frozen', registered: '2026-01-20', lastLogin: '2026-02-15 10:00', totalDeposit: 5000, totalWithdraw: 4500, tags: ['风险'] },
+  { id: 'M10005', username: 'king_poker', phone: '135****5005', agent: '永利娱乐', vip: 5, balance: 78000, status: 'active', registered: '2025-10-25', lastLogin: '2026-03-07 14:20', totalDeposit: 560000, totalWithdraw: 480000, tags: ['活跃'] },
+  { id: 'M10006', username: 'fish_lover', phone: '158****6006', agent: '澳门威尼斯', vip: 3, balance: 22000, status: 'active', registered: '2025-11-30', lastLogin: '2026-03-06 22:10', totalDeposit: 180000, totalWithdraw: 158000, tags: [] },
+  { id: 'M10007', username: 'slot_queen', phone: '186****7007', agent: '金沙娱乐', vip: 7, balance: 210000, status: 'active', registered: '2025-08-05', lastLogin: '2026-03-07 16:15', totalDeposit: 1800000, totalWithdraw: 1590000, tags: ['高价值', 'VIP'] },
+  { id: 'M10008', username: 'newbie_2026', phone: '155****8008', agent: '皇冠体育', vip: 1, balance: 2000, status: 'active', registered: '2026-03-01', lastLogin: '2026-03-07 12:00', totalDeposit: 10000, totalWithdraw: 8000, tags: ['新人'] },
+  { id: 'M10009', username: 'banned_user', phone: '132****9009', agent: '大三元', vip: 2, balance: 0, status: 'disabled', registered: '2025-12-10', lastLogin: '2026-01-05 09:00', totalDeposit: 15000, totalWithdraw: 15000, tags: ['风险', '封禁'] }
 ]
 
 // Deposit orders
@@ -165,13 +166,34 @@ export const adminAccounts = [
   { id: 5, username: 'admin_backup', role: '备用管理员', status: 'inactive', lastLogin: '2026-01-15 10:00', created: '2025-12-01' }
 ]
 
-// Audit logs
+// Audit logs (operation + login logs)
 export const auditLogs = [
-  { id: 1, operator: 'superadmin', action: '审批提现', target: 'W20260307003', detail: '审批通过 ¥25,000', time: '2026-03-07 16:05', ip: '10.0.0.1' },
-  { id: 2, operator: 'admin_finance', action: '充值确认', target: 'D20260307001', detail: '确认到账 ¥50,000', time: '2026-03-07 16:02', ip: '10.0.0.2' },
-  { id: 3, operator: 'superadmin', action: '冻结账户', target: 'M10004', detail: '风险账户冻结', time: '2026-03-07 15:50', ip: '10.0.0.1' },
-  { id: 4, operator: 'admin_risk', action: '添加IP黑名单', target: '103.45.67.89', detail: '多账号操作', time: '2026-03-05 10:30', ip: '10.0.0.3' },
-  { id: 5, operator: 'superadmin', action: '修改代理配置', target: 'AG001', detail: '分成比例 42% -> 45%', time: '2026-03-04 14:20', ip: '10.0.0.1' }
+  { id: 1, operator: 'superadmin', type: 'finance', action: '审批提现', target: 'W20260307003', detail: '审批通过 ¥25,000', time: '2026-03-07 16:05', ip: '10.0.0.1' },
+  { id: 2, operator: 'admin_finance', type: 'finance', action: '充值确认', target: 'D20260307001', detail: '确认到账 ¥50,000', time: '2026-03-07 16:02', ip: '10.0.0.2' },
+  { id: 3, operator: 'superadmin', type: 'member', action: '冻结账户', target: 'M10004', detail: '风险账户冻结', time: '2026-03-07 15:50', ip: '10.0.0.1' },
+  { id: 4, operator: 'admin_risk', type: 'risk', action: '添加IP黑名单', target: '103.45.67.89', detail: '多账号操作', time: '2026-03-05 10:30', ip: '10.0.0.3' },
+  { id: 5, operator: 'superadmin', type: 'system', action: '修改代理配置', target: 'AG001', detail: '分成比例 42% -> 45%', time: '2026-03-04 14:20', ip: '10.0.0.1' },
+  { id: 6, operator: 'superadmin', type: 'member', action: '余额调整', target: 'M10001', detail: '手动充值 ¥10,000 原因: VIP补偿', time: '2026-03-07 14:30', ip: '10.0.0.1' },
+  { id: 7, operator: 'admin_cs', type: 'member', action: '修改会员标签', target: 'M10003', detail: '添加标签: VIP', time: '2026-03-07 13:15', ip: '10.0.0.4' },
+  { id: 8, operator: 'superadmin', type: 'system', action: '创建代理', target: 'AG006', detail: '创建代理: 大三元', time: '2026-01-10 10:00', ip: '10.0.0.1' },
+  { id: 9, operator: 'admin_finance', type: 'finance', action: '代理充值', target: 'AG001', detail: '充值 ¥100,000', time: '2026-03-06 09:30', ip: '10.0.0.2' },
+  { id: 10, operator: 'superadmin', type: 'system', action: '修改系统设置', target: '提现限额', detail: '单笔提现上限调整为 ¥200,000', time: '2026-03-03 11:00', ip: '10.0.0.1' },
+  { id: 11, operator: 'admin_risk', type: 'risk', action: '解除风控', target: 'M10005', detail: '解除提现限制', time: '2026-03-06 16:45', ip: '10.0.0.3' },
+  { id: 12, operator: 'superadmin', type: 'member', action: '封禁账户', target: 'M10009', detail: '永久封禁: 多账号违规', time: '2026-03-02 08:30', ip: '10.0.0.1' }
+]
+
+// Login logs
+export const loginLogs = [
+  { id: 1, operator: 'superadmin', role: '超级管理员', status: 'success', time: '2026-03-07 16:00', ip: '10.0.0.1', location: '上海', device: 'Chrome/Windows' },
+  { id: 2, operator: 'admin_finance', role: '财务管理员', status: 'success', time: '2026-03-07 15:30', ip: '10.0.0.2', location: '北京', device: 'Firefox/MacOS' },
+  { id: 3, operator: 'admin_cs', role: '客服管理员', status: 'success', time: '2026-03-07 14:00', ip: '10.0.0.4', location: '深圳', device: 'Chrome/Windows' },
+  { id: 4, operator: 'admin_risk', role: '风控管理员', status: 'success', time: '2026-03-06 18:00', ip: '10.0.0.3', location: '广州', device: 'Safari/MacOS' },
+  { id: 5, operator: 'unknown_user', role: '-', status: 'failed', time: '2026-03-07 12:30', ip: '203.45.67.89', location: '未知', device: 'Chrome/Linux' },
+  { id: 6, operator: 'superadmin', role: '超级管理员', status: 'success', time: '2026-03-06 09:00', ip: '10.0.0.1', location: '上海', device: 'Chrome/Windows' },
+  { id: 7, operator: 'admin_backup', role: '备用管理员', status: 'failed', time: '2026-03-05 22:15', ip: '192.168.1.50', location: '杭州', device: 'Edge/Windows' },
+  { id: 8, operator: 'admin_finance', role: '财务管理员', status: 'success', time: '2026-03-05 08:45', ip: '10.0.0.2', location: '北京', device: 'Firefox/MacOS' },
+  { id: 9, operator: 'superadmin', role: '超级管理员', status: 'success', time: '2026-03-04 09:10', ip: '10.0.0.1', location: '上海', device: 'Chrome/Windows' },
+  { id: 10, operator: 'admin_risk', role: '风控管理员', status: 'success', time: '2026-03-04 10:20', ip: '10.0.0.3', location: '广州', device: 'Safari/MacOS' }
 ]
 
 // Announcements

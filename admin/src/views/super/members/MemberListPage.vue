@@ -3,13 +3,14 @@
     <h2 class="section-title">会员管理 (全平台)</h2>
     <div class="table-card">
       <div class="filter-bar">
-        <el-input v-model="search" placeholder="搜索用户名" style="width: 200px;" clearable prefix-icon="Search" aria-label="搜索用户名" />
+        <el-input v-model="search" placeholder="搜索用户名/手机号/ID" style="width: 220px;" clearable prefix-icon="Search" aria-label="搜索用户名/手机号/ID" />
         <el-select v-model="agentFilter" placeholder="所属代理" style="width: 140px;" clearable aria-label="筛选代理">
           <el-option v-for="a in agents" :key="a" :label="a" :value="a" />
         </el-select>
         <el-select v-model="statusFilter" placeholder="状态" style="width: 120px;" clearable aria-label="筛选状态">
           <el-option label="正常" value="active" />
           <el-option label="冻结" value="frozen" />
+          <el-option label="禁用" value="disabled" />
         </el-select>
         <el-select v-model="vipFilter" placeholder="VIP等级" style="width: 120px;" clearable aria-label="筛选VIP等级">
           <el-option v-for="i in 9" :key="i-1" :label="'VIP' + (i-1)" :value="i-1" />
@@ -64,6 +65,7 @@
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="会员ID" width="90" />
         <el-table-column prop="username" label="用户名" width="130" />
+        <el-table-column prop="phone" label="手机号" width="120" />
         <el-table-column prop="agent" label="所属代理" width="110" />
         <el-table-column label="VIP" width="70">
           <template #default="{ row }"><el-tag size="small" type="warning">V{{ row.vip }}</el-tag></template>
@@ -84,9 +86,7 @@
         </el-table-column>
         <el-table-column label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
-              {{ row.status === 'active' ? '正常' : '冻结' }}
-            </el-tag>
+            <el-tag :type="memberStatusType(row.status)" size="small">{{ memberStatusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="lastLogin" label="最后登录" width="160" />
@@ -95,9 +95,7 @@
             <el-button size="small" type="primary" text @click.stop="openDetail(row)">详情</el-button>
             <el-button size="small" type="warning" text @click.stop="openBalanceDialog(row)">调额</el-button>
             <el-button size="small" type="info" text @click.stop="handleForceLogout(row)">下线</el-button>
-            <el-button size="small" :type="row.status === 'active' ? 'danger' : 'success'" text @click.stop="toggleFreeze(row)">
-              {{ row.status === 'active' ? '冻结' : '解冻' }}
-            </el-button>
+            <el-button size="small" type="info" text @click.stop="openStatusDialog(row)">状态</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -168,11 +166,13 @@
                 <span class="detail-value" style="color: #409eff;">¥{{ (detailData.balance || 0).toLocaleString() }}</span>
               </div>
               <div class="detail-summary-item">
+                <span class="detail-label">手机号</span>
+                <span class="detail-value">{{ detailData.phone || '-' }}</span>
+              </div>
+              <div class="detail-summary-item">
                 <span class="detail-label">状态</span>
                 <span class="detail-value">
-                  <el-tag :type="detailData.status === 'active' ? 'success' : 'danger'" size="small">
-                    {{ detailData.status === 'active' ? '正常' : '冻结' }}
-                  </el-tag>
+                  <el-tag :type="memberStatusType(detailData.status)" size="small">{{ memberStatusLabel(detailData.status) }}</el-tag>
                 </span>
               </div>
               <div class="detail-summary-item">
@@ -323,6 +323,32 @@
       </template>
     </el-dialog>
 
+    <!-- Member Status Dialog -->
+    <el-dialog v-model="statusDialogVisible" title="会员状态管理" width="450px" destroy-on-close>
+      <el-form :model="statusForm" label-width="80px">
+        <el-form-item label="会员">
+          <span>{{ statusForm.username }} ({{ statusForm.memberId }})</span>
+        </el-form-item>
+        <el-form-item label="当前状态">
+          <el-tag :type="memberStatusType(statusForm.currentStatus)" size="small">{{ memberStatusLabel(statusForm.currentStatus) }}</el-tag>
+        </el-form-item>
+        <el-form-item label="新状态" required>
+          <el-radio-group v-model="statusForm.newStatus">
+            <el-radio value="active">正常</el-radio>
+            <el-radio value="frozen">冻结</el-radio>
+            <el-radio value="disabled">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="原因" required>
+          <el-input v-model="statusForm.reason" type="textarea" :rows="2" placeholder="请输入状态变更原因（必填）" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="statusDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitStatusChange">确认变更</el-button>
+      </template>
+    </el-dialog>
+
     <!-- VIP Adjustment Reason Dialog -->
     <el-dialog v-model="vipReasonVisible" title="VIP等级调整" width="400px" destroy-on-close>
       <el-form label-width="80px">
@@ -382,6 +408,10 @@ const balanceDialogVisible = ref(false)
 const balanceSubmitting = ref(false)
 const balanceForm = ref({ memberId: '', username: '', currentBalance: 0, type: 'deposit', amount: 100, reason: '' })
 
+// Status change
+const statusDialogVisible = ref(false)
+const statusForm = ref({ memberId: '', username: '', currentStatus: '', newStatus: '', reason: '' })
+
 onMounted(async () => {
   try {
     loading.value = true
@@ -393,9 +423,19 @@ onMounted(async () => {
 })
 const agents = ['金沙娱乐', '皇冠体育', '新濠天地', '永利娱乐', '澳门威尼斯']
 
+function memberStatusType(status) {
+  return status === 'active' ? 'success' : status === 'frozen' ? 'warning' : 'danger'
+}
+function memberStatusLabel(status) {
+  return status === 'active' ? '正常' : status === 'frozen' ? '冻结' : '禁用'
+}
+
 const filteredMembers = computed(() => {
   return members.value.filter(m => {
-    if (search.value && !m.username.includes(search.value)) return false
+    if (search.value) {
+      const s = search.value.toLowerCase()
+      if (!m.username.toLowerCase().includes(s) && !(m.phone || '').includes(search.value) && !(m.id || '').toLowerCase().includes(s)) return false
+    }
     if (agentFilter.value && m.agent !== agentFilter.value) return false
     if (statusFilter.value && m.status !== statusFilter.value) return false
     if (vipFilter.value !== '' && m.vip !== vipFilter.value) return false
@@ -483,6 +523,27 @@ function tagType(tag) {
 function txTypeLabel(type) {
   const map = { deposit: '充值', withdrawal: '提现', admin_deposit: '手动充值', admin_deduction: '手动扣减' }
   return map[type] || type
+}
+
+function openStatusDialog(row) {
+  statusForm.value = { memberId: row.id, username: row.username, currentStatus: row.status, newStatus: row.status, reason: '' }
+  statusDialogVisible.value = true
+}
+
+async function submitStatusChange() {
+  if (!statusForm.value.reason) { ElMessage.warning('请输入状态变更原因'); return }
+  if (statusForm.value.newStatus === statusForm.value.currentStatus) { ElMessage.info('状态未变更'); statusDialogVisible.value = false; return }
+  try {
+    const actionMap = { active: 'unfreeze', frozen: 'freeze', disabled: 'disable' }
+    await memberAction(statusForm.value.memberId, actionMap[statusForm.value.newStatus] || statusForm.value.newStatus)
+    const m = members.value.find(m => m.id === statusForm.value.memberId)
+    if (m) m.status = statusForm.value.newStatus
+    if (detailData.value.id === statusForm.value.memberId) detailData.value.status = statusForm.value.newStatus
+    ElMessage.success(`会员状态已变更为: ${memberStatusLabel(statusForm.value.newStatus)}`)
+    statusDialogVisible.value = false
+  } catch (e) {
+    ElMessage.error('状态变更失败: ' + (e.message || '未知错误'))
+  }
 }
 
 function toggleFreeze(row) {
