@@ -246,7 +246,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     newMembersQuery = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now', '-1 day')").get().count
     depositQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed'").get().total
     withdrawalQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved')").get().total
-    revenueTrendQuery = db.prepare('SELECT * FROM revenue_trend ORDER BY date').all()
+    revenueTrendQuery = db.prepare("SELECT * FROM revenue_trend WHERE date >= date('now', '-30 days') ORDER BY date").all()
     depositByChannelQuery = db.prepare("SELECT channel as name, SUM(amount) as value FROM deposits WHERE status = 'completed' GROUP BY channel").all()
   }
 
@@ -425,13 +425,68 @@ app.get('/api/admin/members/:id/detail', authMiddleware, (req, res) => {
     devices = []
   }
 
+  // Login history from audit_logs
+  let loginHistory = []
+  try {
+    loginHistory = db.prepare(
+      "SELECT time, ip, detail FROM audit_logs WHERE target = ? AND action LIKE '%登录%' ORDER BY time DESC LIMIT 50"
+    ).all(req.params.id)
+    if (!loginHistory.length) {
+      // Fallback: generate from member data
+      if (member.last_login) {
+        loginHistory = [{ time: member.last_login, ip: '127.0.0.1', device: 'Unknown', location: '-', status: 'success' }]
+      }
+    } else {
+      loginHistory = loginHistory.map(l => ({
+        time: l.time,
+        ip: l.ip || '127.0.0.1',
+        device: 'Mobile/Desktop',
+        location: '-',
+        status: 'success'
+      }))
+    }
+  } catch (e) {
+    loginHistory = []
+  }
+
+  // Bank cards (table may not exist yet)
+  let bankCards = []
+  try {
+    bankCards = db.prepare('SELECT * FROM member_bank_cards WHERE member_id = ? ORDER BY id DESC').all(req.params.id)
+  } catch (e) {
+    bankCards = []
+  }
+
+  // VIP progress
+  let vipProgress = null
+  try {
+    const currentLevel = member.vip || 0
+    const nextLevel = db.prepare('SELECT * FROM vip_levels WHERE level = ?').get(currentLevel + 1)
+    if (nextLevel) {
+      vipProgress = {
+        currentLevel,
+        nextLevel: currentLevel + 1,
+        nextLevelName: nextLevel.name,
+        depositNeeded: nextLevel.upgrade_deposit || 0,
+        wagerNeeded: nextLevel.upgrade_wager || 0,
+        currentDeposit: member.total_deposit || 0,
+        currentWager: betStats.totalBetAmount || 0
+      }
+    }
+  } catch (e) {
+    vipProgress = null
+  }
+
   res.json({
     ...member,
     betStats,
     bets,
     transactions,
     h5Transactions,
-    devices
+    devices,
+    loginHistory,
+    bankCards,
+    vipProgress
   })
 })
 
@@ -629,9 +684,17 @@ app.put('/api/admin/deposits/:id', authMiddleware, (req, res) => {
   const newStatus = action === 'approve' ? 'completed' : 'failed'
   db.prepare('UPDATE deposits SET status = ? WHERE id = ?').run(newStatus, req.params.id)
 
+  // When approving a deposit, add the amount to the member's balance
+  if (action === 'approve' && order.status !== 'completed') {
+    db.prepare('UPDATE members SET balance = balance + ?, total_deposit = total_deposit + ? WHERE id = ?').run(
+      order.amount, order.amount, order.member
+    )
+  }
+
   auditLog(req.user.username, action === 'approve' ? '充值确认' : '充值拒绝', req.params.id,
     (action === 'approve' ? '确认到账' : '拒绝') + ' ¥' + order.amount, req.ip || '0.0.0.0')
 
+  cacheInvalidate('dashboard')
   res.json({ success: true, status: newStatus })
 })
 
@@ -1312,8 +1375,18 @@ app.delete('/api/admin/admins/:id', authMiddleware, (req, res) => {
 })
 
 app.get('/api/admin/logs', authMiddleware, (req, res) => {
-  const rows = db.prepare('SELECT * FROM audit_logs ORDER BY time DESC LIMIT 100').all()
-  res.json(rows)
+  const rows = db.prepare('SELECT * FROM audit_logs ORDER BY time DESC LIMIT 500').all()
+  // Derive a type category from the action field for frontend filtering
+  const logs = rows.map(r => {
+    let type = 'system'
+    const act = r.action || ''
+    if (act.includes('登录')) type = 'login'
+    else if (act.includes('会员') || act.includes('冻结') || act.includes('解冻') || act.includes('下线') || act.includes('VIP') || act.includes('标签')) type = 'member'
+    else if (act.includes('充值') || act.includes('提现') || act.includes('余额') || act.includes('补单') || act.includes('审批') || act.includes('返水')) type = 'finance'
+    else if (act.includes('风控') || act.includes('黑名单') || act.includes('IP')) type = 'risk'
+    return { ...r, type }
+  })
+  res.json(logs)
 })
 
 app.get('/api/admin/announcements', authMiddleware, (req, res) => {

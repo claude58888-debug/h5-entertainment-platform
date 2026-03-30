@@ -573,6 +573,34 @@ export function initDB() {
     CREATE INDEX IF NOT EXISTS idx_games_recommend ON games(is_recommended, recommend_sort);
   `)
 
+  // ==================== Member Bank Cards Table ====================
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS member_bank_cards (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id TEXT NOT NULL,
+      bank_name TEXT NOT NULL DEFAULT '',
+      card_number TEXT NOT NULL DEFAULT '',
+      holder_name TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_bank_cards_member ON member_bank_cards(member_id);
+  `)
+
+  // ==================== SEED: Revenue Trend (last 30 days) ====================
+  const revTrendCount = db.prepare('SELECT COUNT(*) as c FROM revenue_trend').get().c
+  if (revTrendCount === 0) {
+    const stmtRT = db.prepare('INSERT OR IGNORE INTO revenue_trend (date, revenue, deposit, withdrawal) VALUES (?,?,?,?)')
+    for (let i = 30; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const dateStr = d.toISOString().split('T')[0]
+      const deposit = Math.round(800000 + Math.random() * 1200000)
+      const withdrawal = Math.round(400000 + Math.random() * 600000)
+      const revenue = deposit - withdrawal
+      stmtRT.run(dateStr, revenue, deposit, withdrawal)
+    }
+  }
+
   // ==================== SEED: Auto Review Rules ====================
   const autoReviewCount = db.prepare('SELECT COUNT(*) as c FROM auto_review_rules').get().c
   if (autoReviewCount === 0) {

@@ -225,26 +225,45 @@ onMounted(() => {
 function formatNum(n) { return n?.toLocaleString() || '0' }
 function formatMoney(n) { return ((n || 0) / 10000).toFixed(1) + '万' }
 
-const lineOption = computed(() => ({
-  tooltip: { trigger: 'axis' },
-  legend: { data: ['收入', '充值', '提现'], textStyle: { color: '#a0a0b0' } },
-  grid: { left: 60, right: 20, top: 40, bottom: 30 },
-  xAxis: { type: 'category', data: revenueTrendData.value.map(i => i.date), axisLabel: { color: '#888' }, axisLine: { lineStyle: { color: '#333' } } },
-  yAxis: { type: 'value', axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
-  series: [
-    { name: '收入', type: 'line', data: revenueTrendData.value.map(i => i.revenue), smooth: true, itemStyle: { color: '#f56c6c' } },
-    { name: '充值', type: 'line', data: revenueTrendData.value.map(i => i.deposit), smooth: true, itemStyle: { color: '#409eff' } },
-    { name: '提现', type: 'line', data: revenueTrendData.value.map(i => i.withdrawal), smooth: true, itemStyle: { color: '#e6a23c' } }
-  ]
-}))
+const lineOption = computed(() => {
+  const dates = revenueTrendData.value.map(i => i.date)
+  // Generate default 7-day date range if no data from API
+  const defaultDates = []
+  if (!dates.length) {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      defaultDates.push(d.toISOString().split('T')[0])
+    }
+  }
+  const xDates = dates.length ? dates : defaultDates
+  return {
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['收入', '充值', '提现'], textStyle: { color: '#a0a0b0' } },
+    grid: { left: 60, right: 20, top: 40, bottom: 30 },
+    xAxis: { type: 'category', data: xDates, boundaryGap: false, axisLabel: { color: '#888' }, axisLine: { lineStyle: { color: '#333' } } },
+    yAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
+    series: [
+      { name: '收入', type: 'line', data: revenueTrendData.value.map(i => i.revenue), smooth: true, itemStyle: { color: '#f56c6c' }, showSymbol: dates.length <= 15 },
+      { name: '充值', type: 'line', data: revenueTrendData.value.map(i => i.deposit), smooth: true, itemStyle: { color: '#409eff' }, showSymbol: dates.length <= 15 },
+      { name: '提现', type: 'line', data: revenueTrendData.value.map(i => i.withdrawal), smooth: true, itemStyle: { color: '#e6a23c' }, showSymbol: dates.length <= 15 }
+    ]
+  }
+})
 
-const barOption = computed(() => ({
-  tooltip: { trigger: 'axis' },
-  grid: { left: 100, right: 20, top: 10, bottom: 30 },
-  xAxis: { type: 'value', axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
-  yAxis: { type: 'category', data: topGamesData.value.map(i => i.name).reverse(), axisLabel: { color: '#e0e0e0' } },
-  series: [{ type: 'bar', data: topGamesData.value.map(i => i.ggr).reverse(), itemStyle: { color: '#e6a23c', borderRadius: [0, 4, 4, 0] } }]
-}))
+const barOption = computed(() => {
+  const names = topGamesData.value.map(i => i.name).reverse()
+  const values = topGamesData.value.map(i => i.ggr).reverse()
+  const defaultNames = names.length ? names : ['暂无数据']
+  const defaultValues = values.length ? values : [0]
+  return {
+    tooltip: { trigger: 'axis' },
+    grid: { left: 100, right: 20, top: 10, bottom: 30 },
+    xAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
+    yAxis: { type: 'category', data: defaultNames, axisLabel: { color: '#e0e0e0' } },
+    series: [{ type: 'bar', data: defaultValues, itemStyle: { color: '#e6a23c', borderRadius: [0, 4, 4, 0] } }]
+  }
+})
 
 const pieOption = computed(() => ({
   tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },

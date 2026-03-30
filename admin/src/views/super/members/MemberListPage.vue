@@ -200,6 +200,35 @@
                 <span class="detail-value">¥{{ ((detailData.betStats?.totalBetAmount || 0) / 10000).toFixed(1) }}万</span>
               </div>
             </div>
+
+            <!-- VIP Progress -->
+            <div v-if="detailData.vipProgress" class="vip-progress-section" style="margin-top: 16px;">
+              <h4 style="margin-bottom: 8px; color: #e0e0e0;">VIP升级进度 (VIP{{ detailData.vipProgress.currentLevel }} → VIP{{ detailData.vipProgress.nextLevel }} {{ detailData.vipProgress.nextLevelName }})</h4>
+              <div style="margin-bottom: 8px;">
+                <span class="detail-label">充值进度: </span>
+                <span class="detail-value">¥{{ (detailData.vipProgress.currentDeposit || 0).toLocaleString() }} / ¥{{ (detailData.vipProgress.depositNeeded || 0).toLocaleString() }}</span>
+                <el-progress :percentage="Math.min(100, detailData.vipProgress.depositNeeded ? Math.round(detailData.vipProgress.currentDeposit / detailData.vipProgress.depositNeeded * 100) : 0)" :stroke-width="10" style="margin-top: 4px;" />
+              </div>
+              <div>
+                <span class="detail-label">流水进度: </span>
+                <span class="detail-value">¥{{ (detailData.vipProgress.currentWager || 0).toLocaleString() }} / ¥{{ (detailData.vipProgress.wagerNeeded || 0).toLocaleString() }}</span>
+                <el-progress :percentage="Math.min(100, detailData.vipProgress.wagerNeeded ? Math.round(detailData.vipProgress.currentWager / detailData.vipProgress.wagerNeeded * 100) : 0)" :stroke-width="10" style="margin-top: 4px;" />
+              </div>
+            </div>
+
+            <!-- Bank Cards -->
+            <div style="margin-top: 16px;">
+              <h4 style="margin-bottom: 8px; color: #e0e0e0;">银行卡</h4>
+              <div v-if="(detailData.bankCards || []).length">
+                <div v-for="card in detailData.bankCards" :key="card.id" style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <el-tag size="small" type="info">{{ card.bank_name || '银行卡' }}</el-tag>
+                  <span style="color: #e0e0e0;">{{ card.card_number || '-' }}</span>
+                  <span style="color: #909399; font-size: 12px;">{{ card.holder_name || '' }}</span>
+                </div>
+              </div>
+              <div v-else style="color: #999;">暂无银行卡信息</div>
+            </div>
+
             <div class="detail-info-grid" style="margin-top: 16px;">
               <h4 style="margin-bottom: 8px; color: #e0e0e0;">设备信息</h4>
               <div v-for="device in (detailData.devices || [])" :key="device.id" class="device-item">
@@ -334,7 +363,7 @@ const tableRef = ref(null)
 const detailVisible = ref(false)
 const detailLoading = ref(false)
 const detailData = ref({})
-const detailTab = ref('basic')
+const detailTab = ref('profile')
 const detailVipLevel = ref(0)
 
 // Tags
