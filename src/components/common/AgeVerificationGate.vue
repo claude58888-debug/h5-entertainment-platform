@@ -3,16 +3,16 @@
     <div v-if="showGate" class="age-gate-overlay">
       <div class="age-gate-modal">
         <div class="age-icon">🔞</div>
-        <h2>年龄验证</h2>
-        <p>本平台仅面向18岁及以上用户。请确认您已年满18周岁。</p>
+        <h2>{{ t('age.verification') }}</h2>
+        <p>{{ t('age.description') }}</p>
         <div class="age-actions">
-          <van-button type="primary" block round @click="confirmAge">我已年满18岁</van-button>
-          <van-button plain block round @click="denyAge" style="margin-top: 10px;">我未满18岁</van-button>
+          <van-button type="primary" block round @click="confirmAge">{{ t('age.confirmAge') }}</van-button>
+          <van-button plain block round @click="denyAge" style="margin-top: 10px;">{{ t('age.denyAge') }}</van-button>
         </div>
         <div class="age-links">
-          <a @click.prevent="goToResponsible">负责任博彩</a>
+          <a @click.prevent="goToResponsible">{{ t('age.responsibleGaming') }}</a>
           <span>|</span>
-          <a @click.prevent="goToTerms">服务条款</a>
+          <a @click.prevent="goToTerms">{{ t('age.termsOfService') }}</a>
         </div>
       </div>
     </div>
@@ -22,7 +22,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 const showGate = ref(false)
 

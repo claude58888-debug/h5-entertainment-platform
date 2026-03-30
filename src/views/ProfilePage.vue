@@ -1,5 +1,6 @@
 <template>
   <div class="profile-page">
+    <van-pull-refresh v-model="refreshing" @refresh="onRefresh" :pulling-text="$t('common.pullRefresh')" :loosing-text="$t('common.releaseRefresh')" :loading-text="$t('common.refreshing')">
     <!-- Skeleton Loading State -->
     <template v-if="profileLoading">
       <div class="skeleton-header">
@@ -178,6 +179,8 @@
     </div>
     </template>
 
+    </van-pull-refresh>
+
     <!-- Password Change Dialog -->
     <van-dialog v-model:show="showPasswordDialog" :title="t('profile.changePassword')" show-cancel-button :before-close="handlePasswordChange">
       <div class="dialog-form">
@@ -248,6 +251,7 @@ const userStore = useUserStore()
 const walletStore = useWalletStore()
 const user = computed(() => userStore.user)
 const profileLoading = ref(true)
+const refreshing = ref(false)
 
 const currentLang = computed(() => locale.value === 'zh' ? '简体中文' : 'English')
 
@@ -283,23 +287,23 @@ function handlePasswordChange(action) {
 // Login history
 const showLoginHistory = ref(false)
 const loginHistoryList = ref([
-  { device: 'Chrome 浏览器', ip: '183.xx.xx.42', location: '广东深圳', time: '2025-03-30 10:25' },
-  { device: 'Safari 移动版', ip: '120.xx.xx.88', location: '广东广州', time: '2025-03-29 18:40' },
-  { device: 'Android APP', ip: '223.xx.xx.15', location: '上海', time: '2025-03-28 09:12' },
-  { device: 'Chrome 浏览器', ip: '183.xx.xx.42', location: '广东深圳', time: '2025-03-27 22:08' },
-  { device: 'iOS APP', ip: '36.xx.xx.99', location: '北京', time: '2025-03-26 14:33' }
+  { device: t('profile.chromeBrowser'), ip: '183.xx.xx.42', location: t('profile.shenzhenGuangdong'), time: '2025-03-30 10:25' },
+  { device: t('profile.safariMobile'), ip: '120.xx.xx.88', location: t('profile.guangzhouGuangdong'), time: '2025-03-29 18:40' },
+  { device: t('profile.androidApp'), ip: '223.xx.xx.15', location: t('profile.shanghai'), time: '2025-03-28 09:12' },
+  { device: t('profile.chromeBrowser'), ip: '183.xx.xx.42', location: t('profile.shenzhenGuangdong'), time: '2025-03-27 22:08' },
+  { device: t('profile.iosApp'), ip: '36.xx.xx.99', location: t('profile.beijing'), time: '2025-03-26 14:33' }
 ])
 
 // Account change records
 const showAccountChanges = ref(false)
 const accountChangeList = ref([
-  { type: '充值', icon: '⬆️', iconBg: 'rgba(16, 185, 129, 0.2)', time: '2026-03-29 20:15', amount: 500.00 },
-  { type: '投注', icon: '🎰', iconBg: 'rgba(124, 58, 237, 0.2)', time: '2026-03-29 19:30', amount: -100.00 },
-  { type: '中奖', icon: '🏆', iconBg: 'rgba(245, 158, 11, 0.2)', time: '2026-03-29 19:32', amount: 280.00 },
-  { type: '佣金收益', icon: '💰', iconBg: 'rgba(245, 158, 11, 0.2)', time: '2026-03-29 18:30', amount: 45.60 },
-  { type: '提现', icon: '⬇️', iconBg: 'rgba(239, 68, 68, 0.2)', time: '2026-03-28 20:00', amount: -500.00 },
-  { type: '投注', icon: '🎰', iconBg: 'rgba(124, 58, 237, 0.2)', time: '2026-03-28 16:45', amount: -50.00 },
-  { type: '返佣收益', icon: '🔄', iconBg: 'rgba(59, 130, 246, 0.2)', time: '2026-03-28 12:00', amount: 23.80 }
+  { type: t('profile.changeDeposit'), icon: '⬆️', iconBg: 'rgba(16, 185, 129, 0.2)', time: '2026-03-29 20:15', amount: 500.00 },
+  { type: t('profile.changeBet'), icon: '🎰', iconBg: 'rgba(124, 58, 237, 0.2)', time: '2026-03-29 19:30', amount: -100.00 },
+  { type: t('profile.changeWin'), icon: '🏆', iconBg: 'rgba(245, 158, 11, 0.2)', time: '2026-03-29 19:32', amount: 280.00 },
+  { type: t('profile.changeCommission'), icon: '💰', iconBg: 'rgba(245, 158, 11, 0.2)', time: '2026-03-29 18:30', amount: 45.60 },
+  { type: t('profile.changeWithdraw'), icon: '⬇️', iconBg: 'rgba(239, 68, 68, 0.2)', time: '2026-03-28 20:00', amount: -500.00 },
+  { type: t('profile.changeBet'), icon: '🎰', iconBg: 'rgba(124, 58, 237, 0.2)', time: '2026-03-28 16:45', amount: -50.00 },
+  { type: t('profile.changeRebate'), icon: '🔄', iconBg: 'rgba(59, 130, 246, 0.2)', time: '2026-03-28 12:00', amount: 23.80 }
 ])
 
 // Avatar upload placeholder
@@ -317,6 +321,14 @@ function handleLogout() {
   userStore.logout()
   showToast({ message: t('auth.logoutSuccess'), position: 'bottom' })
   router.push('/home')
+}
+
+function onRefresh() {
+  profileLoading.value = true
+  setTimeout(() => {
+    profileLoading.value = false
+    refreshing.value = false
+  }, 300)
 }
 
 onMounted(() => {

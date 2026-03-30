@@ -1,7 +1,7 @@
 <template>
   <div class="tasks-page">
     <van-nav-bar
-      title="任务中心"
+      :title="t('tasks.title')"
       left-arrow
       @click-left="$router.back()"
       fixed
@@ -11,8 +11,8 @@
       <!-- Sign-in Section -->
       <div class="signin-card">
         <div class="signin-header">
-          <h3>每日签到</h3>
-          <span class="signin-streak">已连续签到 {{ signInStreak }} 天</span>
+          <h3>{{ t('tasks.dailySignIn') }}</h3>
+          <span class="signin-streak">{{ t('tasks.signInStreak', { count: signInStreak }) }}</span>
         </div>
         <div class="signin-days">
           <div
@@ -22,7 +22,7 @@
             :class="{ claimed: day.claimed, today: day.day === currentSignInDay && !day.claimed }"
             @click="claimSignIn(day)"
           >
-            <span class="day-label">第{{ day.day }}天</span>
+            <span class="day-label">{{ t('tasks.dayN', { n: day.day }) }}</span>
             <span class="day-reward">+{{ day.reward }}</span>
             <span class="day-unit">USDT</span>
             <span v-if="day.claimed" class="day-check">✓</span>
@@ -48,12 +48,12 @@
       <div class="task-summary">
         <div class="summary-item">
           <span class="summary-value">{{ completedCount }}</span>
-          <span class="summary-label">已完成</span>
+          <span class="summary-label">{{ t('tasks.completed') }}</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-item">
           <span class="summary-value highlight">{{ totalReward }}</span>
-          <span class="summary-label">可领取奖励 (USDT)</span>
+          <span class="summary-label">{{ t('tasks.claimableReward') }}</span>
         </div>
       </div>
 
@@ -112,14 +112,14 @@
               :class="{ 'btn-claimable': !task.claimed && task.progress >= task.target }"
               @click="claimTask(task)"
             >
-              {{ task.claimed ? '已领取' : task.progress >= task.target ? '领取' : '不可领取' }}
+              {{ task.claimed ? t('tasks.claimed') : task.progress >= task.target ? t('tasks.claim') : t('tasks.notClaimable') }}
             </van-button>
           </div>
         </div>
       </div>
 
       <div v-if="filteredTasks.length === 0" class="empty-tasks">
-        暂无任务
+        {{ t('tasks.noTasks') }}
       </div>
     </div>
   </div>
@@ -127,25 +127,28 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
 
+const { t } = useI18n()
+
 const defaultTasks = [
-  { id: 1, title: '每日登录', description: '每日登录平台即可领取奖励', reward: 5, rewardUnit: 'USDT', progress: 1, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 5 }, { level: 2, reward: 15 }, { level: 3, reward: 38 }, { level: 4, reward: 88 }, { level: 5, reward: 188 }], currentTier: 1 },
-  { id: 2, title: '每日首充', description: '今日完成首次充值', reward: 18, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 18 }, { level: 2, reward: 38 }, { level: 3, reward: 68 }, { level: 4, reward: 128 }, { level: 5, reward: 288 }], currentTier: 1 },
-  { id: 3, title: '邀请好友', description: '今日成功邀请一位好友注册', reward: 50, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 50 }, { level: 2, reward: 108 }, { level: 3, reward: 228 }, { level: 4, reward: 468 }, { level: 5, reward: 888 }], currentTier: 1 },
-  { id: 4, title: '游戏5局', description: '今日完成5局任意游戏', reward: 10, rewardUnit: 'USDT', progress: 2, target: 5, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 128 }, { level: 5, reward: 288 }], currentTier: 1 },
-  { id: 5, title: '游戏20局', description: '今日完成20局任意游戏', reward: 30, rewardUnit: 'USDT', progress: 2, target: 20, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 30 }, { level: 2, reward: 68 }, { level: 3, reward: 128 }, { level: 4, reward: 268 }, { level: 5, reward: 588 }], currentTier: 1 },
-  { id: 6, title: '分享平台', description: '分享平台链接到社交媒体', reward: 3, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 3 }, { level: 2, reward: 8 }, { level: 3, reward: 18 }, { level: 4, reward: 38 }, { level: 5, reward: 88 }], currentTier: 1 },
-  { id: 7, title: '完善个人信息', description: '填写个人基本资料', reward: 10, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 108 }, { level: 5, reward: 218 }], currentTier: 1 },
-  { id: 8, title: '首次充值', description: '完成首次充值操作', reward: 28, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 },
-  { id: 9, title: '首次投注', description: '完成首次游戏投注', reward: 18, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 18 }, { level: 2, reward: 38 }, { level: 3, reward: 88 }, { level: 4, reward: 188 }, { level: 5, reward: 388 }], currentTier: 1 },
-  { id: 10, title: '邀请首位好友', description: '成功邀请一位好友注册', reward: 50, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 50 }, { level: 2, reward: 108 }, { level: 3, reward: 228 }, { level: 4, reward: 468 }, { level: 5, reward: 888 }], currentTier: 1 },
-  { id: 11, title: '绑定银行卡', description: '绑定一张银行卡', reward: 15, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 15 }, { level: 2, reward: 35 }, { level: 3, reward: 68 }, { level: 4, reward: 138 }, { level: 5, reward: 268 }], currentTier: 1 },
-  { id: 12, title: '游戏10局', description: '完成10局任意游戏', reward: 20, rewardUnit: 'USDT', progress: 0, target: 10, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 20 }, { level: 2, reward: 48 }, { level: 3, reward: 98 }, { level: 4, reward: 198 }, { level: 5, reward: 388 }], currentTier: 1 },
-  { id: 13, title: '周累计充值5000', description: '本周累计充值达到5000', reward: 88, rewardUnit: 'USDT', progress: 1200, target: 5000, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 38 }, { level: 2, reward: 88 }, { level: 3, reward: 188 }, { level: 4, reward: 388 }, { level: 5, reward: 888 }], currentTier: 1 },
-  { id: 14, title: '周游戏100局', description: '本周完成100局任意游戏', reward: 128, rewardUnit: 'USDT', progress: 35, target: 100, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 58 }, { level: 2, reward: 128 }, { level: 3, reward: 288 }, { level: 4, reward: 588 }, { level: 5, reward: 1288 }], currentTier: 1 },
-  { id: 15, title: '邀请3位好友', description: '本周邀请3位好友注册', reward: 128, rewardUnit: 'USDT', progress: 1, target: 3, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 58 }, { level: 2, reward: 128 }, { level: 3, reward: 288 }, { level: 4, reward: 588 }, { level: 5, reward: 1288 }], currentTier: 1 },
-  { id: 16, title: '连续登录7天', description: '本周每天都登录平台', reward: 58, rewardUnit: 'USDT', progress: 3, target: 7, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 }
+  { id: 1, title: t('tasks.dailyLogin'), description: t('tasks.dailyLoginDesc'), reward: 5, rewardUnit: 'USDT', progress: 1, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 5 }, { level: 2, reward: 15 }, { level: 3, reward: 38 }, { level: 4, reward: 88 }, { level: 5, reward: 188 }], currentTier: 1 },
+  { id: 2, title: t('tasks.dailyFirstDeposit'), description: t('tasks.dailyFirstDepositDesc'), reward: 18, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 18 }, { level: 2, reward: 38 }, { level: 3, reward: 68 }, { level: 4, reward: 128 }, { level: 5, reward: 288 }], currentTier: 1 },
+  { id: 3, title: t('tasks.inviteFriends'), description: t('tasks.inviteFriendsDesc'), reward: 50, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 50 }, { level: 2, reward: 108 }, { level: 3, reward: 228 }, { level: 4, reward: 468 }, { level: 5, reward: 888 }], currentTier: 1 },
+  { id: 4, title: t('tasks.play5Games'), description: t('tasks.play5GamesDesc'), reward: 10, rewardUnit: 'USDT', progress: 2, target: 5, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 128 }, { level: 5, reward: 288 }], currentTier: 1 },
+  { id: 5, title: t('tasks.play20Games'), description: t('tasks.play20GamesDesc'), reward: 30, rewardUnit: 'USDT', progress: 2, target: 20, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 30 }, { level: 2, reward: 68 }, { level: 3, reward: 128 }, { level: 4, reward: 268 }, { level: 5, reward: 588 }], currentTier: 1 },
+  { id: 6, title: t('tasks.sharePlatform'), description: t('tasks.sharePlatformDesc'), reward: 3, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 3 }, { level: 2, reward: 8 }, { level: 3, reward: 18 }, { level: 4, reward: 38 }, { level: 5, reward: 88 }], currentTier: 1 },
+  { id: 7, title: t('tasks.completeProfile'), description: t('tasks.completeProfileDesc'), reward: 10, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 108 }, { level: 5, reward: 218 }], currentTier: 1 },
+  { id: 8, title: t('tasks.firstDeposit'), description: t('tasks.firstDepositDesc'), reward: 28, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 },
+  { id: 9, title: t('tasks.firstBet'), description: t('tasks.firstBetDesc'), reward: 18, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 18 }, { level: 2, reward: 38 }, { level: 3, reward: 88 }, { level: 4, reward: 188 }, { level: 5, reward: 388 }], currentTier: 1 },
+  { id: 10, title: t('tasks.inviteFirstFriend'), description: t('tasks.inviteFirstFriendDesc'), reward: 50, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 50 }, { level: 2, reward: 108 }, { level: 3, reward: 228 }, { level: 4, reward: 468 }, { level: 5, reward: 888 }], currentTier: 1 },
+  { id: 11, title: t('tasks.bindBankCard'), description: t('tasks.bindBankCardDesc'), reward: 15, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 15 }, { level: 2, reward: 35 }, { level: 3, reward: 68 }, { level: 4, reward: 138 }, { level: 5, reward: 268 }], currentTier: 1 },
+  { id: 12, title: t('tasks.play10Games'), description: t('tasks.play10GamesDesc'), reward: 20, rewardUnit: 'USDT', progress: 0, target: 10, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 20 }, { level: 2, reward: 48 }, { level: 3, reward: 98 }, { level: 4, reward: 198 }, { level: 5, reward: 388 }], currentTier: 1 },
+  { id: 13, title: t('tasks.weeklyDeposit5000'), description: t('tasks.weeklyDeposit5000Desc'), reward: 88, rewardUnit: 'USDT', progress: 1200, target: 5000, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 38 }, { level: 2, reward: 88 }, { level: 3, reward: 188 }, { level: 4, reward: 388 }, { level: 5, reward: 888 }], currentTier: 1 },
+  { id: 14, title: t('tasks.weeklyPlay100'), description: t('tasks.weeklyPlay100Desc'), reward: 128, rewardUnit: 'USDT', progress: 35, target: 100, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 58 }, { level: 2, reward: 128 }, { level: 3, reward: 288 }, { level: 4, reward: 588 }, { level: 5, reward: 1288 }], currentTier: 1 },
+  { id: 15, title: t('tasks.invite3Friends'), description: t('tasks.invite3FriendsDesc'), reward: 128, rewardUnit: 'USDT', progress: 1, target: 3, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 58 }, { level: 2, reward: 128 }, { level: 3, reward: 288 }, { level: 4, reward: 588 }, { level: 5, reward: 1288 }], currentTier: 1 },
+  { id: 16, title: t('tasks.loginStreak7'), description: t('tasks.loginStreak7Desc'), reward: 58, rewardUnit: 'USDT', progress: 3, target: 7, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 }
 ]
 
 const defaultSignInDays = [
@@ -163,9 +166,9 @@ const signInDays = ref(JSON.parse(JSON.stringify(defaultSignInDays)))
 const activeTab = ref('daily')
 
 const taskTabs = [
-  { id: 'daily', label: '每日任务' },
-  { id: 'newbie', label: '新手任务' },
-  { id: 'weekly', label: '每周任务' }
+  { id: 'daily', label: t('tasks.dailyTab') },
+  { id: 'newbie', label: t('tasks.newbieTab') },
+  { id: 'weekly', label: t('tasks.weeklyTab') }
 ]
 
 const signInStreak = computed(() => {
@@ -196,36 +199,36 @@ function getUnclaimedCount(tabId) {
 }
 
 const taskIconMap = {
-  '每日登录': '🔑',
-  '每日首充': '💰',
-  '邀请好友': '👥',
-  '游戏5局': '🎮',
-  '游戏20局': '🎮',
-  '分享平台': '📤',
-  '完善个人信息': '📝',
-  '首次充值': '💎',
-  '首次投注': '🎯',
-  '邀请首位好友': '👥',
-  '绑定银行卡': '💳',
-  '游戏10局': '🎮',
-  '周累计充值5000': '💰',
-  '周游戏100局': '🎮',
-  '邀请3位好友': '👥',
-  '连续登录7天': '📅'
+  1: '🔑',
+  2: '💰',
+  3: '👥',
+  4: '🎮',
+  5: '🎮',
+  6: '📤',
+  7: '📝',
+  8: '💎',
+  9: '🎯',
+  10: '👥',
+  11: '💳',
+  12: '🎮',
+  13: '💰',
+  14: '🎮',
+  15: '👥',
+  16: '📅'
 }
 
 function getTaskIcon(task) {
-  return taskIconMap[task.title] || (task.type === 'daily' ? '📋' : task.type === 'newbie' ? '🌟' : '📅')
+  return taskIconMap[task.id] || (task.type === 'daily' ? '📋' : task.type === 'newbie' ? '🌟' : '📅')
 }
 
 function claimSignIn(day) {
   if (day.claimed) return
   if (day.day !== currentSignInDay.value) {
-    showToast({ message: '请按顺序签到', type: 'fail' })
+    showToast({ message: t('tasks.signInOrder'), type: 'fail' })
     return
   }
   day.claimed = true
-  showToast({ message: `签到成功！+${day.reward} USDT`, type: 'success' })
+  showToast({ message: t('tasks.signInSuccess', { reward: day.reward }), type: 'success' })
 }
 
 const tierOffsets = ref({})

@@ -1,27 +1,27 @@
 <template>
   <div class="responsible-gaming-page">
-    <van-nav-bar title="负责任博彩" left-arrow @click-left="$router.back()" />
+    <van-nav-bar :title="t('responsibleGaming.title')" left-arrow @click-left="$router.back()" />
 
     <div class="page-content">
       <div class="hero-section">
         <div class="hero-icon">🛡️</div>
-        <h2>负责任博彩</h2>
-        <p>我们致力于为您提供安全、健康的娱乐体验</p>
+        <h2>{{ t('responsibleGaming.title') }}</h2>
+        <p>{{ t('responsibleGaming.heroDesc') }}</p>
       </div>
 
       <div class="info-card">
-        <h3>什么是负责任博彩？</h3>
-        <p>负责任博彩意味着将游戏视为娱乐活动，而非赚钱方式。设定预算、控制时间，并在需要时寻求帮助。</p>
+        <h3>{{ t('responsibleGaming.whatIs') }}</h3>
+        <p>{{ t('responsibleGaming.whatIsDesc') }}</p>
       </div>
 
       <div class="tools-section">
-        <h3>我们提供的工具</h3>
+        <h3>{{ t('responsibleGaming.ourTools') }}</h3>
 
         <div class="tool-card" @click="$router.push('/limits')">
           <span class="tool-icon">💰</span>
           <div class="tool-info">
-            <h4>存款/投注限额</h4>
-            <p>设置每日、每周或每月的存款和投注限额</p>
+            <h4>{{ t('responsibleGaming.depositLimits') }}</h4>
+            <p>{{ t('responsibleGaming.depositLimitsDesc') }}</p>
           </div>
           <span class="arrow">→</span>
         </div>
@@ -29,15 +29,15 @@
         <div class="tool-card" @click="$router.push('/self-exclusion')">
           <span class="tool-icon">🚫</span>
           <div class="tool-info">
-            <h4>自我排除</h4>
-            <p>暂时或永久停止您的游戏活动</p>
+            <h4>{{ t('responsibleGaming.selfExclusion') }}</h4>
+            <p>{{ t('responsibleGaming.selfExclusionDesc') }}</p>
           </div>
           <span class="arrow">→</span>
         </div>
       </div>
 
       <div class="tips-section">
-        <h3>安全游戏提示</h3>
+        <h3>{{ t('responsibleGaming.safeTips') }}</h3>
         <div class="tip-list">
           <div class="tip-item" v-for="tip in tips" :key="tip.id">
             <span class="tip-number">{{ tip.id }}</span>
@@ -47,32 +47,32 @@
       </div>
 
       <div class="warning-signs">
-        <h3>问题赌博的警告信号</h3>
+        <h3>{{ t('responsibleGaming.warningSigns') }}</h3>
         <ul>
-          <li>花费超过您负担得起的金额</li>
-          <li>借钱进行游戏</li>
-          <li>游戏时间影响工作或家庭</li>
-          <li>试图通过继续游戏来弥补损失</li>
-          <li>对游戏活动产生焦虑或压力</li>
-          <li>隐瞒游戏行为</li>
+          <li>{{ t('responsibleGaming.warning1') }}</li>
+          <li>{{ t('responsibleGaming.warning2') }}</li>
+          <li>{{ t('responsibleGaming.warning3') }}</li>
+          <li>{{ t('responsibleGaming.warning4') }}</li>
+          <li>{{ t('responsibleGaming.warning5') }}</li>
+          <li>{{ t('responsibleGaming.warning6') }}</li>
         </ul>
       </div>
 
       <div class="help-section">
-        <h3>需要帮助？</h3>
-        <p>如果您或您认识的人可能有赌博问题，请联系以下机构获取帮助：</p>
+        <h3>{{ t('responsibleGaming.needHelp') }}</h3>
+        <p>{{ t('responsibleGaming.needHelpDesc') }}</p>
         <div class="help-contacts">
           <div class="help-item">
             <span class="help-icon">📞</span>
             <div>
-              <strong>全国问题赌博热线</strong>
+              <strong>{{ t('responsibleGaming.gamblingHotline') }}</strong>
               <p>1-800-522-4700</p>
             </div>
           </div>
           <div class="help-item">
             <span class="help-icon">💬</span>
             <div>
-              <strong>在线客服</strong>
+              <strong>{{ t('responsibleGaming.onlineSupport') }}</strong>
               <p>support@h5entertainment.com</p>
             </div>
           </div>
@@ -83,13 +83,17 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 const tips = [
-  { id: 1, text: '设定预算并坚持执行，不要超出您能承受的范围' },
-  { id: 2, text: '将游戏视为娱乐，而非赚钱方式' },
-  { id: 3, text: '设定时间限制，定期休息' },
-  { id: 4, text: '不要在情绪低落或压力大时进行游戏' },
-  { id: 5, text: '不要追逐损失，接受输赢是游戏的一部分' },
-  { id: 6, text: '利用平台提供的限额和自我排除工具' }
+  { id: 1, text: t('responsibleGaming.tip1') },
+  { id: 2, text: t('responsibleGaming.tip2') },
+  { id: 3, text: t('responsibleGaming.tip3') },
+  { id: 4, text: t('responsibleGaming.tip4') },
+  { id: 5, text: t('responsibleGaming.tip5') },
+  { id: 6, text: t('responsibleGaming.tip6') }
 ]
 </script>
 

@@ -66,7 +66,7 @@
     <div class="features-section">
       <h3 class="section-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        APP特色功能
+        {{ t('download.features') }}
       </h3>
       <div class="features-grid">
         <div class="feature-item" v-for="feature in features" :key="feature.name">
@@ -81,7 +81,7 @@
     <div class="install-section">
       <h3 class="section-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        安装指南
+        {{ t('download.installGuide') }}
       </h3>
       <div class="install-steps">
         <div class="step-item" v-for="(step, i) in installSteps" :key="i">
@@ -98,15 +98,15 @@
     <div class="trust-section">
       <div class="trust-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <span>安全加密</span>
+        <span>{{ t('download.secureEncrypt') }}</span>
       </div>
       <div class="trust-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <span>官方正版</span>
+        <span>{{ t('download.officialVersion') }}</span>
       </div>
       <div class="trust-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span>极速下载</span>
+        <span>{{ t('download.fastDownload') }}</span>
       </div>
     </div>
   </div>
@@ -127,24 +127,24 @@ const qrDots = Array.from({ length: 81 }, (_, i) => {
 })
 
 const features = [
-  { icon: '\uD83C\uDFAE', name: '海量游戏', desc: '1000+热门游戏' },
-  { icon: '\uD83D\uDCB0', name: '极速提现', desc: '最快5分钟到账' },
-  { icon: '\uD83D\uDD12', name: '安全可靠', desc: 'SSL加密保护' },
-  { icon: '\uD83C\uDF81', name: '专属优惠', desc: 'APP独享福利' },
-  { icon: '\uD83D\uDCF1', name: '流畅体验', desc: '原生APP性能' },
-  { icon: '\uD83D\uDCAC', name: '24/7客服', desc: '全天候服务' }
+  { icon: '\uD83C\uDFAE', name: t('download.massiveGames'), desc: t('download.massiveGamesDesc') },
+  { icon: '\uD83D\uDCB0', name: t('download.fastWithdraw'), desc: t('download.fastWithdrawDesc') },
+  { icon: '\uD83D\uDD12', name: t('download.safeReliable'), desc: t('download.safeReliableDesc') },
+  { icon: '\uD83C\uDF81', name: t('download.exclusiveOffers'), desc: t('download.exclusiveOffersDesc') },
+  { icon: '\uD83D\uDCF1', name: t('download.smoothExperience'), desc: t('download.smoothExperienceDesc') },
+  { icon: '\uD83D\uDCAC', name: t('download.support247'), desc: t('download.support247Desc') }
 ]
 
 const installSteps = [
-  { title: '点击下载按钮', desc: '选择对应系统版本，点击上方下载按钮' },
-  { title: '允许安装权限', desc: 'Android用户需在设置中允许"未知来源"安装' },
-  { title: '安装应用', desc: '下载完成后，打开安装包进行安装' },
-  { title: '登录畅玩', desc: '打开APP，登录账号即可畅享所有游戏' }
+  { title: t('download.step1Title'), desc: t('download.step1Desc') },
+  { title: t('download.step2Title'), desc: t('download.step2Desc') },
+  { title: t('download.step3Title'), desc: t('download.step3Desc') },
+  { title: t('download.step4Title'), desc: t('download.step4Desc') }
 ]
 
 function handleDownload(platform) {
   showToast({
-    message: (platform === 'android' ? 'Android' : 'iOS') + ' 下载即将开始...',
+    message: t('download.downloadStarting', { platform: platform === 'android' ? 'Android' : 'iOS' }),
     position: 'bottom'
   })
 }

@@ -1,7 +1,7 @@
 <template>
-  <div class="error-page" role="main" aria-label="页面未找到">
+  <div class="error-page" role="main" :aria-label="t('errors.pageNotFound')">
     <van-nav-bar
-      title="页面未找到"
+      :title="t('errors.pageNotFound')"
       left-arrow
       @click-left="goBack"
       fixed
@@ -17,10 +17,10 @@
         </svg>
       </div>
       <h1 class="error-code">404</h1>
-      <p class="error-title">页面未找到</p>
-      <p class="error-desc">您访问的页面不存在或已被移除</p>
+      <p class="error-title">{{ t('errors.pageNotFound') }}</p>
+      <p class="error-desc">{{ t('errors.pageNotFoundDesc') }}</p>
       <van-button type="primary" round @click="$router.push('/home')" class="error-btn">
-        返回首页
+        {{ t('common.backToHome') }}
       </van-button>
     </div>
   </div>
@@ -28,7 +28,9 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 
 function goBack() {

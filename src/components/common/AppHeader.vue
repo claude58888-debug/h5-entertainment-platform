@@ -14,7 +14,7 @@
           </svg>
         </div>
         <div class="logo-text-wrap">
-                    <span class="logo-text-cn">大大娱乐</span>
+                    <span class="logo-text-cn">{{ $t('seo.siteName') }}</span>
                     <span class="logo-text-en">DD.TOP</span>
         </div>
       </router-link>

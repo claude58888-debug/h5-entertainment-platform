@@ -7,6 +7,7 @@
       fixed
       :style="{ maxWidth: '480px', margin: '0 auto' }"
     />
+    <van-pull-refresh v-model="refreshing" @refresh="onRefresh" :pulling-text="$t('common.pullRefresh')" :loosing-text="$t('common.releaseRefresh')" :loading-text="$t('common.refreshing')">
     <div class="games-content" style="padding-top: 46px;">
       <!-- Skeleton Loading State -->
       <template v-if="gameStore.loading && !hasData">
@@ -20,8 +21,8 @@
 
       <!-- Error State -->
       <template v-else-if="hasError && !hasData">
-        <van-empty class="error-empty" image="network" description="加载失败，请重试">
-          <van-button type="primary" round size="small" @click="retryLoad">重新加载</van-button>
+        <van-empty class="error-empty" image="network" :description="t('games.loadFailed')">
+          <van-button type="primary" round size="small" @click="retryLoad">{{ t('common.reload') }}</van-button>
         </van-empty>
       </template>
 
@@ -33,7 +34,7 @@
             :class="{ active: activeProvider === 'all' }"
             @click="activeProvider = 'all'"
           >
-            全部
+            {{ t('games.allGames') }}
           </div>
           <div
             v-for="p in currentProviders"
@@ -50,7 +51,7 @@
         <div class="search-bar">
           <van-field
             v-model="searchQuery"
-            placeholder="搜索游戏..."
+            :placeholder="t('games.searchPlaceholder')"
             left-icon="search"
             clearable
             class="search-input"
@@ -69,7 +70,7 @@
             <div class="provider-card-info">
               <span class="provider-card-name">{{ p.name }}</span>
               <span class="provider-card-label">{{ p.label }}</span>
-              <span class="provider-card-count">{{ p.gameCount }} 款游戏</span>
+              <span class="provider-card-count">{{ t('games.gamesCount', { count: p.gameCount }) }}</span>
             </div>
             <div class="provider-card-deco">
               <svg width="80" height="80" viewBox="0 0 80 80" fill="none" opacity="0.12">
@@ -83,12 +84,12 @@
         <!-- Games grid with infinite scroll -->
         <div v-else>
           <div class="games-count" v-if="filteredGames.length > 0">
-            共 {{ filteredGames.length }} 款游戏
+            {{ t('games.totalGames', { count: filteredGames.length }) }}
           </div>
           <van-list
             v-model:loading="listLoading"
             :finished="listFinished"
-            finished-text="没有更多了"
+            :finished-text="t('games.noMoreData')"
             @load="onListLoad"
           >
             <div class="games-grid">
@@ -99,10 +100,11 @@
 
         <div v-if="!filteredGames.length && (activeProvider !== 'all' || searchQuery)" class="empty-state">
           <span class="empty-icon">🎮</span>
-          <p>暂无游戏</p>
+          <p>{{ t('games.noGames') }}</p>
         </div>
       </template>
     </div>
+    </van-pull-refresh>
   </div>
 </template>
 
@@ -121,23 +123,24 @@ const activeProvider = ref('all')
 const searchQuery = ref('')
 const hasError = ref(false)
 const listLoading = ref(false)
+const refreshing = ref(false)
 const pageSize = 18
 const currentPage = ref(1)
 
 const category = computed(() => route.params.category)
 
 const titleMap = {
-  hot: '热门游戏',
-  slots: '电子游戏',
-  live: '真人视讯',
-  fishing: '捕鱼游戏',
-  lottery: '彩票',
-  sports: '体育竞猜',
-  chess: '棋牌游戏',
-  video: '大大影视'
+  hot: 'games.hot',
+  slots: 'games.slots',
+  live: 'games.live',
+  fishing: 'games.fishing',
+  lottery: 'games.lottery',
+  sports: 'games.sports',
+  chess: 'games.chess',
+  video: 'games.video'
 }
 
-const pageTitle = computed(() => titleMap[category.value] || '全部游戏')
+const pageTitle = computed(() => t(titleMap[category.value] || 'games.allGames'))
 
 const currentProviders = computed(() => {
   return gameStore.getProvidersByCategory(category.value)
@@ -193,13 +196,23 @@ watch(() => route.query.provider, (provider) => {
   }
 }, { immediate: true })
 
+async function onRefresh() {
+  hasError.value = false
+  try {
+    await gameStore.fetchGames()
+  } catch (e) {
+    showToast({ message: t('games.loadFailed'), position: 'bottom' })
+  }
+  refreshing.value = false
+}
+
 async function retryLoad() {
   hasError.value = false
   try {
     await gameStore.fetchGames()
   } catch (e) {
     hasError.value = true
-    showToast({ message: '加载失败', position: 'bottom' })
+    showToast({ message: t('games.loadFailed'), position: 'bottom' })
   }
 }
 

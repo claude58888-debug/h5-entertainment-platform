@@ -1,88 +1,88 @@
 <template>
   <div class="terms-page">
-    <van-nav-bar title="服务条款" left-arrow @click-left="$router.back()" />
+    <van-nav-bar :title="$t('terms.title')" left-arrow @click-left="$router.back()" />
 
     <div class="page-content">
       <div class="policy-card">
-        <h2>服务条款</h2>
-        <p class="updated">最后更新: 2026年3月1日</p>
+        <h2>{{ $t('terms.title') }}</h2>
+        <p class="updated">{{ $t('terms.lastUpdated') }}</p>
 
         <div class="section">
-          <h3>1. 接受条款</h3>
-          <p>通过访问和使用本平台，您同意受本服务条款的约束。如果您不同意这些条款，请不要使用本平台。我们保留随时修改这些条款的权利。</p>
+          <h3>{{ $t('terms.section1Title') }}</h3>
+          <p>{{ $t('terms.section1Desc') }}</p>
         </div>
 
         <div class="section">
-          <h3>2. 资格要求</h3>
+          <h3>{{ $t('terms.section2Title') }}</h3>
           <ul>
-            <li>您必须年满18周岁（或您所在司法管辖区的法定年龄）</li>
-            <li>您必须具有完全民事行为能力</li>
-            <li>您不得位于禁止在线娱乐活动的司法管辖区</li>
-            <li>您必须提供真实、准确的个人信息</li>
+            <li>{{ $t('terms.section2Item1') }}</li>
+            <li>{{ $t('terms.section2Item2') }}</li>
+            <li>{{ $t('terms.section2Item3') }}</li>
+            <li>{{ $t('terms.section2Item4') }}</li>
           </ul>
         </div>
 
         <div class="section">
-          <h3>3. 账户规则</h3>
+          <h3>{{ $t('terms.section3Title') }}</h3>
           <ul>
-            <li>每人仅限注册一个账户</li>
-            <li>您有责任保护账户安全和密码机密性</li>
-            <li>禁止共享、转让或出售账户</li>
-            <li>我们保留在发现违规行为时暂停或终止账户的权利</li>
+            <li>{{ $t('terms.section3Item1') }}</li>
+            <li>{{ $t('terms.section3Item2') }}</li>
+            <li>{{ $t('terms.section3Item3') }}</li>
+            <li>{{ $t('terms.section3Item4') }}</li>
           </ul>
         </div>
 
         <div class="section">
-          <h3>4. 存款与取款</h3>
+          <h3>{{ $t('terms.section4Title') }}</h3>
           <ul>
-            <li>所有存款和取款均受平台规定的最低和最高限额约束</li>
-            <li>取款可能需要身份验证（KYC）</li>
-            <li>处理时间可能因支付方式不同而异</li>
-            <li>平台保留对可疑交易进行审查的权利</li>
+            <li>{{ $t('terms.section4Item1') }}</li>
+            <li>{{ $t('terms.section4Item2') }}</li>
+            <li>{{ $t('terms.section4Item3') }}</li>
+            <li>{{ $t('terms.section4Item4') }}</li>
           </ul>
         </div>
 
         <div class="section">
-          <h3>5. 游戏规则</h3>
-          <p>每个游戏都有其特定的规则和赔率。玩家有责任在参与前了解游戏规则。所有游戏结果由认证的随机数生成器（RNG）决定，确保公平性。</p>
+          <h3>{{ $t('terms.section5Title') }}</h3>
+          <p>{{ $t('terms.section5Desc') }}</p>
         </div>
 
         <div class="section">
-          <h3>6. 奖金与促销</h3>
+          <h3>{{ $t('terms.section6Title') }}</h3>
           <ul>
-            <li>所有奖金和促销活动均受特定条款和条件约束</li>
-            <li>奖金可能需要满足投注要求才能提现</li>
-            <li>平台保留修改或取消促销活动的权利</li>
-            <li>滥用促销活动可能导致账户限制</li>
+            <li>{{ $t('terms.section6Item1') }}</li>
+            <li>{{ $t('terms.section6Item2') }}</li>
+            <li>{{ $t('terms.section6Item3') }}</li>
+            <li>{{ $t('terms.section6Item4') }}</li>
           </ul>
         </div>
 
         <div class="section">
-          <h3>7. 负责任博彩</h3>
-          <p>我们致力于推广负责任博彩。我们提供以下工具帮助您控制游戏行为：</p>
+          <h3>{{ $t('terms.section7Title') }}</h3>
+          <p>{{ $t('terms.section7Desc') }}</p>
           <ul>
-            <li>存款限额设置</li>
-            <li>投注限额设置</li>
-            <li>自我排除选项</li>
-            <li>冷却期功能</li>
+            <li>{{ $t('terms.section7Item1') }}</li>
+            <li>{{ $t('terms.section7Item2') }}</li>
+            <li>{{ $t('terms.section7Item3') }}</li>
+            <li>{{ $t('terms.section7Item4') }}</li>
           </ul>
         </div>
 
         <div class="section">
-          <h3>8. 知识产权</h3>
-          <p>本平台上的所有内容，包括但不限于文字、图形、标志、图像和软件，均为平台或其许可方的财产，受知识产权法保护。</p>
+          <h3>{{ $t('terms.section8Title') }}</h3>
+          <p>{{ $t('terms.section8Desc') }}</p>
         </div>
 
         <div class="section">
-          <h3>9. 免责声明</h3>
-          <p>本平台按"现状"提供服务。我们不保证服务不会中断或无错误。在法律允许的最大范围内，我们不对任何间接、偶然或后果性损害承担责任。</p>
+          <h3>{{ $t('terms.section9Title') }}</h3>
+          <p>{{ $t('terms.section9Desc') }}</p>
         </div>
 
         <div class="section">
-          <h3>10. 联系方式</h3>
-          <p>如果您对本服务条款有任何疑问，请联系我们：</p>
-          <p>电子邮箱: legal@h5entertainment.com</p>
-          <p>客服: support@h5entertainment.com</p>
+          <h3>{{ $t('terms.section10Title') }}</h3>
+          <p>{{ $t('terms.section10Desc') }}</p>
+          <p>{{ $t('terms.email') }}</p>
+          <p>{{ $t('terms.support') }}</p>
         </div>
       </div>
     </div>

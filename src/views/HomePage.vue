@@ -32,8 +32,8 @@
 
       <!-- Network Error Retry State -->
       <template v-else-if="hasError && !hasData">
-        <van-empty class="error-empty" image="network" description="网络连接失败，请重试">
-          <van-button type="primary" round size="small" @click="retryLoad">重新加载</van-button>
+        <van-empty class="error-empty" image="network" :description="$t('common.networkError')">
+          <van-button type="primary" round size="small" @click="retryLoad">{{ $t('common.reload') }}</van-button>
         </van-empty>
       </template>
 
@@ -118,29 +118,29 @@
           <div class="crypto-section">
             <a href="https://www.huobi.com" target="_blank" class="crypto-link">
               <img src="/img/crypto/huobi.svg" alt="HTX" class="crypto-img" />
-              <span class="crypto-name">火币网</span>
+              <span class="crypto-name">{{ $t('home.huobi') }}</span>
               <span class="crypto-desc">HTX</span>
             </a>
             <a href="https://www.binance.com" target="_blank" class="crypto-link">
               <img src="/img/crypto/binance.svg" alt="BINANCE" class="crypto-img" />
-              <span class="crypto-name">币安</span>
+              <span class="crypto-name">{{ $t('home.binance') }}</span>
               <span class="crypto-desc">Binance</span>
             </a>
             <a href="https://www.okx.com" target="_blank" class="crypto-link">
               <img src="/img/crypto/okex.svg" alt="OKEX" class="crypto-img" />
-              <span class="crypto-name">欧易</span>
+              <span class="crypto-name">{{ $t('home.okx') }}</span>
               <span class="crypto-desc">OKX</span>
             </a>
           </div>
           <div class="crypto-tip">
-            <span>购买USDT后充值到平台，支持TRC-20网络</span>
+            <span>{{ $t('home.cryptoTip') }}</span>
           </div>
           <div class="vpn-recommend" @click="$router.push('/softwareDownload')">
             <div class="vpn-recommend-left">
               <span class="vpn-icon">🔒</span>
               <div>
-                <span class="vpn-title">推荐VPN下载</span>
-                <span class="vpn-desc">安全访问交易所，保护您的隐私</span>
+                <span class="vpn-title">{{ $t('home.vpnTitle') }}</span>
+                <span class="vpn-desc">{{ $t('home.vpnDesc') }}</span>
               </div>
             </div>
             <span class="vpn-arrow">›</span>
@@ -215,6 +215,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
 import { useGameStore } from '@/stores/game'
 import { showToast } from 'vant'
@@ -228,6 +229,7 @@ import SectionHeader from '@/components/home/SectionHeader.vue'
 import GameCard from '@/components/home/GameCard.vue'
 import ProviderCard from '@/components/home/ProviderCard.vue'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const gameStore = useGameStore()
 
@@ -267,7 +269,7 @@ async function loadData() {
     await Promise.all([appStore.initApp(), gameStore.fetchGames()])
   } catch (e) {
     hasError.value = true
-    showToast({ message: '加载失败，请检查网络', position: 'bottom' })
+    showToast({ message: t('common.loadFailed'), position: 'bottom' })
   }
 }
 
@@ -276,7 +278,7 @@ async function onRefresh() {
   try {
     await Promise.all([appStore.initApp(), gameStore.fetchGames()])
   } catch (e) {
-    showToast({ message: '刷新失败，请重试', position: 'bottom' })
+    showToast({ message: t('common.refreshFailed'), position: 'bottom' })
   }
   refreshing.value = false
 }

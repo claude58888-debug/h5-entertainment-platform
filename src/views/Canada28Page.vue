@@ -5,7 +5,7 @@
       <button class="back-btn" @click="$router.back()">
         <van-icon name="arrow-left" />
       </button>
-      <h1 class="page-title">加拿大4.2-4.6</h1>
+      <h1 class="page-title">{{ $t('game.canadaTitle') }}</h1>
       <div class="balance-display">
         <span class="balance-icon">T</span>
         <span class="balance-amount">{{ userStore.balance?.toFixed(2) || '0.00' }}</span>

@@ -8,7 +8,7 @@
       @error="onBgError"
     />
     <div v-if="!provider.backgroundImage || provider.id === 'COMING'" class="card-bg-gradient" :style="{ background: comingGradient || provider.gradient }">
-      <span v-if="provider.id === 'COMING'" class="coming-text">即将推出</span>
+      <span v-if="provider.id === 'COMING'" class="coming-text">{{ $t('common.comingSoon') }}</span>
       <span v-else-if="!provider.image" class="provider-name-text">{{ provider.name }}</span>
     </div>
     <img
