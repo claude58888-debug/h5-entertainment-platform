@@ -169,6 +169,18 @@
           </div>
           <p class="license-text">Licensed and regulated by the Government of Curacao. Play responsibly.</p>
         </div>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+          <p class="footer-copyright">&copy; {{ new Date().getFullYear() }} H5 Entertainment. All rights reserved.</p>
+          <div class="footer-links">
+            <router-link to="/terms">Terms</router-link>
+            <span class="footer-divider">|</span>
+            <router-link to="/privacy">Privacy</router-link>
+            <span class="footer-divider">|</span>
+            <router-link to="/responsible-gaming">Responsible Gaming</router-link>
+          </div>
+        </footer>
       </template>
 
         <!-- Category specific view -->
@@ -183,11 +195,18 @@
         </template>
       </template>
     </div>
+
+    <!-- Scroll to Top Button -->
+    <transition name="fade">
+      <div v-show="showScrollTop" class="scroll-top-btn" @click="scrollToTop">
+        <span>TOP</span>
+      </div>
+    </transition>
   </van-pull-refresh>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useGameStore } from '@/stores/game'
 import { showToast } from 'vant'
@@ -256,8 +275,23 @@ function retryLoad() {
   loadData()
 }
 
+const showScrollTop = ref(false)
+
+function handleScroll() {
+  showScrollTop.value = window.scrollY > 400
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 onMounted(() => {
   loadData()
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -557,5 +591,76 @@ onMounted(() => {
   font-size: 10px;
   color: $text-muted;
   line-height: 1.5;
+}
+
+/* Footer */
+.site-footer {
+  text-align: center;
+  padding: 16px 12px 24px;
+  margin-top: 8px;
+}
+
+.footer-copyright {
+  font-size: 10px;
+  color: $text-muted;
+  margin-bottom: 8px;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 10px;
+
+  a {
+    color: $text-muted;
+    transition: color 0.2s;
+
+    &:active {
+      color: $text-secondary;
+    }
+  }
+}
+
+.footer-divider {
+  color: rgba(255, 255, 255, 0.15);
+  font-size: 10px;
+}
+
+/* Scroll to Top */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+  z-index: 100;
+  transition: transform 0.2s, opacity 0.2s;
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

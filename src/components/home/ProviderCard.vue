@@ -9,6 +9,7 @@
     />
     <div v-if="!provider.backgroundImage || provider.id === 'COMING'" class="card-bg-gradient" :style="{ background: comingGradient || provider.gradient }">
       <span v-if="provider.id === 'COMING'" class="coming-text">即将推出</span>
+      <span v-else-if="!provider.image" class="provider-name-text">{{ provider.name }}</span>
     </div>
     <img
       v-if="provider.image && provider.id !== 'COMING'"
@@ -116,6 +117,17 @@ function handleClick() {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.provider-name-text {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
 }
 
