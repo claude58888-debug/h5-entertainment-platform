@@ -1,5 +1,7 @@
 # 大大娱乐 (DaDa Entertainment Platform)
 
+[![CI](https://github.com/claude58888-debug/h5-entertainment-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/claude58888-debug/h5-entertainment-platform/actions/workflows/ci.yml)
+
 Mobile-first H5 entertainment platform with admin backend.
 
 ## Tech Stack
