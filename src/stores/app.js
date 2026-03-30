@@ -2,9 +2,24 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getBannersApi, getAnnouncementsApi, getAppConfigApi } from '@/api/app'
 
+const defaultBanners = [
+  { id: 'b1', title: '新人首充双倍', subtitle: '首次充值即享100%加赠', link: '/deposit', gradient: 'linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%)' },
+  { id: 'b2', title: '每日签到送豪礼', subtitle: '连续签到7天最高领888USDT', link: '/tasks', gradient: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)' },
+  { id: 'b3', title: '邀请好友赚佣金', subtitle: '每邀请一位好友最高奖励50USDT', link: '/invite', gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
+  { id: 'b4', title: 'VIP专属特权', subtitle: 'VIP等级越高返水越多', link: '/vip', gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)' },
+  { id: 'b5', title: '充值返利活动', subtitle: '每笔充值享最高2%返利', link: '/activities', gradient: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)' },
+  { id: 'b6', title: '周末狂欢福利', subtitle: '周末投注额外赠送奖金', link: '/promotions', gradient: 'linear-gradient(135deg, #f97316 0%, #db2777 100%)' }
+]
+
+const defaultAnnouncements = [
+  { id: 'a1', content: '🎉 欢迎来到H5娱乐平台！新用户注册即送体验金' },
+  { id: 'a2', content: '🔥 充值返利活动火热进行中，最高返2%' },
+  { id: 'a3', content: '📢 系统维护通知：每周二凌晨2:00-4:00进行例行维护' }
+]
+
 export const useAppStore = defineStore('app', () => {
-  const banners = ref([])
-  const announcements = ref([])
+  const banners = ref(defaultBanners)
+  const announcements = ref(defaultAnnouncements)
   const config = ref({})
   const loading = ref(false)
 
@@ -18,6 +33,7 @@ export const useAppStore = defineStore('app', () => {
     } catch (e) {
       console.warn('Banners API failed, using default data', e)
     }
+    if (!banners.value.length) banners.value = defaultBanners
     return banners.value
   }
 
@@ -31,6 +47,7 @@ export const useAppStore = defineStore('app', () => {
     } catch (e) {
       console.warn('Announcements API failed, using default data', e)
     }
+    if (!announcements.value.length) announcements.value = defaultAnnouncements
     return announcements.value
   }
 

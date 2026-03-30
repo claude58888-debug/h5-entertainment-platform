@@ -130,20 +130,22 @@ import { ref, computed } from 'vue'
 import { showToast } from 'vant'
 
 const defaultTasks = [
-  { id: 1, title: '每日签到', description: '每日登录平台签到', reward: 5, rewardUnit: 'USDT', progress: 1, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 8 }, { level: 2, reward: 20 }, { level: 3, reward: 50 }, { level: 4, reward: 100 }, { level: 5, reward: 200 }], currentTier: 1 },
-  { id: 2, title: '投注10次', description: '今日投注至少10次', reward: 10, rewardUnit: 'USDT', progress: 3, target: 10, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 5 }, { level: 2, reward: 15 }, { level: 3, reward: 38 }, { level: 4, reward: 88 }, { level: 5, reward: 188 }], currentTier: 1 },
-  { id: 3, title: '充值一次', description: '今日充值任意金额', reward: 8, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 8 }, { level: 2, reward: 18 }, { level: 3, reward: 38 }, { level: 4, reward: 68 }, { level: 5, reward: 128 }], currentTier: 1 },
-  { id: 4, title: '分享平台', description: '分享平台链接到社交媒体', reward: 3, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 3 }, { level: 2, reward: 8 }, { level: 3, reward: 18 }, { level: 4, reward: 38 }, { level: 5, reward: 88 }], currentTier: 1 },
-  { id: 5, title: '累计投注1000', description: '今日累计投注达到1000', reward: 20, rewardUnit: 'USDT', progress: 350, target: 1000, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 128 }, { level: 5, reward: 288 }], currentTier: 1 },
-  { id: 6, title: '完善个人信息', description: '填写个人基本资料', reward: 10, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 108 }, { level: 5, reward: 218 }], currentTier: 1 },
-  { id: 7, title: '首次充值', description: '完成首次充值操作', reward: 28, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 },
-  { id: 8, title: '首次投注', description: '完成首次游戏投注', reward: 18, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 18 }, { level: 2, reward: 38 }, { level: 3, reward: 88 }, { level: 4, reward: 188 }, { level: 5, reward: 388 }], currentTier: 1 },
-  { id: 9, title: '绑定银行卡', description: '绑定一张银行卡', reward: 15, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 15 }, { level: 2, reward: 35 }, { level: 3, reward: 68 }, { level: 4, reward: 138 }, { level: 5, reward: 268 }], currentTier: 1 },
-  { id: 10, title: '邀请好友', description: '成功邀请一位好友注册', reward: 50, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 50 }, { level: 2, reward: 108 }, { level: 3, reward: 228 }, { level: 4, reward: 468 }, { level: 5, reward: 888 }], currentTier: 1 },
-  { id: 11, title: '周累计充值5000', description: '本周累计充值达到5000', reward: 88, rewardUnit: 'USDT', progress: 1200, target: 5000, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 38 }, { level: 2, reward: 88 }, { level: 3, reward: 188 }, { level: 4, reward: 388 }, { level: 5, reward: 888 }], currentTier: 1 },
-  { id: 12, title: '周累计投注50000', description: '本周累计投注达到50000', reward: 188, rewardUnit: 'USDT', progress: 12000, target: 50000, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 88 }, { level: 2, reward: 188 }, { level: 3, reward: 388 }, { level: 4, reward: 888 }, { level: 5, reward: 1888 }], currentTier: 1 },
-  { id: 13, title: '邀请3位好友', description: '本周邀请3位好友注册', reward: 128, rewardUnit: 'USDT', progress: 1, target: 3, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 58 }, { level: 2, reward: 128 }, { level: 3, reward: 288 }, { level: 4, reward: 588 }, { level: 5, reward: 1288 }], currentTier: 1 },
-  { id: 14, title: '连续登录7天', description: '本周每天都登录平台', reward: 58, rewardUnit: 'USDT', progress: 3, target: 7, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 }
+  { id: 1, title: '每日登录', description: '每日登录平台即可领取奖励', reward: 5, rewardUnit: 'USDT', progress: 1, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 5 }, { level: 2, reward: 15 }, { level: 3, reward: 38 }, { level: 4, reward: 88 }, { level: 5, reward: 188 }], currentTier: 1 },
+  { id: 2, title: '每日首充', description: '今日完成首次充值', reward: 18, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 18 }, { level: 2, reward: 38 }, { level: 3, reward: 68 }, { level: 4, reward: 128 }, { level: 5, reward: 288 }], currentTier: 1 },
+  { id: 3, title: '邀请好友', description: '今日成功邀请一位好友注册', reward: 50, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 50 }, { level: 2, reward: 108 }, { level: 3, reward: 228 }, { level: 4, reward: 468 }, { level: 5, reward: 888 }], currentTier: 1 },
+  { id: 4, title: '游戏5局', description: '今日完成5局任意游戏', reward: 10, rewardUnit: 'USDT', progress: 2, target: 5, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 128 }, { level: 5, reward: 288 }], currentTier: 1 },
+  { id: 5, title: '游戏20局', description: '今日完成20局任意游戏', reward: 30, rewardUnit: 'USDT', progress: 2, target: 20, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 30 }, { level: 2, reward: 68 }, { level: 3, reward: 128 }, { level: 4, reward: 268 }, { level: 5, reward: 588 }], currentTier: 1 },
+  { id: 6, title: '分享平台', description: '分享平台链接到社交媒体', reward: 3, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'daily', tiers: [{ level: 1, reward: 3 }, { level: 2, reward: 8 }, { level: 3, reward: 18 }, { level: 4, reward: 38 }, { level: 5, reward: 88 }], currentTier: 1 },
+  { id: 7, title: '完善个人信息', description: '填写个人基本资料', reward: 10, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 10 }, { level: 2, reward: 28 }, { level: 3, reward: 58 }, { level: 4, reward: 108 }, { level: 5, reward: 218 }], currentTier: 1 },
+  { id: 8, title: '首次充值', description: '完成首次充值操作', reward: 28, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 },
+  { id: 9, title: '首次投注', description: '完成首次游戏投注', reward: 18, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 18 }, { level: 2, reward: 38 }, { level: 3, reward: 88 }, { level: 4, reward: 188 }, { level: 5, reward: 388 }], currentTier: 1 },
+  { id: 10, title: '邀请首位好友', description: '成功邀请一位好友注册', reward: 50, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 50 }, { level: 2, reward: 108 }, { level: 3, reward: 228 }, { level: 4, reward: 468 }, { level: 5, reward: 888 }], currentTier: 1 },
+  { id: 11, title: '绑定银行卡', description: '绑定一张银行卡', reward: 15, rewardUnit: 'USDT', progress: 0, target: 1, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 15 }, { level: 2, reward: 35 }, { level: 3, reward: 68 }, { level: 4, reward: 138 }, { level: 5, reward: 268 }], currentTier: 1 },
+  { id: 12, title: '游戏10局', description: '完成10局任意游戏', reward: 20, rewardUnit: 'USDT', progress: 0, target: 10, claimed: false, type: 'newbie', tiers: [{ level: 1, reward: 20 }, { level: 2, reward: 48 }, { level: 3, reward: 98 }, { level: 4, reward: 198 }, { level: 5, reward: 388 }], currentTier: 1 },
+  { id: 13, title: '周累计充值5000', description: '本周累计充值达到5000', reward: 88, rewardUnit: 'USDT', progress: 1200, target: 5000, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 38 }, { level: 2, reward: 88 }, { level: 3, reward: 188 }, { level: 4, reward: 388 }, { level: 5, reward: 888 }], currentTier: 1 },
+  { id: 14, title: '周游戏100局', description: '本周完成100局任意游戏', reward: 128, rewardUnit: 'USDT', progress: 35, target: 100, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 58 }, { level: 2, reward: 128 }, { level: 3, reward: 288 }, { level: 4, reward: 588 }, { level: 5, reward: 1288 }], currentTier: 1 },
+  { id: 15, title: '邀请3位好友', description: '本周邀请3位好友注册', reward: 128, rewardUnit: 'USDT', progress: 1, target: 3, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 58 }, { level: 2, reward: 128 }, { level: 3, reward: 288 }, { level: 4, reward: 588 }, { level: 5, reward: 1288 }], currentTier: 1 },
+  { id: 16, title: '连续登录7天', description: '本周每天都登录平台', reward: 58, rewardUnit: 'USDT', progress: 3, target: 7, claimed: false, type: 'weekly', tiers: [{ level: 1, reward: 28 }, { level: 2, reward: 58 }, { level: 3, reward: 128 }, { level: 4, reward: 288 }, { level: 5, reward: 588 }], currentTier: 1 }
 ]
 
 const defaultSignInDays = [
@@ -194,13 +196,26 @@ function getUnclaimedCount(tabId) {
 }
 
 const taskIconMap = {
-  'daily': '📋',
-  'newbie': '🌟',
-  'weekly': '📅'
+  '每日登录': '🔑',
+  '每日首充': '💰',
+  '邀请好友': '👥',
+  '游戏5局': '🎮',
+  '游戏20局': '🎮',
+  '分享平台': '📤',
+  '完善个人信息': '📝',
+  '首次充值': '💎',
+  '首次投注': '🎯',
+  '邀请首位好友': '👥',
+  '绑定银行卡': '💳',
+  '游戏10局': '🎮',
+  '周累计充值5000': '💰',
+  '周游戏100局': '🎮',
+  '邀请3位好友': '👥',
+  '连续登录7天': '📅'
 }
 
 function getTaskIcon(task) {
-  return taskIconMap[task.type] || '📋'
+  return taskIconMap[task.title] || (task.type === 'daily' ? '📋' : task.type === 'newbie' ? '🌟' : '📅')
 }
 
 function claimSignIn(day) {
