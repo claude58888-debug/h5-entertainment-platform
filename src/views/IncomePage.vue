@@ -18,12 +18,12 @@
           <span class="card-amount">2,580.00</span>
           <div class="card-sub-row">
             <div class="sub-item">
-              <span class="sub-label">佣金收益</span>
+              <span class="sub-label">{{ t('income.commissionIncome') }}</span>
               <span class="sub-value">1,680.00</span>
             </div>
             <div class="sub-divider"></div>
             <div class="sub-item">
-              <span class="sub-label">返佣收益</span>
+              <span class="sub-label">{{ t('income.rebateIncome') }}</span>
               <span class="sub-value">900.00</span>
             </div>
           </div>
@@ -37,16 +37,37 @@
             <span class="card-trend up">+12.3%</span>
           </div>
           <div class="income-card status-card pending">
-            <span class="card-label">待结算</span>
+            <span class="card-label">{{ t('income.pendingSettlement') }}</span>
             <span class="card-amount small">356.00</span>
-            <span class="card-hint">预计明日到账</span>
+            <span class="card-hint">{{ t('income.expectedTomorrow') }}</span>
           </div>
           <div class="income-card status-card">
-            <span class="card-label">已提现</span>
+            <span class="card-label">{{ t('income.withdrawn') }}</span>
             <span class="card-amount small">1,820.00</span>
-            <span class="card-trend neutral">累计</span>
+            <span class="card-trend neutral">{{ t('income.cumulative') }}</span>
           </div>
         </div>
+      </div>
+
+      <!-- Period Filter Tabs -->
+      <div class="period-tabs">
+        <div
+          v-for="period in periodTabs"
+          :key="period.id"
+          class="period-tab"
+          :class="{ active: activePeriod === period.id }"
+          @click="activePeriod = period.id"
+        >
+          {{ period.label }}
+        </div>
+      </div>
+
+      <!-- Withdraw to Balance Button -->
+      <div class="withdraw-section">
+        <van-button round block type="primary" class="withdraw-btn" @click="showWithdrawPopup = true">
+          <van-icon name="cash-back-record" style="margin-right: 6px;" />
+          {{ t('income.withdrawToBalance') }}
+        </van-button>
       </div>
 
       <!-- Income Type Tabs -->
@@ -65,6 +86,7 @@
       <!-- Income History -->
       <div class="history-section">
         <h3>{{ t('income.history') }}</h3>
+        <van-empty v-if="filteredRecords.length === 0" :description="t('income.noRecords')" />
         <div class="history-list">
           <div v-for="record in filteredRecords" :key="record.id" class="history-item">
             <div class="item-left">
@@ -85,22 +107,59 @@
         </div>
       </div>
     </div>
+
+    <!-- Withdraw Popup -->
+    <van-popup v-model:show="showWithdrawPopup" position="bottom" round :style="{ maxHeight: '50vh' }">
+      <div class="withdraw-popup">
+        <div class="popup-header">
+          <h3>{{ t('income.withdrawToBalance') }}</h3>
+          <van-icon name="cross" @click="showWithdrawPopup = false" />
+        </div>
+        <div class="withdraw-form">
+          <div class="withdraw-available">{{ t('income.availableAmount', { amount: '760.00' }) }}</div>
+          <van-field
+            v-model="withdrawAmount"
+            type="number"
+            :placeholder="t('income.withdrawAmount')"
+            class="withdraw-input"
+          >
+            <template #button>
+              <van-button size="small" type="primary" round @click="withdrawAmount = '760.00'">{{ t('income.withdrawAll') }}</van-button>
+            </template>
+          </van-field>
+          <van-button round block type="primary" class="withdraw-submit-btn" @click="handleWithdraw">
+            {{ t('income.withdrawSubmit') }}
+          </van-button>
+        </div>
+      </div>
+    </van-popup>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { showToast } from 'vant'
 const { t } = useI18n()
 
 const activeTab = ref('all')
+const activePeriod = ref('all')
+const showWithdrawPopup = ref(false)
+const withdrawAmount = ref('')
 
-const incomeTabs = [
-  { id: 'all', label: '全部' },
-  { id: 'commission', label: '佣金' },
-  { id: 'rebate', label: '返佣' },
-  { id: 'withdrawn', label: '已提现' }
-]
+const periodTabs = computed(() => [
+  { id: 'all', label: t('common.all') },
+  { id: 'daily', label: t('common.daily') },
+  { id: 'weekly', label: t('common.weekly') },
+  { id: 'monthly', label: t('common.monthly') }
+])
+
+const incomeTabs = computed(() => [
+  { id: 'all', label: t('income.all') },
+  { id: 'commission', label: t('income.commissionTab') },
+  { id: 'rebate', label: t('income.rebateTab') },
+  { id: 'withdrawn', label: t('income.withdrawnTab') }
+])
 
 const allRecords = ref([
   { id: 1, type: '佣金收益', desc: '下级用户 138****5678 投注佣金', time: '2026-03-29 18:30', amount: 45.60, icon: '💰', iconBg: 'rgba(245,158,11,0.2)', status: '已到账', statusClass: 'success', category: 'commission' },
@@ -117,6 +176,21 @@ const filteredRecords = computed(() => {
   if (activeTab.value === 'all') return allRecords.value
   return allRecords.value.filter(r => r.category === activeTab.value)
 })
+
+function handleWithdraw() {
+  const amount = parseFloat(withdrawAmount.value)
+  if (!amount || amount < 10) {
+    showToast({ message: t('income.withdrawMinError'), position: 'bottom' })
+    return
+  }
+  if (amount > 760) {
+    showToast({ message: t('income.withdrawMaxError'), position: 'bottom' })
+    return
+  }
+  showToast({ message: t('income.withdrawSuccess'), type: 'success' })
+  showWithdrawPopup.value = false
+  withdrawAmount.value = ''
+}
 </script>
 
 <style lang="scss" scoped>
@@ -343,5 +417,93 @@ const filteredRecords = computed(() => {
     color: $accent-gold;
     background: rgba(245, 158, 11, 0.1);
   }
+}
+
+/* Period Tabs */
+.period-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.period-tab {
+  flex: 1;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 12px;
+  color: $text-secondary;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.active {
+    border-color: $accent-purple;
+    color: $accent-purple-light;
+    background: rgba(124, 58, 237, 0.1);
+  }
+}
+
+/* Withdraw Section */
+.withdraw-section {
+  margin-bottom: 16px;
+}
+
+.withdraw-btn {
+  background: linear-gradient(135deg, $accent-gold, #d97706) !important;
+  border: none !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Withdraw Popup */
+.withdraw-popup {
+  padding: 20px 16px;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .van-icon {
+    font-size: 20px;
+    color: $text-muted;
+    cursor: pointer;
+  }
+}
+
+.withdraw-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.withdraw-available {
+  font-size: 13px;
+  color: $accent-gold;
+  text-align: center;
+}
+
+.withdraw-input {
+  :deep(.van-field__body) {
+    background: $bg-card;
+    border-radius: 8px;
+  }
+}
+
+.withdraw-submit-btn {
+  background: linear-gradient(135deg, $accent-purple, #4c1d95) !important;
+  border: none !important;
+  font-weight: 600;
+  margin-top: 4px;
 }
 </style>

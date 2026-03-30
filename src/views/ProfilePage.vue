@@ -130,7 +130,7 @@
           <van-icon name="gold-coin-o" size="20" color="#fbbf24" />
           <div>
             <span class="crypto-entry-title">{{ t('profile.buyCrypto') }}</span>
-            <span class="crypto-entry-desc">火币 · 币安 · 欧易</span>
+            <span class="crypto-entry-desc">{{ t('profile.cryptoExchanges') }}</span>
           </div>
         </div>
         <van-icon name="arrow" color="rgba(255,255,255,0.3)" />
@@ -139,8 +139,8 @@
         <div class="crypto-entry-left">
           <van-icon name="shield-o" size="20" color="#a78bfa" />
           <div>
-            <span class="crypto-entry-title">VPN推荐</span>
-            <span class="crypto-entry-desc">安全访问交易所</span>
+            <span class="crypto-entry-title">{{ t('profile.vpnRecommend') }}</span>
+            <span class="crypto-entry-desc">{{ t('profile.vpnDesc') }}</span>
           </div>
         </div>
         <van-icon name="arrow" color="rgba(255,255,255,0.3)" />
@@ -148,17 +148,18 @@
     </div>
 
     <!-- Account Security Section -->
-    <div class="section-title">账户安全</div>
+    <div class="section-title">{{ t('profile.accountSecurity') }}</div>
     <div class="menu-section">
       <van-cell-group>
-        <van-cell title="修改密码" is-link icon="lock-o" @click="showPasswordDialog = true" />
+        <van-cell :title="t('profile.changePassword')" is-link icon="lock-o" @click="showPasswordDialog = true" />
         <van-cell :title="t('profile.securityCenter')" is-link @click="$router.push('/safeCenter')" icon="shield-o" />
-        <van-cell title="登录历史" is-link icon="clock-o" @click="showLoginHistory = true" />
+        <van-cell :title="t('profile.loginHistory')" is-link icon="clock-o" @click="showLoginHistory = true" />
+        <van-cell :title="t('profile.accountChangeRecord')" is-link icon="balance-list-o" @click="showAccountChanges = true" />
       </van-cell-group>
     </div>
 
     <!-- Menu List with 2d additions -->
-    <div class="section-title">功能菜单</div>
+    <div class="section-title">{{ t('profile.functionMenu') }}</div>
     <div class="menu-section">
       <van-cell-group>
         <van-cell :title="t('actions.tasks')" is-link @click="$router.push('/tasks')" icon="todo-list-o" />
@@ -178,11 +179,11 @@
     </template>
 
     <!-- Password Change Dialog -->
-    <van-dialog v-model:show="showPasswordDialog" title="修改密码" show-cancel-button :before-close="handlePasswordChange">
+    <van-dialog v-model:show="showPasswordDialog" :title="t('profile.changePassword')" show-cancel-button :before-close="handlePasswordChange">
       <div class="dialog-form">
-        <van-field v-model="passwordForm.oldPassword" type="password" label="当前密码" placeholder="请输入当前密码" />
-        <van-field v-model="passwordForm.newPassword" type="password" label="新密码" placeholder="请输入新密码" />
-        <van-field v-model="passwordForm.confirmPassword" type="password" label="确认密码" placeholder="请再次输入新密码" />
+        <van-field v-model="passwordForm.oldPassword" type="password" :label="t('profile.currentPassword')" :placeholder="t('profile.enterCurrentPassword')" />
+        <van-field v-model="passwordForm.newPassword" type="password" :label="t('profile.newPassword')" :placeholder="t('profile.enterNewPassword')" />
+        <van-field v-model="passwordForm.confirmPassword" type="password" :label="t('profile.confirmNewPassword')" :placeholder="t('profile.reenterNewPassword')" />
       </div>
     </van-dialog>
 
@@ -190,7 +191,7 @@
     <van-popup v-model:show="showLoginHistory" position="bottom" round :style="{ maxHeight: '70vh' }">
       <div class="login-history-popup">
         <div class="popup-header">
-          <h3>登录历史</h3>
+          <h3>{{ t('profile.loginHistory') }}</h3>
           <van-icon name="cross" @click="showLoginHistory = false" />
         </div>
         <div class="login-history-list">
@@ -201,7 +202,32 @@
             </div>
             <div class="history-time">{{ item.time }}</div>
           </div>
-          <van-empty v-if="!loginHistoryList.length" description="暂无登录记录" />
+          <van-empty v-if="!loginHistoryList.length" :description="t('profile.noLoginHistory')" />
+        </div>
+      </div>
+    </van-popup>
+
+    <!-- Account Change Records Popup -->
+    <van-popup v-model:show="showAccountChanges" position="bottom" round :style="{ maxHeight: '70vh' }">
+      <div class="login-history-popup">
+        <div class="popup-header">
+          <h3>{{ t('profile.accountChangeRecord') }}</h3>
+          <van-icon name="cross" @click="showAccountChanges = false" />
+        </div>
+        <div class="account-changes-list">
+          <div class="change-item" v-for="(item, index) in accountChangeList" :key="index">
+            <div class="change-left">
+              <div class="change-icon" :style="{ background: item.iconBg }">{{ item.icon }}</div>
+              <div class="change-info">
+                <div class="change-type">{{ item.type }}</div>
+                <div class="change-time">{{ item.time }}</div>
+              </div>
+            </div>
+            <div class="change-amount" :class="{ positive: item.amount > 0 }">
+              {{ item.amount > 0 ? '+' : '' }}{{ item.amount.toFixed(2) }} USDT
+            </div>
+          </div>
+          <van-empty v-if="!accountChangeList.length" :description="t('common.noData')" />
         </div>
       </div>
     </van-popup>
@@ -236,18 +262,18 @@ const passwordForm = ref({
 function handlePasswordChange(action) {
   if (action === 'confirm') {
     if (!passwordForm.value.oldPassword || !passwordForm.value.newPassword) {
-      showToast('请填写完整信息')
+      showToast(t('profile.fillComplete'))
       return false
     }
     if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
-      showToast('两次密码不一致')
+      showToast(t('profile.passwordMismatch'))
       return false
     }
     if (passwordForm.value.newPassword.length < 6) {
-      showToast('密码长度不能少于6位')
+      showToast(t('profile.passwordTooShort'))
       return false
     }
-    showToast({ message: '密码修改成功', type: 'success' })
+    showToast({ message: t('profile.passwordChanged'), type: 'success' })
     passwordForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' }
     return true
   }
@@ -264,9 +290,21 @@ const loginHistoryList = ref([
   { device: 'iOS APP', ip: '36.xx.xx.99', location: '北京', time: '2025-03-26 14:33' }
 ])
 
+// Account change records
+const showAccountChanges = ref(false)
+const accountChangeList = ref([
+  { type: '充值', icon: '⬆️', iconBg: 'rgba(16, 185, 129, 0.2)', time: '2026-03-29 20:15', amount: 500.00 },
+  { type: '投注', icon: '🎰', iconBg: 'rgba(124, 58, 237, 0.2)', time: '2026-03-29 19:30', amount: -100.00 },
+  { type: '中奖', icon: '🏆', iconBg: 'rgba(245, 158, 11, 0.2)', time: '2026-03-29 19:32', amount: 280.00 },
+  { type: '佣金收益', icon: '💰', iconBg: 'rgba(245, 158, 11, 0.2)', time: '2026-03-29 18:30', amount: 45.60 },
+  { type: '提现', icon: '⬇️', iconBg: 'rgba(239, 68, 68, 0.2)', time: '2026-03-28 20:00', amount: -500.00 },
+  { type: '投注', icon: '🎰', iconBg: 'rgba(124, 58, 237, 0.2)', time: '2026-03-28 16:45', amount: -50.00 },
+  { type: '返佣收益', icon: '🔄', iconBg: 'rgba(59, 130, 246, 0.2)', time: '2026-03-28 12:00', amount: 23.80 }
+])
+
 // Avatar upload placeholder
 function onAvatarClick() {
-  showToast('头像上传功能即将开放')
+  showToast(t('profile.avatarUploadSoon'))
 }
 
 function toggleLanguage() {
@@ -714,5 +752,64 @@ onMounted(() => {
   color: $text-muted;
   white-space: nowrap;
   margin-left: 12px;
+}
+
+/* Account Change Records */
+.account-changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.change-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: $bg-card;
+  border-radius: 10px;
+}
+
+.change-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.change-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.change-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.change-type {
+  font-size: 14px;
+  color: $text-primary;
+}
+
+.change-time {
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.change-amount {
+  font-size: 15px;
+  font-weight: 600;
+  color: $text-secondary;
+
+  &.positive {
+    color: $accent-green;
+  }
 }
 </style>

@@ -12,8 +12,8 @@
       <div class="invite-card">
         <div class="invite-hero">
           <h3>{{ t('invite.reward') }}</h3>
-          <p class="reward-text">50 USDT / 好友</p>
-          <p class="reward-sub">额外享受下级投注 20% 永久返佣</p>
+          <p class="reward-text">{{ t('invite.rewardPerFriend') }}</p>
+          <p class="reward-sub">{{ t('invite.rewardSubtext') }}</p>
         </div>
 
         <!-- QR Code Display -->
@@ -39,7 +39,7 @@
                 <text x="100" y="106" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">D</text>
               </svg>
             </div>
-            <p class="qr-hint">扫码邀请好友</p>
+            <p class="qr-hint">{{ t('invite.scanToInvite') }}</p>
           </div>
         </div>
 
@@ -65,7 +65,11 @@
         <div class="share-buttons">
           <van-button round type="primary" block class="share-btn" @click="copyLink">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            分享邀请链接
+            {{ t('invite.shareLink') }}
+          </van-button>
+          <van-button round block class="share-btn telegram-btn" @click="shareTelegram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+            {{ t('invite.shareTelegram') }}
           </van-button>
         </div>
       </div>
@@ -80,18 +84,49 @@
         <div class="stat-card highlight">
           <span class="stat-icon">✅</span>
           <span class="stat-num">8</span>
-          <span class="stat-label">活跃好友</span>
+          <span class="stat-label">{{ t('invite.activeFriends') }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-icon">💰</span>
           <span class="stat-num">1,280</span>
-          <span class="stat-label">佣金 (USDT)</span>
+          <span class="stat-label">{{ t('invite.totalCommission') }}</span>
+        </div>
+      </div>
+
+      <!-- Commission Structure -->
+      <div class="commission-section">
+        <h3>{{ t('invite.commissionStructure') }}</h3>
+        <div class="commission-list">
+          <div class="commission-item">
+            <div class="commission-level level-1">1</div>
+            <div class="commission-info">
+              <span class="commission-name">{{ t('invite.level1') }}</span>
+              <span class="commission-rate">{{ t('invite.level1Rate') }}</span>
+            </div>
+            <div class="commission-bar"><div class="bar-fill" style="width: 100%"></div></div>
+          </div>
+          <div class="commission-item">
+            <div class="commission-level level-2">2</div>
+            <div class="commission-info">
+              <span class="commission-name">{{ t('invite.level2') }}</span>
+              <span class="commission-rate">{{ t('invite.level2Rate') }}</span>
+            </div>
+            <div class="commission-bar"><div class="bar-fill" style="width: 50%"></div></div>
+          </div>
+          <div class="commission-item">
+            <div class="commission-level level-3">3</div>
+            <div class="commission-info">
+              <span class="commission-name">{{ t('invite.level3') }}</span>
+              <span class="commission-rate">{{ t('invite.level3Rate') }}</span>
+            </div>
+            <div class="commission-bar"><div class="bar-fill" style="width: 17%"></div></div>
+          </div>
         </div>
       </div>
 
       <!-- Referral List -->
       <div class="referral-section">
-        <h3>邀请记录</h3>
+        <h3>{{ t('invite.inviteRecord') }}</h3>
         <div class="referral-list">
           <div v-for="friend in referralList" :key="friend.id" class="referral-item">
             <div class="referral-left">
@@ -103,7 +138,7 @@
             </div>
             <div class="referral-right">
               <span class="referral-earned">+{{ friend.earned }} USDT</span>
-              <span class="referral-status" :class="friend.active ? 'active' : 'inactive'">{{ friend.active ? '活跃' : '未活跃' }}</span>
+              <span class="referral-status" :class="friend.active ? 'active' : 'inactive'">{{ friend.active ? t('invite.active') : t('invite.inactive') }}</span>
             </div>
           </div>
         </div>
@@ -127,7 +162,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
 
@@ -156,12 +191,12 @@ const referralList = ref([
   { id: 6, name: '152****5678', time: '2026-03-15', earned: 50, active: false }
 ])
 
-const rules = [
-  { title: '分享邀请链接', desc: '将您的专属邀请链接或邀请码分享给好友' },
-  { title: '好友注册充值', desc: '好友通过您的链接注册并完成首次充值' },
-  { title: '获得邀请奖励', desc: '每成功邀请一位好友获得50 USDT奖励' },
-  { title: '永久返佣', desc: '享受下级好友投注金额20%的永久返佣' }
-]
+const rules = computed(() => [
+  { title: t('invite.step1Title'), desc: t('invite.step1Desc') },
+  { title: t('invite.step2Title'), desc: t('invite.step2Desc') },
+  { title: t('invite.step3Title'), desc: t('invite.step3Desc') },
+  { title: t('invite.step4Title'), desc: t('invite.step4Desc') }
+])
 
 function copyCode() {
   navigator.clipboard?.writeText('ABC123')
@@ -171,6 +206,12 @@ function copyCode() {
 function copyLink() {
   navigator.clipboard?.writeText('https://h5play.com/r/ABC123')
   showToast({ message: t('invite.copied'), position: 'bottom' })
+}
+
+function shareTelegram() {
+  const text = encodeURIComponent('Join me on this amazing platform! Use my invite code: ABC123')
+  const url = encodeURIComponent('https://h5play.com/r/ABC123')
+  window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank')
 }
 </script>
 
@@ -265,6 +306,10 @@ function copyLink() {
 }
 
 .share-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
   .share-btn {
     background: linear-gradient(135deg, $accent-gold, #d97706) !important;
     border: none !important;
@@ -273,6 +318,10 @@ function copyLink() {
     align-items: center;
     justify-content: center;
     gap: 6px;
+
+    &.telegram-btn {
+      background: linear-gradient(135deg, #0088cc, #006699) !important;
+    }
   }
 }
 
@@ -445,5 +494,90 @@ function copyLink() {
 .rule-desc {
   font-size: 12px;
   color: $text-secondary;
+}
+
+/* Commission Structure */
+.commission-section {
+  margin-bottom: 20px;
+
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+}
+
+.commission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.commission-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: $bg-card;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.commission-level {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &.level-1 {
+    background: linear-gradient(135deg, $accent-gold, #d97706);
+    color: #000;
+  }
+
+  &.level-2 {
+    background: linear-gradient(135deg, #a78bfa, $accent-purple);
+    color: #fff;
+  }
+
+  &.level-3 {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: #fff;
+  }
+}
+
+.commission-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.commission-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.commission-rate {
+  font-size: 12px;
+  color: $accent-gold;
+}
+
+.commission-bar {
+  width: 60px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $accent-gold, #d97706);
+  border-radius: 3px;
+  transition: width 0.3s ease;
 }
 </style>
