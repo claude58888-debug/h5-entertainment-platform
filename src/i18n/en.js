@@ -223,21 +223,40 @@ export default {
   promotions: {
     title: 'Promotions',
     detail: 'Details',
-    apply: 'Apply Now'
+    apply: 'Apply Now',
+    countdown: 'Countdown',
+    ended: 'Ended',
+    conditions: 'Conditions',
+    activityDetail: 'Activity Details',
+    hot: 'Hot',
+    limited: 'Limited',
+    recommended: 'Recommended'
   },
   support: {
     title: 'Customer Support',
     livechat: 'Live Chat',
     email: 'Email Support',
     telegram: 'Telegram',
-    whatsapp: 'WhatsApp'
+    whatsapp: 'WhatsApp',
+    workingHours: 'Working Hours',
+    online247: '24/7',
+    currentOnline: 'Online Now',
+    contactMethods: 'Contact Methods',
+    faq: 'FAQ',
+    chatPlaceholder: 'Type your question...',
+    send: 'Send'
   },
   download: {
     title: 'APP Download',
     android: 'Android Download',
     ios: 'iOS Download',
     scanQr: 'Scan QR Code',
-    tip: 'Scan QR code to download APP'
+    tip: 'Scan QR code to download APP',
+    features: 'App Features',
+    installGuide: 'Installation Guide',
+    secureEncrypt: 'Encrypted',
+    officialVersion: 'Official',
+    fastDownload: 'Fast Download'
   },
   video: {
     title: 'Video Zone',

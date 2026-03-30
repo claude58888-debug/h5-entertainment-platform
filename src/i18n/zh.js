@@ -223,21 +223,40 @@ export default {
   promotions: {
     title: '优惠活动',
     detail: '详情',
-    apply: '立即参与'
+    apply: '立即参与',
+    countdown: '倒计时',
+    ended: '已结束',
+    conditions: '参与条件',
+    activityDetail: '活动详情',
+    hot: '热门',
+    limited: '限时',
+    recommended: '推荐'
   },
   support: {
     title: '在线客服',
     livechat: '在线聊天',
     email: '邮箱支持',
     telegram: 'Telegram',
-    whatsapp: 'WhatsApp'
+    whatsapp: 'WhatsApp',
+    workingHours: '工作时间',
+    online247: '7×24小时',
+    currentOnline: '当前在线',
+    contactMethods: '联系方式',
+    faq: '常见问题',
+    chatPlaceholder: '请输入您的问题...',
+    send: '发送'
   },
   download: {
     title: 'APP下载',
     android: 'Android下载',
     ios: 'iOS下载',
     scanQr: '扫码下载',
-    tip: '扫描二维码下载APP'
+    tip: '扫描二维码下载APP',
+    features: 'APP特色功能',
+    installGuide: '安装指南',
+    secureEncrypt: '安全加密',
+    officialVersion: '官方正版',
+    fastDownload: '极速下载'
   },
   video: {
     title: '视频专区',
