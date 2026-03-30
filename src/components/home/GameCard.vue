@@ -15,6 +15,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { addRecentGame } from '@/utils/recentBrowsing'
 
 const props = defineProps({
   game: { type: Object, required: true }
@@ -72,6 +73,7 @@ function handleClick() {
     userStore.showLoginModal = true
     return
   }
+  addRecentGame(props.game)
   const route = dedicatedRoutes[props.game.id]
   if (route) {
     router.push(route)

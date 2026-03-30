@@ -46,8 +46,8 @@
           </div>
         </div>
 
-        <!-- Search bar for hot tab -->
-        <div class="search-bar" v-if="category === 'hot'">
+        <!-- Search bar -->
+        <div class="search-bar">
           <van-field
             v-model="searchQuery"
             placeholder="搜索游戏..."

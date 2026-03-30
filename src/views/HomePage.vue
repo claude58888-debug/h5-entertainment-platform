@@ -53,7 +53,15 @@
 
         <!-- Content based on active category -->
         <template v-if="activeCategory === 'home'">
-          <!-- Hot Games -->
+          <!-- Recent Browsing -->
+        <template v-if="recentGames.length > 0">
+          <SectionHeader :title="$t('home.recent')" icon="🕒" />
+          <div class="scroll-row hide-scrollbar">
+            <GameCard v-for="game in recentGames" :key="'recent-'+game.id" :game="game" />
+          </div>
+        </template>
+
+        <!-- Hot Games -->
         <SectionHeader :title="$t('home.hot')" icon="🔥" more="/games/hot" :scrollable="true" @scroll-left="scrollHot(-1)" @scroll-right="scrollHot(1)" />
         <div class="scroll-row hide-scrollbar" ref="hotScrollRef">
           <GameCard v-for="game in hotGames" :key="game.id" :game="game" />
@@ -210,6 +218,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useGameStore } from '@/stores/game'
 import { showToast } from 'vant'
+import { getRecentGames } from '@/utils/recentBrowsing'
 
 import AppNotice from '@/components/common/AppNotice.vue'
 import BannerSwiper from '@/components/home/BannerSwiper.vue'
@@ -230,6 +239,7 @@ const hasError = ref(false)
 const pageLoading = computed(() => appStore.loading || gameStore.loading)
 const hasData = computed(() => gameStore.games.length > 0)
 
+const recentGames = ref([])
 const hotGames = computed(() => gameStore.hotGames)
 const slotsProviders = computed(() => gameStore.getProvidersByCategory('slots'))
 const liveProviders = computed(() => gameStore.getProvidersByCategory('live'))
@@ -285,13 +295,20 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+function refreshRecentGames() {
+  recentGames.value = getRecentGames()
+}
+
 onMounted(() => {
   loadData()
+  refreshRecentGames()
   window.addEventListener('scroll', handleScroll)
+  window.addEventListener('focus', refreshRecentGames)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('focus', refreshRecentGames)
 })
 </script>
 
