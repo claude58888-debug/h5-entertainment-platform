@@ -1,0 +1,16 @@
+node_modules
+admin/node_modules
+admin-server/node_modules
+.git
+.gitignore
+*.md
+!DEPLOY.md
+.env
+.env.*
+docker-compose.yml
+deploy/ssl
+.vscode
+.idea
+*.log
+dist
+admin/dist
