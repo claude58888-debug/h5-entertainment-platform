@@ -1,21 +1,44 @@
 <template>
   <div class="error-page" role="main" aria-label="页面未找到">
-    <div class="error-icon">
-      <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="rgba(124,58,237,0.4)" stroke-width="1.5">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M8 15s1.5-2 4-2 4 2 4 2"/>
-        <line x1="9" y1="9" x2="9.01" y2="9"/>
-        <line x1="15" y1="9" x2="15.01" y2="9"/>
-      </svg>
+    <van-nav-bar
+      title="页面未找到"
+      left-arrow
+      @click-left="goBack"
+      fixed
+      :style="{ maxWidth: '480px', margin: '0 auto' }"
+    />
+    <div class="error-content" style="padding-top: 46px;">
+      <div class="error-icon">
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="rgba(124,58,237,0.4)" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 15s1.5-2 4-2 4 2 4 2"/>
+          <line x1="9" y1="9" x2="9.01" y2="9"/>
+          <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+      </div>
+      <h1 class="error-code">404</h1>
+      <p class="error-title">页面未找到</p>
+      <p class="error-desc">您访问的页面不存在或已被移除</p>
+      <van-button type="primary" round @click="$router.push('/home')" class="error-btn">
+        返回首页
+      </van-button>
     </div>
-    <h1 class="error-code">404</h1>
-    <p class="error-title">页面未找到</p>
-    <p class="error-desc">您访问的页面不存在或已被移除</p>
-    <van-button type="primary" round @click="$router.push('/home')" class="error-btn">
-      返回首页
-    </van-button>
   </div>
 </template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function goBack() {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/home')
+  }
+}
+</script>
 
 <style lang="scss" scoped>
 .error-page {

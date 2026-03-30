@@ -1,21 +1,59 @@
 <template>
   <van-pull-refresh v-model="refreshing" @refresh="onRefresh" :pulling-text="$t('common.pullRefresh')" :loosing-text="$t('common.releaseRefresh')" :loading-text="$t('common.refreshing')">
     <div class="home-page">
-      <!-- Notice -->
-      <AppNotice />
+      <!-- Skeleton Loading State -->
+      <template v-if="pageLoading && !hasData">
+        <div class="skeleton-section">
+          <van-skeleton :row="0" :loading="true">
+            <template #template>
+              <div class="skeleton-banner"></div>
+            </template>
+          </van-skeleton>
+          <div class="skeleton-actions">
+            <div class="skeleton-action-item" v-for="i in 5" :key="'qa'+i"></div>
+          </div>
+          <div class="skeleton-tabs">
+            <div class="skeleton-tab" v-for="i in 6" :key="'tab'+i"></div>
+          </div>
+          <div class="skeleton-section-header">
+            <van-skeleton title :row="0" title-width="120px" :loading="true" />
+          </div>
+          <div class="skeleton-games-row">
+            <div class="skeleton-game-card" v-for="i in 4" :key="'game'+i"></div>
+          </div>
+          <div class="skeleton-section-header">
+            <van-skeleton title :row="0" title-width="100px" :loading="true" />
+          </div>
+          <div class="skeleton-games-row">
+            <div class="skeleton-provider-card" v-for="i in 3" :key="'prov'+i"></div>
+          </div>
+        </div>
+      </template>
 
-      <!-- Banner -->
-      <BannerSwiper />
+      <!-- Network Error Retry State -->
+      <template v-else-if="hasError && !hasData">
+        <van-empty class="error-empty" image="network" description="网络连接失败，请重试">
+          <van-button type="primary" round size="small" @click="retryLoad">重新加载</van-button>
+        </van-empty>
+      </template>
 
-      <!-- Quick Actions -->
-      <QuickActions />
+      <!-- Main Content -->
+      <template v-else>
+        <!-- Notice -->
+        <AppNotice />
 
-      <!-- Category Tabs -->
-      <GameCategoryTabs :active-category="activeCategory" @change="onCategoryChange" />
+        <!-- Banner -->
+        <BannerSwiper />
 
-      <!-- Content based on active category -->
-      <template v-if="activeCategory === 'home'">
-        <!-- Hot Games -->
+        <!-- Quick Actions -->
+        <QuickActions />
+
+        <!-- Category Tabs -->
+        <GameCategoryTabs :active-category="activeCategory" @change="onCategoryChange" />
+
+        <!-- Content based on active category -->
+        <template v-if="activeCategory === 'home'">
+          <!-- Hot Games -->
         <SectionHeader :title="$t('home.hot')" icon="🔥" more="/games/hot" :scrollable="true" @scroll-left="scrollHot(-1)" @scroll-right="scrollHot(1)" />
         <div class="scroll-row hide-scrollbar" ref="hotScrollRef">
           <GameCard v-for="game in hotGames" :key="game.id" :game="game" />
@@ -115,15 +153,16 @@
         </div>
       </template>
 
-      <!-- Category specific view -->
-      <template v-else>
-        <div class="category-games">
-          <GameCard v-for="game in categoryGames" :key="game.id" :game="game" />
-        </div>
-        <div v-if="!categoryGames.length" class="empty-state">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/></svg>
-          <p>{{ $t('common.upcomingOnline') }}</p>
-        </div>
+        <!-- Category specific view -->
+        <template v-else>
+          <div class="category-games">
+            <GameCard v-for="game in categoryGames" :key="game.id" :game="game" />
+          </div>
+          <div v-if="!categoryGames.length" class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/></svg>
+            <p>{{ $t('common.upcomingOnline') }}</p>
+          </div>
+        </template>
       </template>
     </div>
   </van-pull-refresh>
@@ -133,6 +172,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useGameStore } from '@/stores/game'
+import { showToast } from 'vant'
 
 import AppNotice from '@/components/common/AppNotice.vue'
 import BannerSwiper from '@/components/home/BannerSwiper.vue'
@@ -148,6 +188,10 @@ const gameStore = useGameStore()
 const activeCategory = ref('home')
 const refreshing = ref(false)
 const hotScrollRef = ref(null)
+const hasError = ref(false)
+
+const pageLoading = computed(() => appStore.loading || gameStore.loading)
+const hasData = computed(() => gameStore.games.length > 0)
 
 const hotGames = computed(() => gameStore.hotGames)
 const slotsProviders = computed(() => gameStore.getProvidersByCategory('slots'))
@@ -170,20 +214,113 @@ function scrollHot(direction) {
   }
 }
 
+async function loadData() {
+  hasError.value = false
+  try {
+    await Promise.all([appStore.initApp(), gameStore.fetchGames()])
+  } catch (e) {
+    hasError.value = true
+    showToast({ message: '加载失败，请检查网络', position: 'bottom' })
+  }
+}
+
 async function onRefresh() {
-  await Promise.all([appStore.initApp(), gameStore.fetchGames()])
+  hasError.value = false
+  try {
+    await Promise.all([appStore.initApp(), gameStore.fetchGames()])
+  } catch (e) {
+    showToast({ message: '刷新失败，请重试', position: 'bottom' })
+  }
   refreshing.value = false
 }
 
+function retryLoad() {
+  loadData()
+}
+
 onMounted(() => {
-  appStore.initApp()
-  gameStore.fetchGames()
+  loadData()
 })
 </script>
 
 <style lang="scss" scoped>
 .home-page {
   padding-bottom: 20px;
+}
+
+/* Skeleton loading styles */
+.skeleton-section {
+  padding: 0 12px;
+}
+
+.skeleton-banner {
+  width: 100%;
+  height: 160px;
+  border-radius: 12px;
+  background: $bg-card;
+  margin: 12px 0;
+}
+
+.skeleton-actions {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.skeleton-action-item {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background: $bg-card;
+}
+
+.skeleton-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  overflow-x: auto;
+}
+
+.skeleton-tab {
+  width: 56px;
+  height: 32px;
+  border-radius: 16px;
+  background: $bg-card;
+  flex-shrink: 0;
+}
+
+.skeleton-section-header {
+  padding: 16px 0 8px;
+}
+
+.skeleton-games-row {
+  display: flex;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.skeleton-game-card {
+  width: 105px;
+  height: 140px;
+  border-radius: 10px;
+  background: $bg-card;
+  flex-shrink: 0;
+}
+
+.skeleton-provider-card {
+  width: 140px;
+  height: 100px;
+  border-radius: 10px;
+  background: $bg-card;
+  flex-shrink: 0;
+}
+
+.error-empty {
+  padding: 80px 0;
+
+  :deep(.van-empty__description) {
+    color: $text-muted;
+  }
 }
 
 .scroll-row {
