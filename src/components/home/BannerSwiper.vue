@@ -7,7 +7,6 @@
     </van-skeleton>
     <swiper
       v-if="banners.length"
-      ref="swiperRef"
       :modules="[Autoplay, Pagination]"
       :autoplay="{ delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true }"
       :pagination="{ clickable: true }"
@@ -15,10 +14,6 @@
       :space-between="0"
       :speed="600"
       class="banner-container"
-      @mouseenter="onMouseEnter"
-      @mouseleave="onMouseLeave"
-      @touchstart="onMouseEnter"
-      @touchend="onMouseLeave"
     >
       <swiper-slide v-for="banner in banners" :key="banner.id">
         <router-link :to="banner.link" class="banner-slide" :style="{ background: banner.gradient }">
@@ -57,16 +52,6 @@ import 'swiper/css/pagination'
 const appStore = useAppStore()
 const banners = computed(() => appStore.banners)
 const failedImages = ref(new Set())
-const swiperRef = ref(null)
-const isPaused = ref(false)
-
-function onMouseEnter() {
-  isPaused.value = true
-}
-
-function onMouseLeave() {
-  isPaused.value = false
-}
 
 function bannerHasImage(banner) {
   return banner.image && !failedImages.value.has(banner.id)

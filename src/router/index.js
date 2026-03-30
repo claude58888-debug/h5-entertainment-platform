@@ -142,7 +142,7 @@ const routes = [
     path: '/messages',
     name: 'Messages',
     component: () => import('@/views/MessagesPage.vue'),
-    meta: { title: 'Messages' }
+    meta: { requiresAuth: true, title: 'Messages' }
   },
   {
     path: '/bets',
