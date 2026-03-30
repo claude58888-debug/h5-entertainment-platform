@@ -8,10 +8,11 @@
     <swiper
       v-if="banners.length"
       :modules="[Autoplay, Pagination]"
-      :autoplay="{ delay: 3000, disableOnInteraction: false }"
+      :autoplay="{ delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true }"
       :pagination="{ clickable: true }"
       :loop="true"
       :space-between="0"
+      :speed="600"
       class="banner-container"
     >
       <swiper-slide v-for="banner in banners" :key="banner.id">

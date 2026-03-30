@@ -51,7 +51,7 @@ const showTabBar = computed(() => {
 })
 
 // Sub-pages with their own nav-bar should hide the main app header
-const subPages = ['/deposit', '/withdraw', '/tasks', '/income', '/invite', '/activities', '/recharge', '/vip', '/safeCenter', '/report', '/transRecord', '/orderRecordSummary', '/prizeRecord', '/buyBit', '/softwareDownload', '/agentCooperation', '/video', '/login', '/register', '/self-exclusion', '/limits', '/privacy', '/terms', '/responsible-gaming']
+const subPages = ['/deposit', '/withdraw', '/tasks', '/income', '/invite', '/activities', '/recharge', '/vip', '/safeCenter', '/report', '/transRecord', '/orderRecordSummary', '/prizeRecord', '/buyBit', '/softwareDownload', '/agentCooperation', '/video', '/login', '/register', '/self-exclusion', '/limits', '/privacy', '/terms', '/responsible-gaming', '/messages', '/bets']
 const subPagePrefixes = ['/games/', '/game/']
 const showAppHeader = computed(() => {
   const path = route.path
