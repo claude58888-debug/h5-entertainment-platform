@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
@@ -26,11 +27,17 @@ export default defineConfig({
       }
     }
   },
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+    include: ['src/**/*.{test,spec}.{js,ts}']
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,
     proxy: {
       '/api/h5': {
+        // Dev-only proxy target. In production, Nginx or the deployed backend handles /api/h5.
         target: 'http://localhost:3001',
         changeOrigin: true
       }
