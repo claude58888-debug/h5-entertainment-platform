@@ -266,6 +266,67 @@ docker-compose down -v
 
 ---
 
+## Rollback Plan
+
+In case a deployment causes issues, follow these steps to roll back to the previous stable version.
+
+### Docker Compose Rollback
+
+```bash
+# 1. Identify the previous working image tag / commit
+docker images dada-platform --format "{{.Tag}} {{.CreatedAt}}"
+git log --oneline -5
+
+# 2. Stop the current deployment
+docker-compose down
+
+# 3. Check out the last known-good commit
+git checkout <previous-commit-sha>
+
+# 4. Rebuild and restart
+docker-compose up -d --build
+
+# 5. Verify health
+curl -sf http://localhost:3000/api/health
+```
+
+### Manual (PM2) Rollback
+
+```bash
+# 1. Stop the current process
+pm2 stop dada-platform
+
+# 2. Check out the last known-good commit
+git checkout <previous-commit-sha>
+
+# 3. Rebuild frontends
+npm install && npm run build
+cd admin && npm install && npm run build && cd ..
+
+# 4. Restart the server
+cd admin-server && pm2 restart dada-platform && cd ..
+
+# 5. Verify health
+curl -sf http://localhost:3000/api/health
+```
+
+### Rollback Checklist
+
+1. **Identify the issue**: Check logs (`docker-compose logs -f app` or `pm2 logs dada-platform`)
+2. **Decide scope**: Is it a frontend-only issue (redeploy static assets) or backend (full rollback)?
+3. **Communicate**: Notify the team that a rollback is in progress
+4. **Execute**: Use the appropriate rollback procedure above
+5. **Verify**: Confirm the health endpoint responds and key user flows work
+6. **Post-mortem**: Document what went wrong and update deployment procedures
+
+### Database Considerations
+
+- SQLite database is stored in a persistent Docker volume (`app-data`) and is **not** affected by code rollbacks
+- If a migration introduced schema changes, you may need to restore from a database backup
+- **Always back up the database before deploying migrations**: `docker exec dada-platform cp /app/data/admin.db /app/data/admin.db.bak`
+
+---
+
 ## Troubleshooting
 
 ### Container won't start
