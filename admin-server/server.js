@@ -10,6 +10,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import db, { initDB } from './db.js'
 import h5Routes from './h5-routes.js'
+import ppRoutes from './pp-routes.js'
 import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateUpdateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, validateManualDeposit, validateBatchWithdrawal, validateAutoReviewRule, validateHotScore, validateRecommend, validateVipAdjust, validateTagsUpdate, validateBalanceAdjust, handleValidationErrors } from './validation.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -167,6 +168,8 @@ function logLoginAttempt(username, success, ip) {
 
 // Mount H5 API routes
 app.use('/api/h5', h5Routes)
+// Mount PP (Pragmatic Play) API routes
+app.use('/api/pp', ppRoutes)
 
 // JWT auth middleware
 function authMiddleware(req, res, next) {
