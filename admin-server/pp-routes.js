@@ -153,4 +153,112 @@ router.post('/callback/refund', (req, res) => {
   })
 })
 
+// POST /api/pp/callback/bonusWin (credit - bonus win)
+router.post('/callback/bonusWin', (req, res) => {
+  const params = req.body
+  if (!verifyCallbackHash(params)) {
+    return res.json({ error: 1, description: 'Invalid hash' })
+  }
+  const { userId, amount, reference, roundId, gameId } = params
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(userId)
+  if (!member) return res.json({ error: 2, description: 'User not found' })
+  const existing = db.prepare('SELECT id FROM pp_transactions WHERE reference = ?').get(reference)
+  if (existing) return res.json({ error: 0, transactionId: existing.id, currency: 'CNY', cash: member.balance })
+  const newBalance = member.balance + amount
+  db.prepare('UPDATE members SET balance = ? WHERE id = ?').run(newBalance, userId)
+  const txResult = db.prepare(`INSERT INTO pp_transactions (reference, round_id, game_id, user_id, type, amount, balance_after) VALUES (?,?,?,?,?,?,?)`)
+    .run(reference, roundId, gameId || '', userId, 'bonusWin', amount, newBalance)
+  res.json({
+    error: 0,
+    transactionId: String(txResult.lastInsertRowid),
+    currency: 'CNY',
+    cash: newBalance
+  })
+})
+
+// POST /api/pp/callback/jackpotWin (credit - jackpot win)
+router.post('/callback/jackpotWin', (req, res) => {
+  const params = req.body
+  if (!verifyCallbackHash(params)) {
+    return res.json({ error: 1, description: 'Invalid hash' })
+  }
+  const { userId, amount, reference, roundId, gameId, jackpotId } = params
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(userId)
+  if (!member) return res.json({ error: 2, description: 'User not found' })
+  const existing = db.prepare('SELECT id FROM pp_transactions WHERE reference = ?').get(reference)
+  if (existing) return res.json({ error: 0, transactionId: existing.id, currency: 'CNY', cash: member.balance })
+  const newBalance = member.balance + amount
+  db.prepare('UPDATE members SET balance = ? WHERE id = ?').run(newBalance, userId)
+  const txResult = db.prepare(`INSERT INTO pp_transactions (reference, round_id, game_id, user_id, type, amount, balance_after) VALUES (?,?,?,?,?,?,?)`)
+    .run(reference, roundId, gameId || '', userId, 'jackpotWin', amount, newBalance)
+  res.json({
+    error: 0,
+    transactionId: String(txResult.lastInsertRowid),
+    currency: 'CNY',
+    cash: newBalance
+  })
+})
+
+// POST /api/pp/callback/endRound (informational - round ended)
+router.post('/callback/endRound', (req, res) => {
+  const params = req.body
+  if (!verifyCallbackHash(params)) {
+    return res.json({ error: 1, description: 'Invalid hash' })
+  }
+  // EndRound is informational only - just acknowledge
+  res.json({ error: 0 })
+})
+
+// POST /api/pp/callback/promoWin (credit - promotional win)
+router.post('/callback/promoWin', (req, res) => {
+  const params = req.body
+  if (!verifyCallbackHash(params)) {
+    return res.json({ error: 1, description: 'Invalid hash' })
+  }
+  const { userId, amount, reference, roundId, campaignId, campaignType } = params
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(userId)
+  if (!member) return res.json({ error: 2, description: 'User not found' })
+  const existing = db.prepare('SELECT id FROM pp_transactions WHERE reference = ?').get(reference)
+  if (existing) return res.json({ error: 0, transactionId: existing.id, currency: 'CNY', cash: member.balance })
+  const newBalance = member.balance + amount
+  db.prepare('UPDATE members SET balance = ? WHERE id = ?').run(newBalance, userId)
+  const txResult = db.prepare(`INSERT INTO pp_transactions (reference, round_id, game_id, user_id, type, amount, balance_after) VALUES (?,?,?,?,?,?,?)`)
+    .run(reference, roundId || '', '', userId, 'promoWin', amount, newBalance)
+  res.json({
+    error: 0,
+    transactionId: String(txResult.lastInsertRowid),
+    currency: 'CNY',
+    cash: newBalance
+  })
+})
+
+// POST /api/pp/callback/sessionExpired (informational - session expired)
+router.post('/callback/sessionExpired', (req, res) => {
+  // Session expired notification - just acknowledge
+  res.json({ error: 0 })
+})
+
+// POST /api/pp/callback/adjustment (credit/debit - balance adjustment)
+router.post('/callback/adjustment', (req, res) => {
+  const params = req.body
+  if (!verifyCallbackHash(params)) {
+    return res.json({ error: 1, description: 'Invalid hash' })
+  }
+  const { userId, amount, reference, roundId, gameId } = params
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(userId)
+  if (!member) return res.json({ error: 2, description: 'User not found' })
+  const existing = db.prepare('SELECT id FROM pp_transactions WHERE reference = ?').get(reference)
+  if (existing) return res.json({ error: 0, transactionId: existing.id, currency: 'CNY', cash: member.balance })
+  const newBalance = member.balance + amount
+  db.prepare('UPDATE members SET balance = ? WHERE id = ?').run(newBalance, userId)
+  const txResult = db.prepare(`INSERT INTO pp_transactions (reference, round_id, game_id, user_id, type, amount, balance_after) VALUES (?,?,?,?,?,?,?)`)
+    .run(reference, roundId || '', gameId || '', userId, 'adjustment', amount, newBalance)
+  res.json({
+    error: 0,
+    transactionId: String(txResult.lastInsertRowid),
+    currency: 'CNY',
+    cash: newBalance
+  })
+})
+
 export default router
