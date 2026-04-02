@@ -61,6 +61,28 @@ router.get('/games/list', async (req, res) => {
 // ==================== PP WALLET CALLBACKS ====================
 // These endpoints are called by Pragmatic Play servers
 
+// POST /api/pp/callback/authenticate
+router.post('/callback/authenticate', (req, res) => {
+  const params = req.body
+  if (!verifyCallbackHash(params)) {
+    return res.json({ error: 1, description: 'Invalid hash' })
+  }
+  const { token, userId } = params
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(token || userId)
+  if (!member) {
+    return res.json({ error: 2, description: 'Player not found' })
+  }
+  if (member.status !== 'active') {
+    return res.json({ error: 4, description: 'Player is disabled' })
+  }
+  res.json({
+    error: 0,
+    userId: member.id,
+    currency: 'CNY',
+    cash: member.balance
+  })
+})
+
 // POST /api/pp/callback/balance
 router.post('/callback/balance', (req, res) => {
   const params = req.body
@@ -258,6 +280,23 @@ router.post('/callback/adjustment', (req, res) => {
     transactionId: String(txResult.lastInsertRowid),
     currency: 'CNY',
     cash: newBalance
+  })
+})
+
+// POST /api/pp/callback/getBalancePerGame (balance per game query)
+router.post('/callback/getBalancePerGame', (req, res) => {
+  const params = req.body
+  if (!verifyCallbackHash(params)) {
+    return res.json({ error: 1, description: 'Invalid hash' })
+  }
+  const { userId } = params
+  const member = db.prepare('SELECT balance FROM members WHERE id = ?').get(userId)
+  if (!member) return res.json({ error: 2, description: 'User not found' })
+  res.json({
+    error: 0,
+    userId: userId,
+    currency: 'CNY',
+    cash: member.balance
   })
 })
 
