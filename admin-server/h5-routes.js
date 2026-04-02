@@ -2,10 +2,12 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import db from './db.js'
+import { getGameUrl } from './pp-integration.js'
 
 const router = Router()
 
-// ==================== IN-MEMORY CACHE ====================
+// ====================
+IN-MEMORY CACHE ====================
 const h5Cache = new Map()
 
 function h5CacheGet(key) {
@@ -412,20 +414,26 @@ router.get('/games/:id', (req, res) => {
 })
 
 // POST /api/h5/games/:id/launch
-router.post('/games/:id/launch', h5Auth, (req, res) => {
+router.post('/games/:id/launch', h5Auth, async (req, res) => {
   const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id)
   if (!game) return res.status(404).json({ error: 'Game not found' })
 
-  // Return a demo launch URL
-  res.json({
-    success: true,
-    launchUrl: `https://demo.game-provider.com/launch?game=${game.id}&token=demo_${req.h5user.memberId}`,
-    game: {
-      id: game.id,
-      name: game.name,
-      provider: game.provider
+    // Launch game via Pragmatic Play API
+    try {
+      const launchUrl = await getGameUrl(game.pp_game_id || game.name, req.h5user.memberId)
+      res.json({
+        success: true,
+        launchUrl,
+        game: {
+          id: game.id,
+          name: game.name,
+          provider: game.provider
+        }
+      })
+    } catch (err) {
+      console.error('PP game launch error:', err.message)
+      res.status(500).json({ error: 'Failed to launch game', details: err.message })
     }
-  })
 })
 
 // ==================== PROMOTIONS ====================
