@@ -586,6 +586,24 @@ export function initDB() {
     CREATE INDEX IF NOT EXISTS idx_bank_cards_member ON member_bank_cards(member_id);
   `)
 
+    // ==================== Pragmatic Play Transactions ====================
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS pp_transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      reference TEXT UNIQUE NOT NULL,
+      round_id TEXT,
+      game_id TEXT DEFAULT '',
+      user_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      amount REAL NOT NULL DEFAULT 0,
+      balance_after REAL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_pp_tx_reference ON pp_transactions(reference);
+    CREATE INDEX IF NOT EXISTS idx_pp_tx_user ON pp_transactions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_pp_tx_round ON pp_transactions(round_id);
+  `)
+
   // ==================== SEED: Revenue Trend (last 30 days) ====================
   const revTrendCount = db.prepare('SELECT COUNT(*) as c FROM revenue_trend').get().c
   if (revTrendCount === 0) {
