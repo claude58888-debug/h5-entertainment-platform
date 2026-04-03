@@ -71,6 +71,7 @@ jobs:
         working-directory: admin-server
         env:
           JWT_SECRET: ci-test-secret-not-for-production
+          H5_JWT_SECRET: ci-test-h5-secret-not-for-production
         run: |
           node server.js &
           SERVER_PID=$!
