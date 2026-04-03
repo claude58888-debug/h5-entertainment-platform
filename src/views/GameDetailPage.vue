@@ -39,7 +39,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useGameStore } from '@/stores/game'
 import { showToast } from 'vant'
-  import { launchGameApi } from '@/api/game'
+import { launchGameApi } from '@/api/game'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -48,19 +48,19 @@ const gameStore = useGameStore()
 const game = computed(() => gameStore.getGameById(route.params.id))
 
 async function playGame() {
-    if (!game.value) return
-    showToast({ message: 'Launching game...', position: 'bottom' })
-    try {
-      const res = await launchGameApi(route.params.id)
-      if (res.data.success && res.data.launchUrl) {
-        window.open(res.data.launchUrl, '_blank')
-      } else {
-        showToast({ message: res.data.error || 'Launch failed', position: 'bottom' })
-      }
-    } catch (err) {
-      showToast({ message: 'Failed to launch game', position: 'bottom' })
+  if (!game.value) return
+  showToast({ message: 'Launching game...', position: 'bottom' })
+  try {
+    const res = await launchGameApi(route.params.id)
+    if (res.success && res.launchUrl) {
+      window.open(res.launchUrl, '_blank')
+    } else {
+      showToast({ message: res.error || 'Launch failed', position: 'bottom' })
     }
+  } catch (err) {
+    showToast({ message: 'Failed to launch game', position: 'bottom' })
   }
+}
 
 function playDemo() {
   showToast({ message: 'Loading demo...', position: 'bottom' })
@@ -72,35 +72,29 @@ function playDemo() {
   width: 100%;
   height: 260px;
   overflow: hidden;
-
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 }
-
 .game-info {
   padding: 16px;
 }
-
 .game-name {
   font-size: 22px;
   font-weight: 700;
   margin-bottom: 8px;
 }
-
 .game-meta {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
 .meta-item {
   font-size: 13px;
   color: $text-secondary;
 }
-
 .category-badge {
   background: $accent-purple;
   color: #fff;
@@ -109,20 +103,17 @@ function playDemo() {
   font-size: 11px;
   text-transform: uppercase;
 }
-
 .game-actions {
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .demo-btn {
   background: $bg-card !important;
   border-color: $border-color !important;
   color: $text-primary !important;
 }
-
 .game-desc {
   padding: 0 16px 24px;
   font-size: 14px;
