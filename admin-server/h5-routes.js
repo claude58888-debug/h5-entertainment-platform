@@ -6,8 +6,7 @@ import { getGameUrl } from './pp-integration.js'
 
 const router = Router()
 
-// ====================
-IN-MEMORY CACHE ====================
+// ==================== IN-MEMORY CACHE ====================
 const h5Cache = new Map()
 
 function h5CacheGet(key) {
@@ -420,10 +419,10 @@ router.post('/games/:id/launch', h5Auth, async (req, res) => {
 
     // Launch game via Pragmatic Play API
     try {
-      const launchUrl = await getGameUrl(game.pp_game_id || game.name, req.h5user.memberId)
+      const result = await getGameUrl({ symbol: game.pp_game_id || game.name, token: req.h5user.memberId, externalPlayerId: req.h5user.memberId })
       res.json({
         success: true,
-        launchUrl,
+        launchUrl: result.gameURL,
         game: {
           id: game.id,
           name: game.name,
