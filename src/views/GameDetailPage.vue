@@ -5,9 +5,9 @@
       left-arrow
       @click-left="$router.back()"
       fixed
-      :style="{ maxWidth: '480px', margin: '0 auto' }"
+      class="nav-bar-centered"
     />
-    <div class="detail-content" style="padding-top: 46px;" v-if="game">
+    <div class="detail-content" v-if="game">
       <div class="game-cover">
         <img :src="game.image" :alt="game.name" />
       </div>
@@ -68,6 +68,13 @@ function playDemo() {
 </script>
 
 <style lang="scss" scoped>
+.nav-bar-centered {
+  max-width: 480px;
+  margin: 0 auto;
+}
+.detail-content {
+  padding-top: 46px;
+}
 .game-cover {
   width: 100%;
   height: 260px;
