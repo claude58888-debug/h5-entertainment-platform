@@ -39,6 +39,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useGameStore } from '@/stores/game'
 import { showToast } from 'vant'
+  import { launchGameApi } from '@/api/game'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -46,9 +47,20 @@ const gameStore = useGameStore()
 
 const game = computed(() => gameStore.getGameById(route.params.id))
 
-function playGame() {
-  showToast({ message: 'Launching game...', position: 'bottom' })
-}
+async function playGame() {
+    if (!game.value) return
+    showToast({ message: 'Launching game...', position: 'bottom' })
+    try {
+      const res = await launchGameApi(route.params.id)
+      if (res.data.success && res.data.launchUrl) {
+        window.open(res.data.launchUrl, '_blank')
+      } else {
+        showToast({ message: res.data.error || 'Launch failed', position: 'bottom' })
+      }
+    } catch (err) {
+      showToast({ message: 'Failed to launch game', position: 'bottom' })
+    }
+  }
 
 function playDemo() {
   showToast({ message: 'Loading demo...', position: 'bottom' })
