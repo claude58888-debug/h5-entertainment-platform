@@ -23,8 +23,11 @@ function h5CacheSet(key, data, ttlMs) {
   h5Cache.set(key, { data, expiresAt: Date.now() + ttlMs })
 }
 
-// H5 JWT secret - separate from admin
-const H5_JWT_SECRET = process.env.H5_JWT_SECRET || 'dev-only-h5-user-key'
+// H5 JWT secret - must be set via environment variable. No fallback allowed.
+if (!process.env.H5_JWT_SECRET) {
+  throw new Error('FATAL: H5_JWT_SECRET environment variable is not set.')
+}
+const H5_JWT_SECRET = process.env.H5_JWT_SECRET
 
 // ==================== H5 Auth Middleware ====================
 function h5Auth(req, res, next) {
