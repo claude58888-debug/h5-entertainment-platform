@@ -15,3 +15,7 @@ export function getGameCategoriesApi() {
 export function getProvidersApi(category) {
   return request.get('/games/providers', { params: { category } })
 }
+
+export function launchGameApi(id) {
+  return request.post(`/games/${id}/launch`)
+}
