@@ -420,6 +420,11 @@ router.post('/games/:id/launch', h5Auth, async (req, res) => {
   const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id)
   if (!game) return res.status(404).json({ error: 'Game not found' })
 
+    // Check if game has PP integration
+  if (!game.pp_game_id) {
+    return res.status(400).json({ error: 'This game does not support online launch yet', success: false })
+  }
+
     // Launch game via Pragmatic Play API
     try {
       const result = await getGameUrl({ symbol: game.pp_game_id || game.name, token: req.h5user.memberId, externalPlayerId: req.h5user.memberId })
@@ -436,6 +441,32 @@ router.post('/games/:id/launch', h5Auth, async (req, res) => {
       console.error('PP game launch error:', err.message)
       res.status(500).json({ error: 'Failed to launch game', details: err.message })
     }
+})
+
+// POST /api/h5/games/:id/demo - Demo mode (no auth required)
+router.post('/games/:id/demo', async (req, res) => {
+  const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id)
+  if (!game) return res.status(404).json({ error: 'Game not found' })
+
+  if (!game.pp_game_id) {
+    return res.status(400).json({ error: 'Demo not available for this game', success: false })
+  }
+
+  try {
+    const result = await getGameUrl({
+      symbol: game.pp_game_id,
+      token: 'demo_' + Date.now(),
+      externalPlayerId: 'demo_player',
+      playMode: 'DEMO'
+    })
+    res.json({
+      success: true,
+      launchUrl: result.gameURL,
+      game: { id: game.id, name: game.name, provider: game.provider }
+    })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to launch demo', success: false })
+  }
 })
 
 // ==================== PROMOTIONS ====================
