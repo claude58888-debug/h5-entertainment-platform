@@ -76,6 +76,11 @@ ENV PORT=3000
 # Expose port
 EXPOSE 3000
 
+ENV PP_API_URL=https://api.prerelease-env.biz
+ENV PP_SECURE_LOGIN=zf1487_bygame02
+ENV PP_SECRET=8IPy9SfmmITyT8Wh
+ENV JWT_SECRET=dada-platform-jwt-secret-2024
+ENV H5_JWT_SECRET=dada-h5-jwt-secret-2024
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://localhost:3000/api/health || exit 1
