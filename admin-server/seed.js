@@ -82,17 +82,17 @@ insertProvider.run('FC', 'FC游戏', 'multi', 38, 'active', 98.5, 600000, '160ms
 insertProvider.run('WM', 'WM真人', 'live', 20, 'maintenance', 0, 2000000, 'N/A', 'demo_key_wm', 0)
 
 // ===== Games =====
-const insertGame = db.prepare(`INSERT INTO games (id, name, provider, category, status, rtp, is_hot, is_new, bets, revenue) VALUES (?,?,?,?,?,?,?,?,?,?)`)
-insertGame.run('G001', '麻将胡了2', 'PG', '电子游戏', 'active', 96.8, 1, 0, 125000, 520000)
-insertGame.run('G002', '极速糖果1000', 'PP', '电子游戏', 'active', 96.5, 1, 1, 98000, 380000)
-insertGame.run('G003', '奥林匹斯之门', 'PP', '电子游戏', 'active', 96.2, 1, 0, 87000, 310000)
-insertGame.run('G004', '闪电轮盘', 'EVO', '真人视讯', 'active', 97.3, 1, 0, 76000, 280000)
-insertGame.run('G005', '百家乐', 'AG', '真人视讯', 'active', 98.9, 0, 0, 150000, 250000)
-insertGame.run('G006', '海洋之王', 'JDB', '捕鱼游戏', 'active', 95.5, 0, 0, 45000, 180000)
-insertGame.run('G007', '招财猫', 'PG', '电子游戏', 'active', 96.0, 0, 0, 62000, 150000)
-insertGame.run('G008', '德州扑克', 'FC', '棋牌游戏', 'active', 97.5, 0, 1, 35000, 120000)
-insertGame.run('G009', '加拿大4.2-4.6', 'TCG', '彩票', 'active', 97.0, 0, 0, 55000, 200000)
-insertGame.run('G010', 'CR皇冠体育', 'CROWN', '体育竞猜', 'active', 96.5, 0, 0, 80000, 350000)
+const insertGame = db.prepare(`INSERT INTO games (id, name, provider, category, status, rtp, is_hot, is_new, bets, revenue, pp_game_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+insertGame.run('G001', '麻将胡了2', 'PG', '电子游戏', 'active', 96.8, 1, 0, 125000, 520000, '')
+insertGame.run('G002', '极速糖果1000', 'PP', '电子游戏', 'active', 96.5, 1, 1, 98000, 380000, 'vs20sugarush1000')
+insertGame.run('G003', '奥林匹斯之门', 'PP', '电子游戏', 'active', 96.2, 1, 0, 87000, 310000, 'vs20olympgate')
+insertGame.run('G004', '闪电轮盘', 'EVO', '真人视讯', 'active', 97.3, 1, 0, 76000, 280000, '')
+insertGame.run('G005', '百家乐', 'AG', '真人视讯', 'active', 98.9, 0, 0, 150000, 250000, '')
+insertGame.run('G006', '海洋之王', 'JDB', '捕鱼游戏', 'active', 95.5, 0, 0, 45000, 180000, '')
+insertGame.run('G007', '招财猫', 'PG', '电子游戏', 'active', 96.0, 0, 0, 62000, 150000, '')
+insertGame.run('G008', '德州扑克', 'FC', '棋牌游戏', 'active', 97.5, 0, 1, 35000, 120000, '')
+insertGame.run('G009', '加拿大4.2-4.6', 'TCG', '彩票', 'active', 97.0, 0, 0, 55000, 200000, '')
+insertGame.run('G010', 'CR皇冠体育', 'CROWN', '体育竞猜', 'active', 96.5, 0, 0, 80000, 350000, '')
 
 // ===== Betting records =====
 const insertBet = db.prepare(`INSERT INTO bets (id, member, game, provider, bet_amount, win_amount, time, status) VALUES (?,?,?,?,?,?,?,?)`)
