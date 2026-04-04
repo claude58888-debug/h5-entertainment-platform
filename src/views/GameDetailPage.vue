@@ -77,6 +77,8 @@ async function playDemo() {
   }
 }
 
+</script>
+
 <style lang="scss" scoped>
 .nav-bar-centered {
   max-width: 480px;
