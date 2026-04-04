@@ -4,7 +4,10 @@ import db from './db.js'
 import { getGameUrl, getCasinoGames, verifyCallbackHash } from './pp-integration.js'
 
 const router = Router()
-const H5_JWT_SECRET = process.env.H5_JWT_SECRET || 'dev-only-h5-user-key'
+if (!process.env.H5_JWT_SECRET) {
+  throw new Error('FATAL: H5_JWT_SECRET environment variable is not set.')
+}
+const H5_JWT_SECRET = process.env.H5_JWT_SECRET
 
 // H5 Auth Middleware
 function h5Auth(req, res, next) {
