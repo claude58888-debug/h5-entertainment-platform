@@ -39,7 +39,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useGameStore } from '@/stores/game'
 import { showToast } from 'vant'
-import { launchGameApi } from '@/api/game'
+import { launchGameApi, demoGameApi } from '@/api/game'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -62,10 +62,20 @@ async function playGame() {
   }
 }
 
-function playDemo() {
+async function playDemo() {
+  if (!game.value) return
   showToast({ message: 'Loading demo...', position: 'bottom' })
+  try {
+    const res = await demoGameApi(route.params.id)
+    if (res.success && res.launchUrl) {
+      window.open(res.launchUrl, '_blank')
+    } else {
+      showToast({ message: res.error || 'Demo not available', position: 'bottom' })
+    }
+  } catch (err) {
+    showToast({ message: 'Failed to load demo', position: 'bottom' })
+  }
 }
-</script>
 
 <style lang="scss" scoped>
 .nav-bar-centered {
