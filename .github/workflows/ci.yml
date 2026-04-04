@@ -72,6 +72,8 @@ jobs:
         env:
           JWT_SECRET: ci-test-secret-not-for-production
           H5_JWT_SECRET: ci-test-h5-secret-not-for-production
+          PP_SECRET: ci-test-pp-secret-not-for-production
+          PP_SECURE_LOGIN: ci-test-pp-login-not-for-production
         run: |
           node server.js &
           SERVER_PID=$!
