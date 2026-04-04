@@ -108,7 +108,8 @@ export function initDB() {
       revenue REAL DEFAULT 0,
       hot_score INTEGER DEFAULT 0,
       is_recommended INTEGER DEFAULT 0,
-      recommend_sort INTEGER DEFAULT 0
+      recommend_sort INTEGER DEFAULT 0,
+        pp_game_id TEXT DEFAULT ''
     );
 
     -- Betting records
