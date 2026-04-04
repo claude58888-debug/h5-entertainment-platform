@@ -4,16 +4,14 @@ import querystring from 'querystring'
 
 // ==================== PRAGMATIC PLAY CONFIG ====================
 // Sensitive credentials - must be set via environment variables. No fallback allowed.
-if (!process.env.PP_SECRET) {
-  throw new Error('FATAL: PP_SECRET environment variable is not set.')
-}
-if (!process.env.PP_SECURE_LOGIN) {
-  throw new Error('FATAL: PP_SECURE_LOGIN environment variable is not set.')
+const PP_CONFIGURED = !!(process.env.PP_SECRET && process.env.PP_SECURE_LOGIN)
+if (!PP_CONFIGURED) {
+  console.warn('WARNING: PP_SECRET and/or PP_SECURE_LOGIN not set. PP game API will be unavailable.')
 }
 
 const PP_API_URL = process.env.PP_API_URL || 'https://api.prerelease-env.biz'
-const PP_SECURE_LOGIN = process.env.PP_SECURE_LOGIN
-const PP_SECRET = process.env.PP_SECRET
+const PP_SECURE_LOGIN = process.env.PP_SECURE_LOGIN || ''
+const PP_SECRET = process.env.PP_SECRET || ''
 const PP_PROVIDER_ID = process.env.PP_PROVIDER_ID || 'bygame02'
 const PP_STYLENAME = process.env.PP_STYLENAME || 'bygame02'
 const PP_CURRENCY = process.env.PP_CURRENCY || 'USDT'
@@ -37,6 +35,9 @@ export function calcHash(params) {
 
 // ==================== HTTP REQUEST HELPER ====================
 function ppRequest(path, params) {
+  if (!PP_CONFIGURED) {
+    return Promise.resolve({ error: '1', description: 'PP integration not configured. Set PP_SECRET and PP_SECURE_LOGIN env vars.' })
+  }
   return new Promise((resolve, reject) => {
     const hash = calcHash(params)
     const body = querystring.stringify({ ...params, hash })
@@ -105,4 +106,4 @@ export function verifyCallbackHash(params) {
   return hash === expected
 }
 
-export { PP_PROVIDER_ID, PP_CURRENCY }
+export { PP_CONFIGURED, PP_PROVIDER_ID, PP_CURRENCY }
