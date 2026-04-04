@@ -15,6 +15,9 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - PP_API_URL=https://api.prerelease-env.biz
+      - PP_SECURE_LOGIN=zf1487_bygame02
+      - PP_SECRET=8IPy9SfmmITyT8Wh
     volumes:
       - app-data:/app/data
     healthcheck:
