@@ -57,7 +57,7 @@ COPY admin-server/package.json admin-server/package-lock.json* ./admin-server/
 RUN cd admin-server && npm install --omit=dev
 
 # Copy admin-server source
-COPY admin-server/server.js admin-server/db.js admin-server/h5-routes.js admin-server/validation.js admin-server/seed.js ./admin-server/
+COPY admin-server/server.js admin-server/db.js admin-server/h5-routes.js admin-server/pp-integration.js admin-server/pp-routes.js admin-server/validation.js admin-server/seed.js ./admin-server/
 
 # Copy built frontends from build stages
 COPY --from=build-h5 /build/dist ./dist
