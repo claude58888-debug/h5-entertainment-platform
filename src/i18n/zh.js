@@ -161,7 +161,8 @@ export default {
     shenzhenGuangdong: '广东深圳',
     guangzhouGuangdong: '广东广州',
     shanghai: '上海',
-    beijing: '北京'
+    beijing: '北京',
+    xp: '经验值'
   },
   tasks: {
     title: '任务中心',
@@ -635,7 +636,9 @@ export default {
     detail: '消息详情',
     deleteConfirm: '确认删除此消息？',
     delete: '删除',
-    markRead: '标为已读'
+    markRead: '标为已读',
+    yesterday: '昨天',
+    daysAgo: '{n}天前'
   },
   bets: {
     title: '投注记录',
@@ -701,5 +704,114 @@ export default {
   seo: {
     siteName: '大大娱乐',
     siteDescription: '大大娱乐 - 最安全的在线娱乐平台'
+  },
+  routes: {
+    home: '首页',
+    login: '登录',
+    register: '注册',
+    canada28: '加拿大28',
+    canadaHigh: '加拿大高频',
+    hash1m: '哈希1分钟',
+    games: '游戏',
+    gameDetail: '游戏详情',
+    deposit: '充值',
+    withdraw: '提现',
+    tasks: '任务中心',
+    income: '我的收入',
+    invite: '邀请好友',
+    promotions: '活动',
+    activities: '活动详情',
+    profile: '我的',
+    video: '视讯',
+    download: '下载',
+    support: '客服',
+    recharge: '充值',
+    vip: 'VIP',
+    securityCenter: '安全中心',
+    messages: '消息中心',
+    bets: '投注记录',
+    activityDetail: '活动详情',
+    redPacket: '红包',
+    passwordRedPacket: '口令红包',
+    report: '报表',
+    transactionRecord: '交易记录',
+    betRecord: '投注记录',
+    prizeRecord: '中奖记录',
+    buyCrypto: '购买虚拟币',
+    agentCooperation: '代理合作',
+    selfExclusion: '自我排除',
+    limits: '存款限额',
+    privacy: '隐私政策',
+    terms: '服务条款',
+    responsibleGaming: '负责任博彩',
+    networkError: '网络错误',
+    serverError: '服务器错误',
+    notFound: '页面未找到'
+  },
+  transactions: {
+    title: '交易记录',
+    accountChanges: '账变',
+    deposit: '充值',
+    withdrawal: '提现',
+    promotions: '优惠',
+    balance: '余额',
+    claimed: '已领取',
+    completed: '已完成',
+    pending: '处理中',
+    types: {
+      deposit: '充值',
+      betSlots: '投注 - 老虎机',
+      winSlots: '中奖 - 老虎机',
+      withdrawal: '提现',
+      bonus: '奖金',
+      rebate: '返佣'
+    },
+    promoNames: {
+      firstDeposit: '首充奖金',
+      dailyLossRebate: '每日亏损返佣',
+      weeklyBetBonus: '周投注奖金'
+    }
+  },
+  messageSamples: {
+    m1: {
+      title: '系统维护通知',
+      summary: '计划维护时间：2026年4月2日 02:00-04:00 UTC+8',
+      content: '尊敬的用户，我们将于2026年4月2日 02:00至04:00（UTC+8）进行计划维护。维护期间平台将暂时无法使用，给您带来的不便深表歉意，感谢您的理解。所有待处理的投注和交易将在维护后处理。'
+    },
+    m2: {
+      title: '充值已确认',
+      summary: '您的500 USDT充值已到账',
+      content: '您通过TRC-20充值的500 USDT已成功确认并到账。交易ID：TXN20260329001。当前余额：1,580.00 USDT。如有任何问题，请联系客服团队。'
+    },
+    m3: {
+      title: '提现已处理',
+      summary: '您的200 USDT提现已处理',
+      content: '您提现至TRC-20钱包的200 USDT已成功处理。交易哈希：0xabc...def。资金到账可能需要最多30分钟，如2小时内未收到，请联系客服。'
+    },
+    m4: {
+      title: '新活动：周末奖金',
+      summary: '本周末获得50%充值奖金！限时优惠。',
+      content: '好消息！本周末（3月29-30日），所有充值可获得高达500 USDT的50%奖金！只需充值即可自动获得奖金。流水要求：15倍。最高奖金：500 USDT。此活动不可与其他优惠同享。'
+    },
+    m5: {
+      title: '优惠已领取',
+      summary: '您已领取每日签到奖励：5 USDT',
+      content: '恭喜！您已成功领取每日签到奖励 5 USDT。该奖励已计入您的账户余额。每天签到可获得更多奖励！第7天连续签到奖金：88 USDT。'
+    },
+    m6: {
+      title: '安全提醒',
+      summary: '检测到新设备登录',
+      content: '我们检测到您的账户于2026年3月29日 18:40 通过 Chrome 浏览器登录（IP：183.xx.xx.42，位置：广东深圳）。若为本人操作可忽略此消息；如非本人操作，请立即修改密码并联系客服。'
+    },
+    m7: {
+      title: 'VIP等级升级',
+      summary: '恭喜！您已升级到VIP3',
+      content: '恭喜！根据您的游戏活动和充值，您已升级至VIP3等级！新特权包括：128U升级奖金（已自动到账）、每月38U红包、0.5%亏损返佣、更快的提现处理。尽情享受升级后的VIP体验吧！'
+    },
+    m8: {
+      title: '充值已确认',
+      summary: '您的1,000 USDT充值已到账',
+      content: '您通过TRC-20充值的1,000 USDT已成功确认并到账。交易ID：TXN20260328002。当前余额：2,080.00 USDT。'
+    }
   }
 }

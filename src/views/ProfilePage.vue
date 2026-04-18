@@ -46,7 +46,7 @@
     <div class="vip-progress-section" @click="$router.push('/vip')">
       <div class="vip-progress-header">
         <span class="vip-current">VIP{{ currentVipLevel }}</span>
-        <span class="vip-xp">{{ vipCurrentXP.toLocaleString() }} / {{ vipRequiredXP.toLocaleString() }} XP</span>
+        <span class="vip-xp">{{ vipCurrentXP.toLocaleString() }} / {{ vipRequiredXP.toLocaleString() }} {{ t('profile.xp') }}</span>
         <span class="vip-next" v-if="currentVipLevel < 10">VIP{{ currentVipLevel + 1 }}</span>
         <span class="vip-next max" v-else>MAX</span>
       </div>

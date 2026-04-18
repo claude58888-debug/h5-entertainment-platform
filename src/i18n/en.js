@@ -161,7 +161,8 @@ export default {
     shenzhenGuangdong: 'Shenzhen, Guangdong',
     guangzhouGuangdong: 'Guangzhou, Guangdong',
     shanghai: 'Shanghai',
-    beijing: 'Beijing'
+    beijing: 'Beijing',
+    xp: 'XP'
   },
   tasks: {
     title: 'Task Center',
@@ -635,7 +636,9 @@ export default {
     detail: 'Message Detail',
     deleteConfirm: 'Delete this message?',
     delete: 'Delete',
-    markRead: 'Mark as Read'
+    markRead: 'Mark as Read',
+    yesterday: 'Yesterday',
+    daysAgo: '{n}d ago'
   },
   bets: {
     title: 'Betting History',
@@ -701,5 +704,114 @@ export default {
   seo: {
     siteName: 'DD Entertainment',
     siteDescription: 'The safest online entertainment platform'
+  },
+  routes: {
+    home: 'Home',
+    login: 'Login',
+    register: 'Register',
+    canada28: 'Canada 28',
+    canadaHigh: 'Canada High',
+    hash1m: 'Hash 1 Min',
+    games: 'Games',
+    gameDetail: 'Game Detail',
+    deposit: 'Deposit',
+    withdraw: 'Withdraw',
+    tasks: 'Tasks',
+    income: 'Income',
+    invite: 'Invite Friends',
+    promotions: 'Promotions',
+    activities: 'Activities',
+    profile: 'Profile',
+    video: 'Video',
+    download: 'Download',
+    support: 'Support',
+    recharge: 'Recharge',
+    vip: 'VIP',
+    securityCenter: 'Security Center',
+    messages: 'Messages',
+    bets: 'Betting History',
+    activityDetail: 'Activity Detail',
+    redPacket: 'Red Packet',
+    passwordRedPacket: 'Password Red Packet',
+    report: 'Report',
+    transactionRecord: 'Transaction Records',
+    betRecord: 'Bet Records',
+    prizeRecord: 'Prize Records',
+    buyCrypto: 'Buy Crypto',
+    agentCooperation: 'Agent Cooperation',
+    selfExclusion: 'Self Exclusion',
+    limits: 'Deposit Limits',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
+    responsibleGaming: 'Responsible Gaming',
+    networkError: 'Network Error',
+    serverError: 'Server Error',
+    notFound: 'Page Not Found'
+  },
+  transactions: {
+    title: 'Transaction Records',
+    accountChanges: 'Account Changes',
+    deposit: 'Deposit',
+    withdrawal: 'Withdrawal',
+    promotions: 'Promotions',
+    balance: 'Balance',
+    claimed: 'Claimed',
+    completed: 'Completed',
+    pending: 'Pending',
+    types: {
+      deposit: 'Deposit',
+      betSlots: 'Bet - Slots',
+      winSlots: 'Win - Slots',
+      withdrawal: 'Withdrawal',
+      bonus: 'Bonus',
+      rebate: 'Rebate'
+    },
+    promoNames: {
+      firstDeposit: 'First Deposit Bonus',
+      dailyLossRebate: 'Daily Loss Rebate',
+      weeklyBetBonus: 'Weekly Bet Bonus'
+    }
+  },
+  messageSamples: {
+    m1: {
+      title: 'System Maintenance Notice',
+      summary: 'Scheduled maintenance on April 2, 2026 from 02:00-04:00 UTC+8',
+      content: 'Dear users, we will perform scheduled maintenance on April 2, 2026 from 02:00 to 04:00 (UTC+8). During this period, the platform will be temporarily unavailable. We apologize for any inconvenience and appreciate your understanding. All pending bets and transactions will be processed after maintenance.'
+    },
+    m2: {
+      title: 'Deposit Confirmed',
+      summary: 'Your deposit of 500 USDT has been credited to your account',
+      content: 'Your deposit of 500 USDT via TRC-20 has been successfully confirmed and credited to your account. Transaction ID: TXN20260329001. Current balance: 1,580.00 USDT. If you have any questions, please contact our support team.'
+    },
+    m3: {
+      title: 'Withdrawal Processed',
+      summary: 'Your withdrawal of 200 USDT has been processed',
+      content: 'Your withdrawal request of 200 USDT to your TRC-20 wallet has been processed successfully. Transaction hash: 0xabc...def. Please allow up to 30 minutes for the funds to appear in your wallet. If you don\'t receive the funds within 2 hours, please contact support.'
+    },
+    m4: {
+      title: 'New Promotion: Weekend Bonus',
+      summary: 'Get 50% deposit bonus this weekend! Limited time offer.',
+      content: 'Exciting news! This weekend (March 29-30), all deposits receive a 50% bonus up to 500 USDT! Simply make a deposit and the bonus will be automatically credited to your account. Wagering requirement: 15x. Maximum bonus: 500 USDT. This promotion cannot be combined with other offers.'
+    },
+    m5: {
+      title: 'Promotion Claimed',
+      summary: 'You have claimed the Daily Sign-in reward: 5 USDT',
+      content: 'Congratulations! You have successfully claimed the Daily Sign-in reward of 5 USDT. This has been added to your account balance. Keep signing in every day for bigger rewards! Day 7 streak bonus: 88 USDT.'
+    },
+    m6: {
+      title: 'Security Alert',
+      summary: 'New login detected from a new device',
+      content: 'We detected a new login to your account from Chrome Browser (IP: 183.xx.xx.42, Location: Shenzhen, Guangdong) on March 29, 2026 at 18:40. If this was you, you can ignore this message. If you did not authorize this login, please change your password immediately and contact support.'
+    },
+    m7: {
+      title: 'VIP Level Upgrade',
+      summary: 'Congratulations! You have been upgraded to VIP3',
+      content: 'Congratulations! Based on your gaming activity and deposits, you have been upgraded to VIP Level 3! Your new privileges include: 128U upgrade bonus (auto-credited), 38U monthly red packet, 0.5% loss rebate, faster withdrawal processing. Enjoy your enhanced VIP experience!'
+    },
+    m8: {
+      title: 'Deposit Confirmed',
+      summary: 'Your deposit of 1,000 USDT has been credited',
+      content: 'Your deposit of 1,000 USDT via TRC-20 has been successfully confirmed and credited to your account. Transaction ID: TXN20260328002. Current balance: 2,080.00 USDT.'
+    }
   }
 }

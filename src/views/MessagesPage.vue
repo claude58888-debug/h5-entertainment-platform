@@ -21,13 +21,13 @@
               <van-icon :name="selectedMessage.icon" />
             </div>
             <div class="detail-meta">
-              <h3>{{ selectedMessage.title }}</h3>
+              <h3>{{ msgText(selectedMessage, 'title') }}</h3>
               <span class="detail-time">{{ selectedMessage.time }}</span>
               <span class="detail-type-badge" :class="selectedMessage.type">{{ $t('messages.' + selectedMessage.type) }}</span>
             </div>
           </div>
           <div class="detail-body">
-            <p>{{ selectedMessage.content }}</p>
+            <p>{{ msgText(selectedMessage, 'content') }}</p>
           </div>
           <div class="detail-actions">
             <van-button size="small" round plain @click="selectedMessage = null">{{ $t('messages.back') }}</van-button>
@@ -51,10 +51,10 @@
             </div>
             <div class="msg-content">
               <div class="msg-top">
-                <span class="msg-title">{{ msg.title }}</span>
+                <span class="msg-title">{{ msgText(msg, 'title') }}</span>
                 <span class="msg-time">{{ formatTime(msg.time) }}</span>
               </div>
-              <p class="msg-summary">{{ msg.summary }}</p>
+              <p class="msg-summary">{{ msgText(msg, 'summary') }}</p>
             </div>
             <div v-if="!msg.read" class="unread-dot"></div>
           </div>
@@ -86,6 +86,14 @@ function tabTitle(type) {
   return unread > 0 ? `${label} (${unread})` : label
 }
 
+// Resolve title/summary/content from either new keyed format or legacy plain-text messages
+function msgText(msg, field) {
+  if (!msg) return ''
+  const keyField = field + 'Key'
+  if (msg[keyField]) return t(msg[keyField])
+  return msg[field] || ''
+}
+
 function formatTime(timeStr) {
   const date = new Date(timeStr)
   const now = new Date()
@@ -94,9 +102,9 @@ function formatTime(timeStr) {
   if (diffDays === 0) {
     return timeStr.split(' ')[1] || timeStr
   } else if (diffDays === 1) {
-    return 'Yesterday'
+    return t('messages.yesterday')
   } else if (diffDays < 7) {
-    return `${diffDays}d ago`
+    return t('messages.daysAgo', { n: diffDays })
   }
   return timeStr.split(' ')[0]
 }
