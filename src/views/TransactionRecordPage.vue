@@ -1,37 +1,37 @@
 <template>
   <div class="trans-record-page">
-    <van-nav-bar title="Transaction Records" left-arrow @click-left="$router.back()" fixed :style="{ maxWidth: '480px', margin: '0 auto' }" />
+    <van-nav-bar :title="$t('transactions.title')" left-arrow @click-left="$router.back()" fixed :style="{ maxWidth: '480px', margin: '0 auto' }" />
     <div class="page-content" style="padding-top: 46px;">
       <van-tabs v-model:active="activeTab" sticky shrink>
-        <van-tab title="Account Changes">
+        <van-tab :title="$t('transactions.accountChanges')">
           <div class="record-list">
             <div v-for="r in accountRecords" :key="r.id" class="record-item">
-              <div class="r-left"><span class="r-type">{{ r.type }}</span><span class="r-time">{{ r.time }}</span></div>
-              <div class="r-right"><span class="r-amount" :class="r.amount>0?'green':'red'">{{ r.amount>0?'+':'' }}{{ r.amount.toFixed(2) }}</span><span class="r-balance">Balance: {{ r.balance.toFixed(2) }}</span></div>
+              <div class="r-left"><span class="r-type">{{ $t('transactions.types.' + r.typeKey) }}</span><span class="r-time">{{ r.time }}</span></div>
+              <div class="r-right"><span class="r-amount" :class="r.amount>0?'green':'red'">{{ r.amount>0?'+':'' }}{{ r.amount.toFixed(2) }}</span><span class="r-balance">{{ $t('transactions.balance') }}: {{ r.balance.toFixed(2) }}</span></div>
             </div>
           </div>
         </van-tab>
-        <van-tab title="Deposit">
+        <van-tab :title="$t('transactions.deposit')">
           <div class="record-list">
             <div v-for="r in depositRecords" :key="r.id" class="record-item">
               <div class="r-left"><span class="r-type">USDT TRC-20</span><span class="r-time">{{ r.time }}</span></div>
-              <div class="r-right"><span class="r-amount green">+{{ r.amount.toFixed(2) }}</span><span class="r-status" :class="r.status">{{ r.status }}</span></div>
+              <div class="r-right"><span class="r-amount green">+{{ r.amount.toFixed(2) }}</span><span class="r-status" :class="r.status">{{ $t('transactions.' + r.status) }}</span></div>
             </div>
           </div>
         </van-tab>
-        <van-tab title="Withdrawal">
+        <van-tab :title="$t('transactions.withdrawal')">
           <div class="record-list">
             <div v-for="r in withdrawRecords" :key="r.id" class="record-item">
               <div class="r-left"><span class="r-type">{{ r.method }}</span><span class="r-time">{{ r.time }}</span></div>
-              <div class="r-right"><span class="r-amount red">-{{ r.amount.toFixed(2) }}</span><span class="r-status" :class="r.status">{{ r.status }}</span></div>
+              <div class="r-right"><span class="r-amount red">-{{ r.amount.toFixed(2) }}</span><span class="r-status" :class="r.status">{{ $t('transactions.' + r.status) }}</span></div>
             </div>
           </div>
         </van-tab>
-        <van-tab title="Promotions">
+        <van-tab :title="$t('transactions.promotions')">
           <div class="record-list">
             <div v-for="r in promoRecords" :key="r.id" class="record-item">
-              <div class="r-left"><span class="r-type">{{ r.name }}</span><span class="r-time">{{ r.time }}</span></div>
-              <div class="r-right"><span class="r-amount green">+{{ r.amount.toFixed(2) }}</span><span class="r-status completed">Claimed</span></div>
+              <div class="r-left"><span class="r-type">{{ $t('transactions.promoNames.' + r.nameKey) }}</span><span class="r-time">{{ r.time }}</span></div>
+              <div class="r-right"><span class="r-amount green">+{{ r.amount.toFixed(2) }}</span><span class="r-status completed">{{ $t('transactions.claimed') }}</span></div>
             </div>
           </div>
         </van-tab>
@@ -44,12 +44,12 @@
 import { ref } from 'vue'
 const activeTab = ref(0)
 const accountRecords = [
-  { id: 1, type: 'Deposit', time: '2024-03-15 14:30', amount: 1000, balance: 2500 },
-  { id: 2, type: 'Bet - Slots', time: '2024-03-15 15:00', amount: -50, balance: 2450 },
-  { id: 3, type: 'Win - Slots', time: '2024-03-15 15:01', amount: 120, balance: 2570 },
-  { id: 4, type: 'Withdrawal', time: '2024-03-14 10:00', amount: -500, balance: 1500 },
-  { id: 5, type: 'Bonus', time: '2024-03-14 08:00', amount: 68, balance: 2000 },
-  { id: 6, type: 'Rebate', time: '2024-03-13 08:00', amount: 25.5, balance: 1932 }
+  { id: 1, typeKey: 'deposit', time: '2024-03-15 14:30', amount: 1000, balance: 2500 },
+  { id: 2, typeKey: 'betSlots', time: '2024-03-15 15:00', amount: -50, balance: 2450 },
+  { id: 3, typeKey: 'winSlots', time: '2024-03-15 15:01', amount: 120, balance: 2570 },
+  { id: 4, typeKey: 'withdrawal', time: '2024-03-14 10:00', amount: -500, balance: 1500 },
+  { id: 5, typeKey: 'bonus', time: '2024-03-14 08:00', amount: 68, balance: 2000 },
+  { id: 6, typeKey: 'rebate', time: '2024-03-13 08:00', amount: 25.5, balance: 1932 }
 ]
 const depositRecords = [
   { id: 1, time: '2024-03-15 14:30', amount: 1000, status: 'completed' },
@@ -63,9 +63,9 @@ const withdrawRecords = [
   { id: 3, method: 'USDT TRC-20', time: '2024-03-08 12:00', amount: 1000, status: 'pending' }
 ]
 const promoRecords = [
-  { id: 1, name: 'First Deposit Bonus', time: '2024-03-15 14:35', amount: 68 },
-  { id: 2, name: 'Daily Loss Rebate', time: '2024-03-14 08:00', amount: 25.5 },
-  { id: 3, name: 'Weekly Bet Bonus', time: '2024-03-11 08:00', amount: 188 }
+  { id: 1, nameKey: 'firstDeposit', time: '2024-03-15 14:35', amount: 68 },
+  { id: 2, nameKey: 'dailyLossRebate', time: '2024-03-14 08:00', amount: 25.5 },
+  { id: 3, nameKey: 'weeklyBetBonus', time: '2024-03-11 08:00', amount: 188 }
 ]
 </script>
 
