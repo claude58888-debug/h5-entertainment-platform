@@ -550,7 +550,7 @@ onMounted(() => {
 
 .profile-header {
   background:
-    radial-gradient(500px 180px at 20% 0%, rgba(201, 166, 84, 0.18), transparent 60%),
+    radial-gradient(500px 180px at 20% 0%, rgba(212, 168, 67, 0.18), transparent 60%),
     linear-gradient(180deg, rgba(20, 28, 46, 0.7), rgba(10, 14, 26, 0.4));
   padding: 28px 16px 22px;
   display: flex;
@@ -563,21 +563,39 @@ onMounted(() => {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  overflow: hidden;
   position: relative;
   cursor: pointer;
-  background: $gold-gradient;
-  padding: 2px;
+  padding: 3px;
+  background: conic-gradient(
+    from 180deg,
+    #d4a843,
+    #f0d78c,
+    #c9a654,
+    #f0d78c,
+    #d4a843
+  );
   box-shadow:
-    0 6px 18px rgba(201, 166, 84, 0.35),
-    0 0 0 3px rgba(201, 166, 84, 0.18);
+    0 0 24px rgba(212, 168, 67, 0.45),
+    0 6px 18px rgba(0, 0, 0, 0.35);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(240, 215, 140, 0.25), transparent 70%);
+    filter: blur(8px);
+    z-index: -1;
+    pointer-events: none;
+  }
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
-    background: $bg-secondary;
+    background: $bg-3;
+    display: block;
   }
 }
 
@@ -617,8 +635,10 @@ onMounted(() => {
   gap: 4px;
   background: $gold-gradient;
   color: #1a1407;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
   padding: 4px 12px;
   border-radius: $radius-pill;
   cursor: pointer;
@@ -634,8 +654,8 @@ onMounted(() => {
   margin: 12px 14px 0;
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-lg;
   padding: 14px;
   cursor: pointer;
@@ -717,7 +737,7 @@ onMounted(() => {
   justify-content: space-around;
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px solid rgba(201, 166, 84, 0.18);
+  border-top: 1px solid rgba(212, 168, 67, 0.18);
   position: relative;
   z-index: 1;
 }
@@ -840,8 +860,8 @@ onMounted(() => {
   border-radius: $radius-lg;
   padding: 16px;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   box-shadow: $shadow-card;
   position: relative;
   overflow: hidden;
@@ -903,8 +923,8 @@ onMounted(() => {
   align-items: stretch;
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-lg;
   padding: 12px 4px;
 }
@@ -956,8 +976,8 @@ onMounted(() => {
   gap: 12px;
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-lg;
   padding: 16px 12px;
 }
@@ -1064,8 +1084,8 @@ onMounted(() => {
   :deep(.van-cell-group) {
     background: $glass-bg;
     border: $glass-border;
-    backdrop-filter: blur($glass-blur);
-    -webkit-backdrop-filter: blur($glass-blur);
+    backdrop-filter: $glass-backdrop;
+    -webkit-backdrop-filter: $glass-backdrop;
     border-radius: $radius-lg;
     overflow: hidden;
   }

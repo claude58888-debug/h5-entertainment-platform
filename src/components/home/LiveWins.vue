@@ -32,8 +32,8 @@ const wins = computed(() => appStore.liveWins || [])
   padding: 12px 14px;
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-lg;
 }
 

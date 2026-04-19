@@ -111,8 +111,8 @@ onMounted(async () => {
   overflow: hidden;
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-lg;
   padding: 24px;
   margin-bottom: 20px;
@@ -163,8 +163,8 @@ onMounted(async () => {
 .vip-table {
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-md;
   overflow: hidden;
 }
@@ -191,8 +191,8 @@ onMounted(async () => {
 .rules-content {
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-md;
   padding: 16px;
   p { font-size: 13px; color: $text-secondary; line-height: 2; }

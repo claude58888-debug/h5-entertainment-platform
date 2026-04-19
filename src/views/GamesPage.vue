@@ -272,8 +272,8 @@ onMounted(async () => {
   :deep(.search-input) {
     background: $glass-bg;
     border: $glass-border;
-    backdrop-filter: blur($glass-blur);
-    -webkit-backdrop-filter: blur($glass-blur);
+    backdrop-filter: $glass-backdrop;
+    -webkit-backdrop-filter: $glass-backdrop;
     border-radius: $radius-md;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -281,7 +281,7 @@ onMounted(async () => {
 
     &:focus-within {
       border-color: $gold;
-      box-shadow: 0 0 0 3px rgba(201, 166, 84, 0.18);
+      box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.18);
     }
 
     .van-field__left-icon { color: $gold-light; }

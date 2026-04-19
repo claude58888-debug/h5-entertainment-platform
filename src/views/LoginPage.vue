@@ -75,7 +75,7 @@ async function onSubmit() {
   min-height: 100vh;
   padding: 56px 20px 40px;
   background:
-    radial-gradient(600px 300px at 50% 0%, rgba(201, 166, 84, 0.18) 0%, transparent 60%),
+    radial-gradient(600px 300px at 50% 0%, rgba(212, 168, 67, 0.18) 0%, transparent 60%),
     linear-gradient(180deg, #0a0e1a 0%, #111827 100%);
 }
 
@@ -129,8 +129,8 @@ async function onSubmit() {
   :deep(.van-field) {
     background: $glass-bg;
     border: $glass-border;
-    backdrop-filter: blur($glass-blur);
-    -webkit-backdrop-filter: blur($glass-blur);
+    backdrop-filter: $glass-backdrop;
+    -webkit-backdrop-filter: $glass-backdrop;
     border-radius: $radius-md;
     padding: 14px 16px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -141,7 +141,7 @@ async function onSubmit() {
 
     &:focus-within {
       border-color: $gold;
-      box-shadow: 0 0 0 3px rgba(201, 166, 84, 0.18);
+      box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.18);
     }
 
     .van-field__left-icon {

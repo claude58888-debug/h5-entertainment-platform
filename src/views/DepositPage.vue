@@ -96,8 +96,8 @@ async function onSubmit() {
 .balance-card {
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-lg;
   padding: 20px;
   display: flex;
@@ -111,7 +111,7 @@ async function onSubmit() {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(500px 160px at 20% 0%, rgba(201, 166, 84, 0.18), transparent 70%);
+    background: radial-gradient(500px 160px at 20% 0%, rgba(212, 168, 67, 0.18), transparent 70%);
     pointer-events: none;
   }
 }
@@ -178,8 +178,8 @@ async function onSubmit() {
 :deep(.amount-input) {
   background: $glass-bg;
   border: $glass-border;
-  backdrop-filter: blur($glass-blur);
-  -webkit-backdrop-filter: blur($glass-blur);
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
   border-radius: $radius-md;
   margin-bottom: 12px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -188,7 +188,7 @@ async function onSubmit() {
 
   &:focus-within {
     border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(201, 166, 84, 0.18);
+    box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.18);
   }
 
   input {

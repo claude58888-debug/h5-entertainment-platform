@@ -1,63 +1,91 @@
 // ============================================================================
-// H5 UI V2 - Premium Black Gold Glassmorphism Theme
+// H5 UI V2 — Premium Black Gold Glassmorphism Theme
+// Tokens aligned to Claude Design (tokens.css)
 // ============================================================================
 
-// -- Core background (deep navy, NOT pure black) --------------------------
-$bg-primary: #0a0e1a;          // Deep navy page background
-$bg-secondary: #111827;        // Slightly lifted sections
-$bg-elevated: #141c2e;         // Elevated surface
-$bg-card: rgba(255, 255, 255, 0.05);          // Glass card fill
-$bg-card-strong: rgba(255, 255, 255, 0.08);   // Slightly stronger glass
-$bg-card-hover: rgba(255, 255, 255, 0.10);
+// -- Background layers (from tokens.css --bg-0..5) --------------------------
+$bg-0: #05070d;
+$bg-1: #0a0e1a;
+$bg-2: #111827;
+$bg-3: #1a2338;
+$bg-4: #212b44;
+$bg-5: #2a3555;
+
+// Backwards-compatible aliases
+$bg-primary: $bg-1;
+$bg-secondary: $bg-2;
+$bg-elevated: $bg-3;
+$bg-card: rgba(26, 35, 56, 0.55);          // Glass card fill
+$bg-card-strong: rgba(26, 35, 56, 0.75);
+$bg-card-hover: rgba(33, 43, 68, 0.70);
 $bg-header: rgba(10, 14, 26, 0.85);
 $bg-sidebar: rgba(17, 24, 39, 0.75);
 $bg-input: rgba(255, 255, 255, 0.04);
 
-// Page gradient (used on html/body & #app)
-$page-gradient: linear-gradient(180deg, #0a0e1a 0%, #111827 100%);
-$page-gradient-radial: radial-gradient(1200px 600px at 50% -10%, rgba(201, 166, 84, 0.10) 0%, transparent 60%),
-                      linear-gradient(180deg, #0a0e1a 0%, #111827 100%);
+// Page background — main radial from tokens.css
+$page-gradient: radial-gradient(
+  ellipse 120% 60% at 50% 0%,
+  #141b33 0%,
+  #0a0e1a 60%,
+  #05070d 100%
+);
+// Legacy alias retained (now resolves to radial)
+$page-gradient-radial: $page-gradient;
 
-// -- Gold accent palette --------------------------------------------------
-$gold-dark: #8d6b2b;
-$gold: #c9a654;
-$gold-mid: #dcb866;
-$gold-light: #f0d78c;
-$gold-pale: #f7e8b5;
+// -- Gold gradient system (from tokens.css --gold-1..4) -------------------
+$gold-1: #f0d78c;  // light gold
+$gold-2: #d4a843;  // main gold
+$gold-3: #c9a654;  // deep gold
+$gold-4: #8a6d22;  // dark gold
 
-// Gold gradients
-$gold-gradient: linear-gradient(135deg, #c9a654 0%, #f0d78c 100%);
-$gold-gradient-horizontal: linear-gradient(90deg, #c9a654 0%, #f0d78c 50%, #c9a654 100%);
-$gold-gradient-soft: linear-gradient(135deg, rgba(201, 166, 84, 0.22), rgba(240, 215, 140, 0.10));
+// Aliases
+$gold-dark: $gold-4;
+$gold: $gold-2;
+$gold-mid: $gold-3;
+$gold-light: $gold-1;
+$gold-pale: #fff6d9;
+
+// Gradients (exact from tokens.css)
+$gold-gradient: linear-gradient(135deg, #f0d78c 0%, #d4a843 50%, #c9a654 100%);
+$gold-gradient-horizontal: linear-gradient(90deg, #f0d78c 0%, #d4a843 50%, #c9a654 100%);
+$gold-gradient-soft: linear-gradient(135deg, rgba(240, 215, 140, 0.15) 0%, rgba(212, 168, 67, 0.08) 100%);
+$gold-shine: linear-gradient(110deg, #c9a654 0%, #f0d78c 35%, #fff6d9 50%, #f0d78c 65%, #c9a654 100%);
+
+// CTA shadow
+$cta-shadow: 0 4px 20px rgba(212, 168, 67, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 
 // -- Legacy accent names (kept for backwards compatibility) ---------------
-$accent-gold: #c9a654;
-$accent-gold-light: #f0d78c;
-$accent-purple: #c9a654;       // remap old purple -> gold for safety
-$accent-purple-light: #f0d78c;
-$accent-purple-glow: #dcb866;
+$accent-gold: $gold-2;
+$accent-gold-light: $gold-1;
+$accent-purple: $gold-2;
+$accent-purple-light: $gold-1;
+$accent-purple-glow: $gold-3;
 $accent-blue: #3b82f6;
 $accent-cyan: #06b6d4;
 $accent-red: #ef4444;
 $accent-green: #10b981;
 
 // -- Text --------------------------------------------------------------------
-$text-primary: #ffffff;
-$text-secondary: rgba(255, 255, 255, 0.75);
-$text-muted: rgba(255, 255, 255, 0.55);
-$text-faint: rgba(255, 255, 255, 0.38);
+$text-1: #ffffff;
+$text-2: #c4cae0;
+$text-3: #7a8199;
+
+$text-primary: $text-1;
+$text-secondary: $text-2;
+$text-muted: $text-3;
+$text-faint: rgba(122, 129, 153, 0.65);
 
 // -- Borders & separators ---------------------------------------------------
 $border-color: rgba(255, 255, 255, 0.08);
 $border-strong: rgba(255, 255, 255, 0.12);
-$border-gold: rgba(201, 166, 84, 0.35);
-$border-gold-strong: rgba(201, 166, 84, 0.55);
+$border-gold: rgba(212, 168, 67, 0.35);
+$border-gold-strong: rgba(212, 168, 67, 0.55);
 $border-glow: rgba(240, 215, 140, 0.45);
 
 // -- Shadows & glows --------------------------------------------------------
-$shadow-card: 0 8px 32px rgba(0, 0, 0, 0.35);
-$shadow-gold: 0 8px 28px rgba(201, 166, 84, 0.28);
-$shadow-gold-soft: 0 4px 18px rgba(201, 166, 84, 0.18);
+$shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35);
+$shadow-gold: 0 8px 24px rgba(212, 168, 67, 0.25);
+$shadow-gold-soft: 0 4px 20px rgba(212, 168, 67, 0.35);
 
 // -- Category gradient palette (homepage 2-column grid) --------------------
 $cat-live:    linear-gradient(135deg, #c21b5b 0%, #7a2582 100%); // 真人视讯 red-purple
@@ -71,20 +99,24 @@ $cat-crash:   linear-gradient(135deg, #0f8a9a 0%, #2dd0d8 100%); // 弹珠 cyan
 
 // -- Radii -----------------------------------------------------------------
 $radius-sm: 8px;
-$radius-md: 12px;   // buttons
-$radius-lg: 16px;   // cards
+$radius-md: 12px;
+$radius-lg: 16px;
 $radius-xl: 20px;
 $radius-pill: 999px;
 
-// -- Glass mixin values ----------------------------------------------------
+// -- Glassmorphism mixin values (from tokens.css) --------------------------
 $glass-blur: 20px;
-$glass-bg: rgba(255, 255, 255, 0.05);
-$glass-bg-strong: rgba(255, 255, 255, 0.08);
+$glass-bg: rgba(26, 35, 56, 0.55);
+$glass-bg-strong: rgba(26, 35, 56, 0.75);
 $glass-border: 1px solid rgba(255, 255, 255, 0.08);
+// Full backdrop-filter value (blur + saturate)
+$glass-backdrop: blur(20px) saturate(180%);
 
 // -- Typography ------------------------------------------------------------
-$font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-$font-mono: 'SF Mono', ui-monospace, 'JetBrains Mono', 'Fira Code', 'Roboto Mono', Menlo, Consolas, monospace;
+$font-system: 'Manrope', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+$font-num: 'Manrope', 'SF Pro Display', system-ui, sans-serif;
+// Numbers use Manrope with tabular-nums feature — same stack, the feature is set via font-feature-settings
+$font-mono: 'Manrope', 'SF Pro Display', 'SF Mono', ui-monospace, 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
 
 // -- Layout ----------------------------------------------------------------
 $max-width: 450px;

@@ -137,7 +137,7 @@ function handleAction(a) {
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(201, 166, 84, 0.18);
+  background: rgba(212, 168, 67, 0.18);
   color: $gold-light;
   border: 1px solid rgba(201, 166, 84, 0.3);
 }
@@ -193,8 +193,10 @@ function handleAction(a) {
   border-radius: $radius-pill;
   background: $gold-gradient;
   color: #1a1407;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
   box-shadow: $shadow-gold-soft;
   cursor: pointer;
   flex-shrink: 0;
