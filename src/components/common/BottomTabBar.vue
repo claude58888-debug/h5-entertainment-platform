@@ -25,7 +25,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
-// Touch gesture support for swiping between tabs
+// Swipe between tabs
 const touchStartX = ref(0)
 const SWIPE_THRESHOLD = 60
 
@@ -47,36 +47,38 @@ function onTouchEnd(e) {
   }
 }
 
+// 5 equal tabs: 首页 / 活动 / 任务 / 客服 / 我的
+// Line-style 1.75px icons, no protruding center button (Stake-inspired)
 const tabs = [
   {
     path: '/home',
     labelKey: 'nav.home',
     requiresAuth: false,
-    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
+    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5h-3.75V14h-5.5v7.5H4.5A1.5 1.5 0 0 1 3 20z"/></svg>'
   },
   {
     path: '/promotions',
     labelKey: 'nav.activity',
     requiresAuth: false,
-    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>'
+    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 21V7"/><path d="M12 7h-4a2.5 2.5 0 0 1 0-5c2.5 0 4 2 4 5zM12 7h4a2.5 2.5 0 0 0 0-5c-2.5 0-4 2-4 5z"/></svg>'
+  },
+  {
+    path: '/tasks',
+    labelKey: 'nav.tasks',
+    requiresAuth: true,
+    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M9 2h6v4H9z"/><path d="M8 11h5"/><path d="M8 15h7"/><path d="M8 19h4"/></svg>'
   },
   {
     path: '/support',
     labelKey: 'nav.service',
     requiresAuth: false,
-    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>'
-  },
-  {
-    path: '/download',
-    labelKey: 'nav.download',
-    requiresAuth: false,
-    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>'
   },
   {
     path: '/profile',
     labelKey: 'nav.profile',
     requiresAuth: true,
-    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>'
   }
 ]
 
@@ -102,12 +104,11 @@ function isActive(path) {
   width: 100%;
   max-width: $max-width;
   height: $tab-bar-height;
-  background: linear-gradient(180deg, #150f2e 0%, #110d28 100%);
+  background: $bg-secondary;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  border-top: 1px solid rgba(124, 58, 237, 0.3);
-  box-shadow: 0 -4px 20px rgba(124, 58, 237, 0.1);
+  border-top: 1px solid $border-subtle;
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -116,15 +117,30 @@ function isActive(path) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
+  gap: 3px;
   flex: 1;
+  height: 100%;
   color: $text-muted;
-  transition: color 0.2s;
+  transition: color 0.15s ease;
   cursor: pointer;
   text-decoration: none;
+  position: relative;
 
   &.active {
-    color: $accent-purple-light;
+    color: $accent-gold;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 2px;
+      background: $accent-gold;
+      border-radius: 0 0 2px 2px;
+    }
   }
 }
 
@@ -132,10 +148,12 @@ function isActive(path) {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 24px;
+  height: 22px;
 }
 
 .tab-label {
   font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.2px;
 }
 </style>

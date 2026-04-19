@@ -88,17 +88,17 @@ function share(method) {
 .page-content { padding: 16px; }
 .agent-header { text-align: center; padding: 24px 0; .agent-icon { font-size: 56px; } h2 { font-size: 22px; margin-top: 8px; } p { font-size: 14px; color: $text-secondary; margin-top: 4px; } }
 .benefit-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; }
-.b-card { background: $bg-card; border-radius: 12px; padding: 16px; text-align: center; .b-icon { font-size: 28px; } h4 { font-size: 13px; margin: 6px 0 4px; } p { font-size: 11px; color: $text-muted; } }
+.b-card { background: $bg-card; border: 1px solid $border-subtle; border-radius: $radius-md; padding: 16px; text-align: center; .b-icon { font-size: 26px; } h4 { font-size: 13px; margin: 6px 0 4px; color: $text-primary; } p { font-size: 11px; color: $text-muted; line-height: 1.5; } }
 .commission-table { margin-bottom: 24px; h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; } }
-.table-wrap { background: $bg-card; border-radius: 12px; overflow: hidden; }
+.table-wrap { background: $bg-card; border: 1px solid $border-subtle; border-radius: $radius-md; overflow: hidden; }
 .t-header { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; padding: 10px 12px; font-size: 11px; color: $text-muted; border-bottom: 1px solid $border-color; }
 .t-row { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid $border-color; &:last-child { border-bottom: none; } &.highlight { background: rgba($accent-gold, 0.1); color: $accent-gold; } }
 .share-section { margin-bottom: 24px; h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; } }
 .share-methods { display: flex; flex-direction: column; gap: 8px; }
 .how-it-works { margin-bottom: 24px; h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; } }
 .steps { display: flex; flex-direction: column; gap: 10px; }
-.step { display: flex; gap: 12px; background: $bg-card; border-radius: 12px; padding: 14px; }
-.step-n { width: 28px; height: 28px; border-radius: 50%; background: $accent-purple; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+.step { display: flex; gap: 12px; background: $bg-card; border: 1px solid $border-subtle; border-radius: $radius-md; padding: 14px; align-items: flex-start; }
+.step-n { width: 28px; height: 28px; border-radius: 50%; background: $accent-gold; color: #0b1a23; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; font-family: $font-mono; }
 .step h4 { font-size: 14px; margin-bottom: 2px; }
 .step p { font-size: 12px; color: $text-secondary; }
 .contact-section { h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; } p { font-size: 13px; color: $text-secondary; margin-bottom: 10px; } }

@@ -37,9 +37,25 @@ export default {
   nav: {
     home: '首页',
     activity: '活动',
+    tasks: '任务',
     service: '客服',
     download: '下载',
     profile: '我的'
+  },
+  header: {
+    balanceUnit: 'USDT',
+    searchPlaceholder: '搜索游戏…',
+    liveFeedTitle: '实时动态',
+    viewAll: '查看全部'
+  },
+  categories: {
+    all: '全部',
+    slots: '老虎机',
+    live: '真人',
+    sports: '体育',
+    lottery: '彩票',
+    fishing: '捕鱼',
+    crash: 'Crash'
   },
   home: {
     recharge: '充值',

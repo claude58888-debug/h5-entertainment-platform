@@ -8,7 +8,18 @@
       :style="{ maxWidth: '480px', margin: '0 auto' }"
     />
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-    <div class="page-content" style="padding-top: 46px;">
+    <div class="page-content" style="padding-top: 54px;">
+      <!-- Category filters -->
+      <div class="filter-bar hide-scrollbar">
+        <button
+          v-for="f in filters"
+          :key="f.id"
+          class="filter-chip"
+          :class="{ active: activeFilter === f.id }"
+          @click="activeFilter = f.id"
+        >{{ f.label }}</button>
+      </div>
+
       <!-- Skeleton loading -->
       <template v-if="loading">
         <div v-for="i in 3" :key="i" class="promo-skeleton">
@@ -18,27 +29,27 @@
 
       <template v-else>
         <div
-          v-for="promo in promotions"
+          v-for="promo in filteredPromotions"
           :key="promo.id"
           class="promo-card"
-          :style="{ background: promo.gradient }"
           @click="openDetail(promo)"
         >
-          <div class="promo-badge" v-if="promo.tag">{{ promo.tag }}</div>
-          <div class="promo-content">
+          <div class="promo-media" :style="promo.image ? { backgroundImage: `url(${promo.image})` } : {}">
+            <span v-if="promo.tag" class="promo-tag">{{ promo.tag }}</span>
+          </div>
+          <div class="promo-body">
             <h3 class="promo-title">{{ promo.title }}</h3>
             <p class="promo-subtitle">{{ promo.description }}</p>
-            <div class="promo-countdown" v-if="promo.endTime">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>{{ formatCountdown(promo.remaining) }}</span>
+            <div class="promo-meta">
+              <span v-if="promo.endTime" class="promo-countdown num-mono">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {{ formatCountdown(promo.remaining) }}
+              </span>
+              <span class="promo-btn">查看详情</span>
             </div>
-            <span class="promo-btn">了解详情</span>
-          </div>
-          <div class="promo-decoration">
-            <div class="deco-circle deco-circle-1"></div>
-            <div class="deco-circle deco-circle-2"></div>
           </div>
         </div>
+        <div v-if="filteredPromotions.length === 0" class="empty-promos">{{ $t('common.noData') }}</div>
       </template>
     </div>
     </van-pull-refresh>
@@ -51,11 +62,11 @@
       :style="{ maxHeight: '80vh', maxWidth: '480px', margin: '0 auto' }"
     >
       <div class="detail-popup" v-if="selectedPromo">
-        <div class="detail-header" :style="{ background: selectedPromo.gradient }">
+        <div class="detail-header">
           <h3>{{ selectedPromo.title }}</h3>
           <p>{{ selectedPromo.description }}</p>
-          <div class="detail-countdown" v-if="selectedPromo.endTime">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div class="detail-countdown num-mono" v-if="selectedPromo.endTime">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span>剩余 {{ formatCountdown(selectedPromo.remaining) }}</span>
           </div>
         </div>
@@ -80,20 +91,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { getPromotionsApi } from '@/api/promo'
 
 const loading = ref(true)
 const refreshing = ref(false)
 const showDetail = ref(false)
 const selectedPromo = ref(null)
+const activeFilter = ref('all')
 
-const defaultGradients = [
-  'linear-gradient(135deg, #f0a030, #e67e22)',
-  'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-  'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-  'linear-gradient(135deg, #e17055, #d63031)',
-  'linear-gradient(135deg, #00b894, #00897b)'
+const filters = [
+  { id: 'all', label: '全部' },
+  { id: 'hot', label: '热门' },
+  { id: 'limited', label: '限时' },
+  { id: 'daily', label: '每日' },
+  { id: 'weekly', label: '每周' }
 ]
 
 const now = ref(Date.now())
@@ -102,40 +114,47 @@ let timer = null
 const promotions = ref([
   {
     id: 1, title: '每日首充', description: '最多赠送588U',
-    gradient: defaultGradients[0], tag: '热门',
+    tag: '热门', category: 'daily',
     endTime: Date.now() + 8 * 3600 * 1000, remaining: 0,
     detail: '每日首次充值即可获得额外奖励，充值越多奖励越大。最高可获得588U的额外赠送。',
     rules: ['每日首次充值有效', '最低充值100U', '奖金需完成3倍流水', '每日00:00重置']
   },
   {
     id: 2, title: '每日翻盘金', description: '最多1888U',
-    gradient: defaultGradients[1], tag: '限时',
+    tag: '限时', category: 'limited',
     endTime: Date.now() + 4 * 3600 * 1000, remaining: 0,
     detail: '当日亏损达到一定额度，即可申请翻盘金。最高可获得1888U的翻盘资金。',
     rules: ['当日亏损500U以上可申请', '翻盘金需完成5倍流水', '每日仅限申请一次', '次日00:00前有效']
   },
   {
     id: 3, title: '电子闯关', description: '每日最多85U',
-    gradient: defaultGradients[2], tag: null,
+    tag: null, category: 'daily',
     endTime: null, remaining: 0,
     detail: '完成指定电子游戏闯关任务，即可获得丰厚奖励。每日最多可获得85U。',
     rules: ['完成任意电子游戏10局', '单局投注不低于5U', '奖励自动发放', '每日可参与多次']
   },
   {
     id: 4, title: '棋牌闯关', description: '每日最多85U',
-    gradient: defaultGradients[3], tag: null,
+    tag: null, category: 'daily',
     endTime: null, remaining: 0,
     detail: '完成棋牌游戏闯关任务，层层递进奖励递增。每日最多可获得85U。',
     rules: ['参与任意棋牌游戏', '完成5/10/20局解锁不同奖励', '奖励自动发放到账户', '每日00:00重置进度']
   },
   {
     id: 5, title: '当周有效投注', description: '最多12888U',
-    gradient: defaultGradients[4], tag: '推荐',
+    tag: '推荐', category: 'weekly',
     endTime: Date.now() + 72 * 3600 * 1000, remaining: 0,
     detail: '当周有效投注达到指定额度，即可获得超高额返利。最高可获得12888U。',
     rules: ['统计周一至周日有效投注', '投注越多返利比例越高', '奖励于次周一发放', '所有游戏均计入统计']
   }
 ])
+
+const filteredPromotions = computed(() => {
+  if (activeFilter.value === 'all') return promotions.value
+  if (activeFilter.value === 'hot') return promotions.value.filter(p => p.tag === '热门' || p.tag === '推荐')
+  if (activeFilter.value === 'limited') return promotions.value.filter(p => p.tag === '限时')
+  return promotions.value.filter(p => p.category === activeFilter.value)
+})
 
 function updateCountdowns() {
   now.value = Date.now()
@@ -167,9 +186,8 @@ async function loadPromotions() {
   try {
     const res = await getPromotionsApi()
     if (Array.isArray(res) && res.length) {
-      promotions.value = res.map((p, i) => ({
+      promotions.value = res.map((p) => ({
         ...p,
-        gradient: p.gradient || defaultGradients[i % defaultGradients.length],
         remaining: 0
       }))
     }
@@ -197,141 +215,169 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.promotions-page {
+  background: $bg-primary;
+  min-height: 100vh;
+}
+
 .page-content {
-  padding: 16px;
+  padding: 12px 12px 24px;
   min-height: 80vh;
 }
 
-.promo-skeleton {
-  border-radius: 14px;
-  padding: 24px 20px;
-  margin-bottom: 14px;
-  background: rgba(255, 255, 255, 0.04);
+.filter-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
 }
 
-.promo-card {
-  border-radius: 14px;
-  overflow: hidden;
-  margin-bottom: 14px;
-  padding: 24px 20px;
-  position: relative;
+.filter-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  background: $bg-card;
+  border: 1px solid $border-subtle;
+  color: $text-secondary;
+  border-radius: $radius-md;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s;
-  min-height: 110px;
-  display: flex;
-  align-items: center;
+  white-space: nowrap;
 
-  &:active {
-    transform: scale(0.98);
+  &.active {
+    background: $bg-card-hover;
+    color: $accent-gold;
+    border-color: rgba(212, 168, 67, 0.3);
   }
 }
 
-.promo-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 0 14px 0 10px;
-  backdrop-filter: blur(4px);
+.promo-skeleton {
+  border-radius: $radius-lg;
+  padding: 16px;
+  margin-bottom: 10px;
+  background: $bg-card;
 }
 
-.promo-content {
+.promo-card {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 12px;
+  background: $surface-translucent;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:active {
+    background: $surface-translucent-hover;
+    border-color: rgba(212, 168, 67, 0.25);
+  }
+}
+
+.promo-media {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: $radius-md;
+  background-color: $bg-card-hover;
+  background-size: cover;
+  background-position: center;
   position: relative;
-  z-index: 1;
+  overflow: hidden;
+}
+
+.promo-tag {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 6px;
+  background: $accent-gold;
+  color: #0b1a23;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: $radius-sm;
+}
+
+.promo-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .promo-title {
-  font-size: 22px;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 6px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  font-size: 15px;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 4px;
 }
 
 .promo-subtitle {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 8px;
+  font-size: 12px;
+  color: $text-secondary;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.promo-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .promo-countdown {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  color: #fff;
-  margin-bottom: 10px;
-  font-variant-numeric: tabular-nums;
+  color: $accent-gold;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .promo-btn {
   display: inline-block;
-  padding: 6px 18px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  font-size: 12px;
-  color: #fff;
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 4px 10px;
+  font-size: 11px;
+  color: $text-secondary;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-sm;
 }
 
-.promo-decoration {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 50%;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.deco-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.deco-circle-1 {
-  width: 120px;
-  height: 120px;
-  top: -20px;
-  right: -10px;
-}
-
-.deco-circle-2 {
-  width: 80px;
-  height: 80px;
-  bottom: -20px;
-  right: 40px;
+.empty-promos {
+  text-align: center;
+  padding: 60px 0;
+  color: $text-muted;
+  font-size: 13px;
 }
 
 /* Detail Popup */
 .detail-popup {
   max-height: 80vh;
   overflow-y: auto;
+  background: $bg-secondary;
 }
 
 .detail-header {
-  padding: 28px 20px 20px;
-  color: #fff;
+  padding: 24px 20px 16px;
+  background: $bg-card;
+  color: $text-primary;
 
   h3 {
-    font-size: 24px;
-    font-weight: 800;
+    font-size: 20px;
+    font-weight: 700;
     margin-bottom: 6px;
   }
 
   p {
-    font-size: 14px;
-    opacity: 0.85;
-    margin-bottom: 8px;
+    font-size: 13px;
+    color: $text-secondary;
+    margin-bottom: 10px;
   }
 }
 
@@ -339,28 +385,29 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.2);
+  background: $bg-primary;
   padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
+  border-radius: $radius-md;
+  font-size: 12px;
+  color: $accent-gold;
+  font-weight: 600;
 }
 
 .detail-body {
   padding: 20px;
-  background: $bg-primary;
+  background: $bg-secondary;
 }
 
 .detail-section {
   margin-bottom: 20px;
 
   h4 {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: $text-primary;
     margin-bottom: 10px;
     padding-left: 10px;
-    border-left: 3px solid $accent-purple;
+    border-left: 3px solid $accent-gold;
   }
 
   p {
@@ -378,8 +425,7 @@ onUnmounted(() => {
   li {
     font-size: 13px;
     color: $text-secondary;
-    padding: 6px 0;
-    padding-left: 16px;
+    padding: 6px 0 6px 16px;
     position: relative;
 
     &::before {
@@ -388,10 +434,10 @@ onUnmounted(() => {
       left: 0;
       top: 50%;
       transform: translateY(-50%);
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
-      background: $accent-purple;
+      background: $accent-gold;
     }
   }
 }

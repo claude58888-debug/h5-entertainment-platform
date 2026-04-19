@@ -8,7 +8,7 @@
           <span class="vip-level">VIP {{ currentLevel }}</span>
         </div>
         <div class="vip-progress">
-          <van-progress :percentage="progressPct" stroke-width="8" color="#f59e0b" track-color="#1e2a4a" />
+          <van-progress :percentage="progressPct" stroke-width="6" color="#d4a843" track-color="#0f212e" />
           <span class="progress-text">{{ currentDeposit }}/{{ nextRequirement }} USDT to VIP {{ currentLevel + 1 }}</span>
         </div>
       </div>
@@ -106,18 +106,18 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .page-content { padding: 16px; }
-.vip-header { background: linear-gradient(135deg, #f59e0b, #b45309); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
-.current-vip { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-.vip-icon { font-size: 32px; }
-.vip-level { font-size: 24px; font-weight: 700; }
-.progress-text { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 6px; display: block; }
+.vip-header { background: $bg-card; border: 1px solid rgba($accent-gold, 0.25); border-radius: $radius-lg; padding: 20px; margin-bottom: 18px; }
+.current-vip { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.vip-icon { font-size: 28px; }
+.vip-level { font-size: 20px; font-weight: 700; color: $accent-gold; letter-spacing: 0.5px; }
+.progress-text { font-size: 11px; color: $text-muted; margin-top: 8px; display: block; font-family: $font-mono; }
 .vip-benefits { margin-bottom: 20px; h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; } }
 .benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.benefit-item { background: $bg-card; border-radius: 10px; padding: 14px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.benefit-item { background: $bg-card; border: 1px solid $border-subtle; border-radius: $radius-md; padding: 14px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .benefit-icon { font-size: 24px; }
 .benefit-label { font-size: 11px; color: $text-secondary; }
 .vip-table-section { margin-bottom: 20px; h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; } }
-.vip-table { background: $bg-card; border-radius: 12px; overflow: hidden; }
+.vip-table { background: $bg-card; border: 1px solid $border-subtle; border-radius: $radius-md; overflow: hidden; }
 .table-header { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 1fr; padding: 10px 8px; font-size: 10px; color: $text-muted; border-bottom: 1px solid $border-color; }
 .table-row { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 1fr; padding: 10px 8px; font-size: 11px; border-bottom: 1px solid $border-color;
   &.current { background: rgba($accent-gold, 0.1); }
@@ -126,5 +126,5 @@ onMounted(async () => {
 .level-badge { font-weight: 700; color: $accent-gold; }
 .gold { color: $accent-gold; font-weight: 600; }
 .vip-rules { h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; } }
-.rules-content { background: $bg-card; border-radius: 12px; padding: 16px; p { font-size: 13px; color: $text-secondary; line-height: 2; } }
+.rules-content { background: $bg-card; border: 1px solid $border-subtle; border-radius: $radius-md; padding: 16px; p { font-size: 13px; color: $text-secondary; line-height: 2; } }
 </style>

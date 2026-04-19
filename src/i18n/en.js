@@ -37,9 +37,25 @@ export default {
   nav: {
     home: 'Home',
     activity: 'Activity',
-    service: 'Service',
+    tasks: 'Tasks',
+    service: 'Support',
     download: 'Download',
     profile: 'Profile'
+  },
+  header: {
+    balanceUnit: 'USDT',
+    searchPlaceholder: 'Search games…',
+    liveFeedTitle: 'Live Activity',
+    viewAll: 'View all'
+  },
+  categories: {
+    all: 'All',
+    slots: 'Slots',
+    live: 'Live',
+    sports: 'Sports',
+    lottery: 'Lottery',
+    fishing: 'Fishing',
+    crash: 'Crash'
   },
   home: {
     recharge: 'Recharge',

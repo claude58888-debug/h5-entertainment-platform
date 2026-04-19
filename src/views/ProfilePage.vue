@@ -170,7 +170,7 @@
       </div>
       <div class="crypto-entry" @click="$router.push('/softwareDownload')">
         <div class="crypto-entry-left">
-          <van-icon name="shield-o" size="20" color="#a78bfa" />
+          <van-icon name="shield-o" size="20" color="#d4a843" />
           <div>
             <span class="crypto-entry-title">{{ t('profile.vpnRecommend') }}</span>
             <span class="crypto-entry-desc">{{ t('profile.vpnDesc') }}</span>
@@ -469,7 +469,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 /* Skeleton loading */
 .skeleton-header {
-  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
+  background: $bg-secondary;
   padding: 24px 16px;
   display: flex;
   align-items: center;
@@ -513,13 +513,12 @@ onMounted(() => {
 }
 
 .profile-header {
-  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
+  background: $bg-secondary;
   padding: 24px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.3);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  border-bottom: 1px solid $border-subtle;
 }
 
 .avatar {
@@ -527,7 +526,7 @@ onMounted(() => {
   height: 64px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(212, 168, 67, 0.35);
   position: relative;
   cursor: pointer;
 
@@ -557,14 +556,17 @@ onMounted(() => {
 
 .user-info {
   h3 {
-    font-size: 18px;
+    font-size: 17px;
+    font-weight: 700;
+    color: $text-primary;
     margin-bottom: 4px;
   }
 
   p {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
+    color: $text-muted;
     margin-bottom: 6px;
+    font-family: $font-mono;
   }
 }
 
@@ -572,14 +574,13 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: linear-gradient(135deg, $accent-gold, #b45309);
-  color: #fff;
+  background: $accent-gold;
+  color: #0b1a23;
   font-size: 11px;
   font-weight: 700;
   padding: 3px 12px;
-  border-radius: 10px;
+  border-radius: $radius-pill;
   cursor: pointer;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
 .vip-badge-icon {
@@ -589,9 +590,9 @@ onMounted(() => {
 /* VIP Progress Section */
 .vip-progress-section {
   margin: 12px 16px 0;
-  background: linear-gradient(135deg, rgba($accent-gold, 0.1), rgba(180, 83, 9, 0.1));
-  border: 1px solid rgba($accent-gold, 0.25);
-  border-radius: 12px;
+  background: $bg-card;
+  border: 1px solid rgba($accent-gold, 0.22);
+  border-radius: $radius-lg;
   padding: 14px;
   cursor: pointer;
 }
@@ -625,18 +626,17 @@ onMounted(() => {
 }
 
 .progress-bar {
-  height: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
+  height: 6px;
+  background: $bg-primary;
+  border-radius: $radius-pill;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, $accent-gold, $accent-gold-light);
-  border-radius: 5px;
+  background: $accent-gold;
+  border-radius: $radius-pill;
   transition: width 0.6s ease;
-  box-shadow: 0 0 8px rgba($accent-gold, 0.5);
 }
 
 .vip-hint {
@@ -699,9 +699,9 @@ onMounted(() => {
 
 .level-up-card {
   position: relative;
-  background: linear-gradient(135deg, #1c1640, #2d1b69);
+  background: $bg-secondary;
   border: 2px solid $accent-gold;
-  border-radius: 20px;
+  border-radius: $radius-lg;
   padding: 40px 32px;
   text-align: center;
   animation: levelUpBounce 0.6s ease-out;
@@ -767,17 +767,18 @@ onMounted(() => {
 }
 
 .balance-card {
-  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
-  border-radius: 12px;
+  background: $bg-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
   padding: 16px;
-  border: 1px solid rgba(167, 139, 250, 0.3);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
 }
 
 .balance-label {
   font-size: 12px;
-  color: $text-secondary;
+  color: $text-muted;
   display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .balance-amount {
@@ -785,8 +786,9 @@ onMounted(() => {
   font-weight: 700;
   display: block;
   margin: 4px 0 12px;
-  color: #fbbf24;
-  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+  color: $text-primary;
+  font-family: $font-mono;
+  letter-spacing: 0.5px;
 }
 
 .balance-actions {
@@ -796,8 +798,8 @@ onMounted(() => {
 
 .outline-btn {
   background: transparent !important;
-  border-color: $accent-purple !important;
-  color: $accent-purple-light !important;
+  border: 1px solid $border-subtle !important;
+  color: $text-secondary !important;
 }
 
 /* 2b: Quick Menu Grid */
@@ -836,8 +838,8 @@ onMounted(() => {
 .menu-icon-wrapper {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  background: rgba(108, 92, 231, 0.15);
+  border-radius: $radius-sm;
+  background: rgba(212, 168, 67, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -845,7 +847,7 @@ onMounted(() => {
 
   .van-icon {
     font-size: 20px;
-    color: $accent-purple-light;
+    color: $accent-gold;
   }
 }
 
@@ -875,15 +877,15 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(168, 85, 247, 0.2));
-  border: 1px solid rgba(108, 92, 231, 0.3);
-  border-radius: 12px;
+  background: $bg-card;
+  border: 1px solid rgba(212, 168, 67, 0.22);
+  border-radius: $radius-lg;
   padding: 14px 16px;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.15s ease;
 
   &:active {
-    opacity: 0.8;
+    opacity: 0.85;
   }
 }
 
@@ -895,7 +897,7 @@ onMounted(() => {
 
 .detail-link {
   font-size: 12px;
-  color: $accent-purple-light;
+  color: $accent-gold;
   white-space: nowrap;
 }
 
@@ -914,19 +916,20 @@ onMounted(() => {
 
   :deep(.van-cell-group) {
     background: $bg-card;
-    border-radius: 12px;
+    border: 1px solid $border-subtle;
+    border-radius: $radius-lg;
     overflow: hidden;
   }
 
   :deep(.van-cell) {
-    background: $bg-card;
+    background: transparent;
     color: $text-primary;
 
     .van-cell__right-icon {
       color: $text-muted;
     }
     .van-icon {
-      color: $accent-purple-light;
+      color: $accent-gold;
     }
     .van-cell__value {
       color: $text-secondary;
@@ -947,13 +950,14 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   background: $bg-card;
-  border-radius: 12px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
   padding: 14px 16px;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.15s ease;
 
   &:active {
-    opacity: 0.8;
+    opacity: 0.85;
   }
 }
 

@@ -13,7 +13,7 @@
         <div class="balance-row">
           <div class="balance-info">
             <span class="balance-label">可提现余额</span>
-            <span class="balance-amount">{{ walletStore.balance.toFixed(2) }}</span>
+            <span class="balance-amount num-mono">{{ walletStore.balance.toFixed(2) }}</span>
           </div>
           <span class="balance-unit">USDT</span>
         </div>
@@ -270,9 +270,10 @@ async function onSubmit() {
 }
 
 .balance-card {
-  background: linear-gradient(135deg, #10b981, #065f46);
-  border-radius: 16px;
-  padding: 20px;
+  background: $bg-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  padding: 18px 20px;
   margin-bottom: 20px;
 }
 
@@ -290,18 +291,22 @@ async function onSubmit() {
 }
 
 .balance-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .balance-amount {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
+  color: $text-primary;
+  letter-spacing: 0.5px;
 }
 
 .balance-unit {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  color: $text-muted;
   font-weight: 600;
 }
 
@@ -309,8 +314,8 @@ async function onSubmit() {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  color: $text-muted;
+  border-top: 1px solid $border-subtle;
   padding-top: 10px;
 }
 
@@ -332,7 +337,7 @@ async function onSubmit() {
 
 .method-item {
   padding: 14px 12px;
-  border-radius: 12px;
+  border-radius: $radius-md;
   background: $bg-card;
   text-align: center;
   cursor: pointer;
@@ -340,12 +345,14 @@ async function onSubmit() {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  border: 2px solid transparent;
-  transition: all 0.2s;
+  border: 1px solid $border-subtle;
+  color: $text-secondary;
+  transition: all 0.15s ease;
 
   &.active {
-    border-color: $accent-purple;
-    background: rgba(124, 58, 237, 0.1);
+    border-color: $accent-gold;
+    background: $bg-card-hover;
+    color: $text-primary;
   }
 }
 
@@ -365,7 +372,7 @@ async function onSubmit() {
 
 .form-input {
   background: $bg-card;
-  border-radius: 10px;
+  border-radius: $radius-md;
   margin-bottom: 8px;
 }
 
@@ -376,7 +383,7 @@ async function onSubmit() {
 }
 
 .amount-all {
-  color: $accent-purple;
+  color: $accent-gold;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -390,23 +397,27 @@ async function onSubmit() {
 }
 
 .quick-amount-btn {
-  padding: 6px 16px;
-  border-radius: 20px;
+  padding: 6px 14px;
+  border-radius: $radius-md;
   background: $bg-card;
-  font-size: 13px;
+  border: 1px solid $border-subtle;
+  font-size: 12px;
+  font-weight: 600;
   color: $text-secondary;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 
   &.active {
-    background: $accent-purple;
-    color: #fff;
+    background: $bg-card-hover;
+    color: $accent-gold;
+    border-color: rgba(212, 168, 67, 0.3);
   }
 }
 
 .fee-info {
   background: $bg-card;
-  border-radius: 12px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
   padding: 14px;
   margin-bottom: 20px;
 }
@@ -445,7 +456,8 @@ async function onSubmit() {
 
 .record-card {
   background: $bg-card;
-  border-radius: 12px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
   padding: 14px;
   margin-bottom: 8px;
   display: flex;
