@@ -12,14 +12,24 @@ const defaultBanners = [
 ]
 
 const defaultAnnouncements = [
-  { id: 'a1', content: '🎉 欢迎来到H5娱乐平台！新用户注册即送体验金' },
+  { id: 'a1', content: '🎉 欢迎来到DD娱乐平台！新用户注册即送体验金' },
   { id: 'a2', content: '🔥 充值返利活动火热进行中，最高返2%' },
   { id: 'a3', content: '📢 系统维护通知：每周二凌晨2:00-4:00进行例行维护' }
+]
+
+const defaultLiveWins = [
+  { id: 'w1', user: 'VIP**5188', amount: '12,456', game: 'PG 糖果派对' },
+  { id: 'w2', user: 'USDT**99', amount: '8,320', game: 'EVO 百家乐' },
+  { id: 'w3', user: 'Player**23', amount: '21,008', game: 'JILI 捕鱼' },
+  { id: 'w4', user: 'Dragon**77', amount: '5,420', game: 'PP 甜蜜派对' },
+  { id: 'w5', user: 'Lucky**66', amount: '33,210', game: 'DG 龙虎' },
+  { id: 'w6', user: 'Gold**08', amount: '9,870', game: 'CQ9 水浒传' }
 ]
 
 export const useAppStore = defineStore('app', () => {
   const banners = ref(defaultBanners)
   const announcements = ref(defaultAnnouncements)
+  const liveWins = ref(defaultLiveWins)
   const config = ref({})
   const loading = ref(false)
 
@@ -80,5 +90,5 @@ export const useAppStore = defineStore('app', () => {
     })
   }
 
-  return { banners, announcements, config, loading, fetchBanners, fetchAnnouncements, fetchConfig, initApp }
+  return { banners, announcements, liveWins, config, loading, fetchBanners, fetchAnnouncements, fetchConfig, initApp }
 })

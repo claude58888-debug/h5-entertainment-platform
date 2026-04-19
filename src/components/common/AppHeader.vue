@@ -1,45 +1,43 @@
 <template>
   <header class="app-header">
     <div class="header-left">
-      <router-link to="/home" class="logo">
-        <div class="logo-icon">
-          <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-            <defs>
-              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#6c5ce7"/>
-                <stop offset="100%" style="stop-color:#a855f7"/>
-              </linearGradient>
-            </defs>
-            <path d="M5 32V8L13 24L20 12L27 24L35 8V32" stroke="url(#logoGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
+      <router-link to="/home" class="logo" aria-label="DD Home">
+        <div class="logo-mark">
+          <span class="logo-mark-text">DD</span>
         </div>
         <div class="logo-text-wrap">
-                    <span class="logo-text-cn">{{ $t('seo.siteName') }}</span>
-                    <span class="logo-text-en">DD.TOP</span>
+          <span class="logo-text-cn">{{ $t('seo.siteName') }}</span>
+          <span class="logo-text-en">DD.TOP</span>
         </div>
       </router-link>
     </div>
+
     <div class="header-right">
       <template v-if="!userStore.isLoggedIn">
         <button class="btn-login" @click="userStore.showLoginModal = true">{{ $t('common.login') }}</button>
         <router-link to="/register" class="btn-register">{{ $t('common.register') }}</router-link>
       </template>
-      <template v-else>
-        <div class="balance-display">
-          <span class="balance-icon">💰</span>
-          <span class="balance-amount">{{ walletStore.balance.toFixed(2) }}</span>
-        </div>
-        <button class="btn-refresh" @click="walletStore.fetchBalance()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-        </button>
-        <router-link to="/deposit" class="btn-deposit">{{ $t('actions.deposit') }}</router-link>
-      </template>
-      <router-link to="/messages" class="btn-bell">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+
+      <router-link to="/messages" class="icon-btn btn-bell" aria-label="Notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
         <span v-if="notificationStore.unreadCount > 0" class="bell-badge">{{ notificationStore.unreadCount }}</span>
       </router-link>
-      <button class="btn-lang" @click="toggleLocale">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+
+      <router-link to="/support" class="icon-btn btn-support" aria-label="Customer Service">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 18v-6a9 9 0 0118 0v6"/>
+          <path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/>
+        </svg>
+      </router-link>
+
+      <button class="icon-btn btn-lang" @click="toggleLocale" aria-label="Language">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+        </svg>
       </button>
     </div>
   </header>
@@ -48,12 +46,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
-import { useWalletStore } from '@/stores/wallet'
 import { useNotificationStore } from '@/stores/notification'
 
 const { locale } = useI18n()
 const userStore = useUserStore()
-const walletStore = useWalletStore()
 const notificationStore = useNotificationStore()
 
 function toggleLocale() {
@@ -74,39 +70,56 @@ function toggleLocale() {
   width: 100%;
   max-width: $max-width;
   height: $header-height;
-  background: linear-gradient(90deg, #110d28 0%, #1c1040 100%);
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 14px;
   z-index: 100;
-  border-bottom: 1px solid rgba(124, 58, 237, 0.3);
-  box-shadow: 0 2px 20px rgba(124, 58, 237, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .header-left {
   .logo {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
 }
 
-.logo-icon {
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: $gold-gradient;
   display: flex;
   align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 14px rgba(201, 166, 84, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.logo-mark-text {
+  font-family: $font-mono;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: #1a1407;
 }
 
 .logo-text-wrap {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 .logo-text-cn {
   font-size: 15px;
   font-weight: 700;
-  background: linear-gradient(135deg, #a855f7, #6c5ce7);
+  background: $gold-gradient;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -115,7 +128,8 @@ function toggleLocale() {
 .logo-text-en {
   font-size: 9px;
   color: $text-muted;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  font-family: $font-mono;
 }
 
 .header-right {
@@ -125,86 +139,44 @@ function toggleLocale() {
 }
 
 .btn-login {
-  padding: 4px 14px;
-  border: 1px solid rgba($accent-purple-light, 0.5);
+  padding: 5px 14px;
+  border: 1px solid $border-gold;
   background: transparent;
-  color: $accent-purple-light;
-  border-radius: 16px;
+  color: $gold-light;
+  border-radius: $radius-pill;
   font-size: 12px;
   cursor: pointer;
+  font-weight: 600;
 }
 
 .btn-register {
-  padding: 5px 14px;
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  color: #fff;
-  border-radius: 16px;
+  padding: 6px 14px;
+  background: $gold-gradient;
+  color: #1a1407;
+  border-radius: $radius-pill;
   font-size: 12px;
+  font-weight: 700;
+  box-shadow: $shadow-gold-soft;
 }
 
-.balance-display {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 16px;
-  padding: 4px 10px;
-}
-
-.balance-icon {
-  font-size: 14px;
-}
-
-.balance-amount {
-  font-size: 13px;
-  font-weight: 600;
-  color: #10b981;
-}
-
-.btn-refresh {
-  width: 28px;
-  height: 28px;
+.icon-btn {
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1px solid $border-color;
-  background: transparent;
-  color: $text-secondary;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s;
-
-  &:active {
-    transform: rotate(180deg);
-  }
-}
-
-.btn-deposit {
-  padding: 5px 16px;
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  color: #fff;
-  border-radius: 16px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.btn-bell {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid $border-color;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
   color: $text-secondary;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: color 0.2s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 
   &:hover {
-    color: $accent-purple-light;
+    color: $gold-light;
+    border-color: $border-gold;
+    background: rgba(201, 166, 84, 0.08);
   }
 }
 
@@ -224,18 +196,6 @@ function toggleLocale() {
   justify-content: center;
   padding: 0 4px;
   line-height: 1;
-}
-
-.btn-lang {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid $border-color;
-  background: transparent;
-  color: $text-secondary;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
 }
 </style>

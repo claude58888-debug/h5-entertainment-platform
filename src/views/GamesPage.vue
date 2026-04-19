@@ -247,31 +247,48 @@ onMounted(async () => {
 
 .provider-tab {
   flex-shrink: 0;
-  padding: 6px 16px;
-  border-radius: 20px;
-  background: $bg-card;
+  padding: 7px 16px;
+  border-radius: $radius-pill;
+  background: $glass-bg;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 13px;
   color: $text-secondary;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   white-space: nowrap;
 
   &.active {
-    background: $accent-purple;
-    color: #fff;
-    font-weight: 600;
+    background: $gold-gradient;
+    color: #1a1407;
+    font-weight: 700;
+    border-color: rgba(240, 215, 140, 0.6);
+    box-shadow: $shadow-gold-soft;
   }
 }
 
 .search-bar {
   margin-bottom: 14px;
 
-  .search-input {
-    background: $bg-card;
-    border-radius: 10px;
+  :deep(.search-input) {
+    background: $glass-bg;
+    border: $glass-border;
+    backdrop-filter: blur($glass-blur);
+    -webkit-backdrop-filter: blur($glass-blur);
+    border-radius: $radius-md;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
-    :deep(.van-field__left-icon) {
-      color: $text-muted;
+    &::after { display: none; }
+
+    &:focus-within {
+      border-color: $gold;
+      box-shadow: 0 0 0 3px rgba(201, 166, 84, 0.18);
+    }
+
+    .van-field__left-icon { color: $gold-light; }
+    input {
+      color: $text-primary;
+      caret-color: $gold-light;
+      &::placeholder { color: $text-muted; }
     }
   }
 }
@@ -284,15 +301,25 @@ onMounted(async () => {
 }
 
 .provider-card-large {
-  border-radius: 12px;
+  border-radius: $radius-lg;
   padding: 16px;
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  min-height: 100px;
+  min-height: 110px;
   display: flex;
   align-items: flex-end;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.35) 100%);
+    pointer-events: none;
+  }
 
   &:active {
     transform: scale(0.97);

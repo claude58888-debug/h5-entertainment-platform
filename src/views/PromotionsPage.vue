@@ -9,6 +9,17 @@
     />
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
     <div class="page-content" style="padding-top: 46px;">
+      <!-- Category tabs -->
+      <div class="promo-tabs hide-scrollbar">
+        <div
+          v-for="tab in tabs"
+          :key="tab.id"
+          class="promo-tab"
+          :class="{ active: activeTab === tab.id }"
+          @click="activeTab = tab.id"
+        >{{ tab.name }}</div>
+      </div>
+
       <!-- Skeleton loading -->
       <template v-if="loading">
         <div v-for="i in 3" :key="i" class="promo-skeleton">
@@ -87,6 +98,15 @@ const loading = ref(true)
 const refreshing = ref(false)
 const showDetail = ref(false)
 const selectedPromo = ref(null)
+
+const tabs = [
+  { id: 'activity', name: '活动' },
+  { id: 'tasks', name: '任务' },
+  { id: 'rebate', name: '返水' },
+  { id: 'vip', name: 'VIP' },
+  { id: 'tutorial', name: '教程' }
+]
+const activeTab = ref('activity')
 
 const defaultGradients = [
   'linear-gradient(135deg, #f0a030, #e67e22)',
@@ -209,8 +229,40 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.04);
 }
 
+.promo-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.promo-tab {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: $radius-pill;
+  background: $glass-bg;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-secondary;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: $gold-gradient;
+    color: #1a1407;
+    font-weight: 700;
+    border-color: rgba(240, 215, 140, 0.6);
+    box-shadow: $shadow-gold-soft;
+  }
+}
+
 .promo-card {
-  border-radius: 14px;
+  border-radius: $radius-lg;
   overflow: hidden;
   margin-bottom: 14px;
   padding: 24px 20px;
@@ -220,6 +272,16 @@ onUnmounted(() => {
   min-height: 110px;
   display: flex;
   align-items: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 100%);
+    pointer-events: none;
+  }
 
   &:active {
     transform: scale(0.98);
@@ -228,15 +290,17 @@ onUnmounted(() => {
 
 .promo-badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
+  top: 10px;
+  right: 10px;
+  background: $gold-gradient;
+  color: #1a1407;
   font-size: 10px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 0 14px 0 10px;
-  backdrop-filter: blur(4px);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  letter-spacing: 0.5px;
+  z-index: 2;
+  box-shadow: $shadow-gold-soft;
 }
 
 .promo-content {
@@ -360,7 +424,7 @@ onUnmounted(() => {
     color: $text-primary;
     margin-bottom: 10px;
     padding-left: 10px;
-    border-left: 3px solid $accent-purple;
+    border-left: 3px solid $gold;
   }
 
   p {
@@ -391,12 +455,17 @@ onUnmounted(() => {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: $accent-purple;
+      background: $gold;
     }
   }
 }
 
 .detail-apply-btn {
   margin-top: 8px;
+  background: $gold-gradient !important;
+  border: none !important;
+  color: #1a1407 !important;
+  font-weight: 700 !important;
+  box-shadow: $shadow-gold !important;
 }
 </style>

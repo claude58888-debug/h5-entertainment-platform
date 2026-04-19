@@ -21,7 +21,6 @@
           <div v-if="!bannerHasImage(banner)" class="banner-content">
             <h3 class="banner-title">{{ banner.title }}</h3>
             <p class="banner-subtitle">{{ banner.subtitle }}</p>
-            <span class="banner-btn">{{ $t('banner.learnMore') }}</span>
           </div>
           <div v-if="!bannerHasImage(banner)" class="banner-decos">
             <div class="deco-circle d1"></div>
@@ -66,14 +65,14 @@ function onImgError(e, bannerId) {
 
 <style lang="scss" scoped>
 .banner-swiper {
-  margin: 2px 12px 0px;
-  border-radius: 12px;
+  margin: 10px 14px 4px;
+  border-radius: $radius-lg;
   overflow: hidden;
 }
 
 .banner-container {
   height: $banner-height;
-  border-radius: 12px;
+  border-radius: $radius-lg;
 
   :deep(.swiper-pagination-bullet) {
     background: rgba(255, 255, 255, 0.5);
@@ -95,6 +94,7 @@ function onImgError(e, bannerId) {
   padding: 20px 24px;
   position: relative;
   overflow: hidden;
+  border-radius: $radius-lg;
 }
 
 .banner-image {
@@ -116,7 +116,7 @@ function onImgError(e, bannerId) {
   font-weight: 700;
   color: #fff;
   margin-bottom: 6px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.45);
 }
 
 .banner-subtitle {

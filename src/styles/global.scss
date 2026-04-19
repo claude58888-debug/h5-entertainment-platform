@@ -1,5 +1,9 @@
 @use './variables' as *;
 
+// ============================================================================
+// H5 UI V2 - Premium Black Gold Glassmorphism Theme
+// ============================================================================
+
 * {
   margin: 0;
   padding: 0;
@@ -11,11 +15,11 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: linear-gradient(160deg, #0e0b1f 0%, #150f2e 40%, #1a0a3d 70%, #0e0b1f 100%) !important;
+  background: $page-gradient !important;
   background-attachment: fixed !important;
   overflow-x: hidden;
   color: $text-primary;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: $font-system;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
@@ -27,8 +31,8 @@ html, body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background: linear-gradient(160deg, #0e0b1f 0%, #150f2e 40%, #1a0a3d 70%, #0e0b1f 100%);
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  background: $page-gradient-radial;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
 }
 
 a {
@@ -41,102 +45,116 @@ img {
   max-width: 100%;
 }
 
-// Scrollbar hide
+// ============================================================================
+// Utility classes
+// ============================================================================
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  &::-webkit-scrollbar { display: none; }
 }
 
-// Page transitions - default fade
-.slide-fade-enter-active {
-  transition: all 0.25s ease-out;
-}
-.slide-fade-leave-active {
-  transition: all 0.2s ease-in;
-}
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: translateX(20px);
-}
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-20px);
+.mono,
+.num {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
-// Slide right - navigating into sub-page
-.slide-right-enter-active {
-  transition: all 0.3s ease-out;
-}
-.slide-right-leave-active {
-  transition: all 0.25s ease-in;
-}
-.slide-right-enter-from {
-  opacity: 0;
-  transform: translateX(30px);
-}
-.slide-right-leave-to {
-  opacity: 0;
-  transform: translateX(-30px);
+// Glassmorphism card
+.glass-card {
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: blur($glass-blur);
+  -webkit-backdrop-filter: blur($glass-blur);
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
 }
 
-// Slide left - navigating back to main page
-.slide-left-enter-active {
-  transition: all 0.3s ease-out;
-}
-.slide-left-leave-active {
-  transition: all 0.25s ease-in;
-}
-.slide-left-enter-from {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-.slide-left-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
+// Gold gradient text
+.gold-text,
+.text-gold {
+  background: $gold-gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 18px rgba(240, 215, 140, 0.20);
 }
 
-// Vant overrides for dark theme
+// Gold gradient button helper
+.btn-gold {
+  background: $gold-gradient;
+  color: #1a1407;
+  border: none;
+  border-radius: $radius-md;
+  font-weight: 700;
+  box-shadow: $shadow-gold-soft;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+
+  &:active { transform: translateY(1px); }
+  &:disabled { opacity: 0.5; }
+}
+
+// ============================================================================
+// Page transitions
+// ============================================================================
+.slide-fade-enter-active { transition: all 0.25s ease-out; }
+.slide-fade-leave-active { transition: all 0.2s ease-in; }
+.slide-fade-enter-from { opacity: 0; transform: translateX(20px); }
+.slide-fade-leave-to { opacity: 0; transform: translateX(-20px); }
+
+.slide-right-enter-active { transition: all 0.3s ease-out; }
+.slide-right-leave-active { transition: all 0.25s ease-in; }
+.slide-right-enter-from { opacity: 0; transform: translateX(30px); }
+.slide-right-leave-to { opacity: 0; transform: translateX(-30px); }
+
+.slide-left-enter-active { transition: all 0.3s ease-out; }
+.slide-left-leave-active { transition: all 0.25s ease-in; }
+.slide-left-enter-from { opacity: 0; transform: translateX(-30px); }
+.slide-left-leave-to { opacity: 0; transform: translateX(30px); }
+
+// ============================================================================
+// Vant theme overrides
+// ============================================================================
 :root {
   --van-background: #{$bg-primary};
-  --van-background-2: #{$bg-card};
+  --van-background-2: #{$bg-secondary};
   --van-text-color: #{$text-primary};
   --van-text-color-2: #{$text-secondary};
   --van-text-color-3: #{$text-muted};
   --van-border-color: #{$border-color};
-  --van-active-color: #{$bg-card};
-  --van-popup-background: #{$bg-primary};
-  --van-action-sheet-background: #{$bg-primary};
-  --van-button-primary-background: #{$accent-purple};
-  --van-button-primary-border-color: #{$accent-purple};
-  --van-tab-active-text-color: #{$accent-purple};
-  --van-tabs-bottom-bar-color: #{$accent-purple};
+  --van-active-color: rgba(255, 255, 255, 0.06);
+  --van-popup-background: #{$bg-secondary};
+  --van-action-sheet-background: #{$bg-secondary};
+  --van-button-primary-background: #{$gold};
+  --van-button-primary-border-color: #{$gold};
+  --van-button-primary-color: #1a1407;
+  --van-tab-active-text-color: #{$gold-light};
+  --van-tabs-bottom-bar-color: #{$gold};
   --van-field-input-text-color: #{$text-primary};
-  --van-cell-background: #{$bg-card};
-  --van-skeleton-paragraph-background: #{$bg-card};
-  --van-skeleton-avatar-background: #{$bg-card};
-  --van-notice-bar-background: #{$bg-card};
-  --van-notice-bar-text-color: #{$accent-gold};
+  --van-field-placeholder-text-color: #{$text-muted};
+  --van-cell-background: transparent;
+  --van-skeleton-paragraph-background: rgba(255, 255, 255, 0.06);
+  --van-skeleton-avatar-background: rgba(255, 255, 255, 0.06);
+  --van-notice-bar-background: rgba(255, 255, 255, 0.04);
+  --van-notice-bar-text-color: #{$gold-light};
   --van-pull-refresh-text-color: #{$text-secondary};
   --van-loading-text-color: #{$text-secondary};
-  --van-toast-background: #{$bg-card};
+  --van-toast-background: rgba(20, 28, 46, 0.95);
   --van-toast-text-color: #{$text-primary};
-  --van-overlay-background: rgba(0, 0, 0, 0.7);
-  --van-nav-bar-background: #{$bg-header};
+  --van-overlay-background: rgba(0, 0, 0, 0.75);
+  --van-nav-bar-background: rgba(10, 14, 26, 0.9);
   --van-nav-bar-title-text-color: #{$text-primary};
   --van-nav-bar-icon-color: #{$text-primary};
   --van-field-label-color: #{$text-secondary};
   --van-cell-text-color: #{$text-primary};
 }
 
-// Skeleton theme
 .van-skeleton {
-  --van-skeleton-paragraph-background: #{$bg-card};
+  --van-skeleton-paragraph-background: rgba(255, 255, 255, 0.06);
 }
 
-// Constrain Vant popups/overlays to 450px container
+// Popups constrained to container width
 .van-overlay,
 .van-popup {
   max-width: $max-width;
@@ -149,49 +167,117 @@ img {
   transform: translateX(-50%);
 }
 
-// Primary button glow effect
+// Primary button → Gold gradient
 .van-button--primary {
-  background: linear-gradient(90deg, #7c3aed, #9333ea) !important;
+  background: $gold-gradient !important;
   border: none !important;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
-  transition: box-shadow 0.2s;
+  color: #1a1407 !important;
+  font-weight: 700 !important;
+  box-shadow: $shadow-gold-soft;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
 
   &:active {
-    box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+    transform: translateY(1px);
+    box-shadow: 0 2px 10px rgba(201, 166, 84, 0.2);
   }
 }
 
-// Gold accent text
-.gold-text {
-  color: #fbbf24;
-  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+// Default (outline) button
+.van-button--default {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid $border-strong !important;
+  color: $text-primary !important;
+  backdrop-filter: blur(8px);
 }
 
-// Accessibility: Skip navigation link
+// Cells on dark glass
+.van-cell {
+  background: transparent !important;
+}
+.van-cell::after {
+  border-bottom-color: $border-color !important;
+}
+
+// Field (input) styling with gold focus
+.van-field__control {
+  color: $text-primary !important;
+  caret-color: $gold-light !important;
+}
+.van-cell-group--inset {
+  background: $glass-bg !important;
+  border: $glass-border !important;
+  backdrop-filter: blur($glass-blur);
+  border-radius: $radius-lg !important;
+  overflow: hidden;
+}
+
+// Nav bar: align with centered container
+.van-nav-bar {
+  max-width: $max-width !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+  background: rgba(10, 14, 26, 0.9) !important;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid $border-color;
+}
+.van-nav-bar__title {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+  color: $text-primary !important;
+}
+.van-nav-bar .van-icon {
+  color: $text-primary !important;
+}
+
+// Tabs
+.van-tabs--line .van-tabs__wrap {
+  background: transparent;
+}
+.van-tab {
+  color: $text-muted !important;
+}
+.van-tab--active {
+  color: $gold-light !important;
+}
+.van-tabs__line {
+  background: $gold-gradient !important;
+  height: 3px !important;
+  border-radius: 2px;
+}
+
+// Marquee / notice bar
+.van-notice-bar {
+  background: transparent !important;
+  color: $gold-light !important;
+}
+
+// ============================================================================
+// Accessibility
+// ============================================================================
 .skip-link {
   position: absolute;
   top: -100%;
   left: 0;
-  background: $accent-purple;
-  color: #fff;
+  background: $gold;
+  color: #1a1407;
   padding: 8px 16px;
   z-index: 9999;
   font-size: 14px;
   border-radius: 0 0 8px 0;
   transition: top 0.2s;
+  font-weight: 700;
 
-  &:focus {
-    top: 0;
-  }
+  &:focus { top: 0; }
 }
 
-// Accessibility: Focus visible outlines for keyboard navigation
 *:focus-visible {
-  outline: 2px solid $accent-purple;
+  outline: 2px solid $gold-light;
   outline-offset: 2px;
 }
 
-// Accessibility: Reduced motion preference
 @media (prefers-reduced-motion: reduce) {
   .slide-fade-enter-active,
   .slide-fade-leave-active,
@@ -207,7 +293,6 @@ img {
   }
 }
 
-// Screen reader only utility
 .sr-only {
   position: absolute;
   width: 1px;
@@ -217,5 +302,5 @@ img {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  border-width: 0;
+  border: 0;
 }

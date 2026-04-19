@@ -39,20 +39,23 @@
 
       <!-- Main Content -->
       <template v-else>
-        <!-- Banner -->
-        <BannerSwiper />
-
-        <!-- Scrolling Announcement Bar (below banner) -->
+        <!-- Scrolling Live Ticker -->
         <AppNotice />
 
-        <!-- Quick Actions -->
-        <QuickActions />
+        <!-- Banner Carousel -->
+        <BannerSwiper />
+
+        <!-- Balance Card (glassmorphism, USDT) -->
+        <BalanceCard />
 
         <!-- Category Tabs -->
         <GameCategoryTabs :active-category="activeCategory" @change="onCategoryChange" />
 
         <!-- Content based on active category -->
         <template v-if="activeCategory === 'home'">
+          <!-- 2-column Game Category Grid -->
+          <CategoryGrid />
+
           <!-- Recent Browsing -->
         <template v-if="recentGames.length > 0">
           <SectionHeader :title="$t('home.recent')" icon="🕒" />
@@ -66,6 +69,9 @@
         <div class="scroll-row hide-scrollbar" ref="hotScrollRef">
           <GameCard v-for="game in hotGames" :key="game.id" :game="game" />
         </div>
+
+        <!-- Live Wins Table -->
+        <LiveWins />
 
         <!-- Slots -->
         <SectionHeader :title="$t('home.slots')" icon="🎰" more="/games/slots" :scrollable="true" />
@@ -223,7 +229,9 @@ import { getRecentGames } from '@/utils/recentBrowsing'
 
 import AppNotice from '@/components/common/AppNotice.vue'
 import BannerSwiper from '@/components/home/BannerSwiper.vue'
-import QuickActions from '@/components/home/QuickActions.vue'
+import BalanceCard from '@/components/home/BalanceCard.vue'
+import CategoryGrid from '@/components/home/CategoryGrid.vue'
+import LiveWins from '@/components/home/LiveWins.vue'
 import GameCategoryTabs from '@/components/home/GameCategoryTabs.vue'
 import SectionHeader from '@/components/home/SectionHeader.vue'
 import GameCard from '@/components/home/GameCard.vue'

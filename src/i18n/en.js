@@ -32,10 +32,13 @@ export default {
     backToHome: 'Back to Home',
     skipToContent: 'Skip to main content',
     noMoreData: 'No more data',
-    mainNav: 'Main Navigation'
+    mainNav: 'Main Navigation',
+    refresh: 'Refresh'
   },
   nav: {
     home: 'Home',
+    games: 'Games',
+    deposit: 'Deposit',
     activity: 'Activity',
     service: 'Service',
     download: 'Download',
@@ -65,7 +68,9 @@ export default {
     vpnDesc: 'Securely access exchanges, protect your privacy',
     huobi: 'Huobi',
     binance: 'Binance',
-    okx: 'OKX'
+    okx: 'OKX',
+    availableBalance: 'Available Balance',
+    liveWins: 'Live Wins'
   },
   auth: {
     phone: 'Phone',
@@ -102,6 +107,8 @@ export default {
   actions: {
     deposit: 'Deposit',
     withdraw: 'Withdraw',
+    transfer: 'Transfer',
+    support: 'Support',
     tasks: 'Tasks',
     income: 'Income',
     invite: 'Invite'
@@ -128,6 +135,9 @@ export default {
     inviteBanner: 'Invite friends and earn up to 0.6% commission',
     details: 'Details',
     vipHint: 'Deposit 50U more to upgrade your VIP level',
+    todayPnl: "Today's P/L",
+    liveRebate: 'Live Rebate',
+    pendingCommission: 'Pending Commission',
     accountSecurity: 'Account Security',
     changePassword: 'Change Password',
     loginHistory: 'Login History',

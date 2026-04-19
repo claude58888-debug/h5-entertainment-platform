@@ -45,9 +45,13 @@ router.beforeEach((to, from) => {
   }
 })
 
-const tabBarPages = ['/', '/home', '/promotions', '/activities', '/support', '/download', '/profile']
+const tabBarPages = ['/', '/home', '/promotions', '/activities', '/support', '/download', '/profile', '/deposit']
+const tabBarPathPrefixes = ['/games/', '/games']
 const showTabBar = computed(() => {
-  return tabBarPages.some(p => route.path === p || route.path === p + '/')
+  const path = route.path
+  if (tabBarPages.some(p => path === p || path === p + '/')) return true
+  if (tabBarPathPrefixes.some(prefix => path.startsWith(prefix))) return true
+  return false
 })
 
 // Sub-pages with their own nav-bar should hide the main app header
