@@ -10,7 +10,7 @@
     <div class="page-content" style="padding-top: 46px;">
       <div class="balance-card">
         <span class="balance-label">{{ t('wallet.balance') }}</span>
-        <span class="balance-amount">{{ walletStore.balance.toFixed(2) }} USDT</span>
+        <span class="balance-amount num-mono">{{ formattedBalance }} <span class="balance-currency">USDT</span></span>
       </div>
 
       <div class="method-section">
@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWalletStore } from '@/stores/wallet'
 import { showToast } from 'vant'
@@ -61,6 +61,11 @@ const walletStore = useWalletStore()
 const amount = ref('')
 const activeMethod = ref('usdt')
 const loading = ref(false)
+
+const formattedBalance = computed(() => {
+  const value = Number(walletStore.balance) || 0
+  return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+})
 
 const methods = [
   { id: 'usdt', name: 'USDT-TRC20', icon: '💎' },
@@ -94,23 +99,35 @@ async function onSubmit() {
 }
 
 .balance-card {
-  background: linear-gradient(135deg, $accent-purple, #4c1d95);
-  border-radius: 16px;
-  padding: 20px;
+  background: $bg-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 20px;
 }
 
 .balance-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .balance-amount {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
+  color: $text-primary;
+  letter-spacing: 0.5px;
+}
+
+.balance-currency {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-muted;
+  margin-left: 4px;
 }
 
 .method-section, .amount-section {
@@ -129,46 +146,58 @@ async function onSubmit() {
 }
 
 .method-item {
-  padding: 12px;
-  border-radius: 10px;
+  padding: 14px 10px;
+  border-radius: $radius-md;
   background: $bg-card;
+  border: 1px solid $border-subtle;
   text-align: center;
   font-size: 12px;
+  color: $text-secondary;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  border: 2px solid transparent;
+  gap: 6px;
+  transition: border-color 0.15s ease, color 0.15s ease;
 
   &.active {
-    border-color: $accent-purple;
+    border-color: $accent-gold;
+    color: $text-primary;
+    background: $bg-card-hover;
   }
 }
 
-.method-icon { font-size: 24px; }
+.method-icon {
+  font-size: 22px;
+}
 
 .amount-input {
   background: $bg-card;
-  border-radius: 10px;
+  border-radius: $radius-md;
   margin-bottom: 12px;
 }
 
 .quick-amounts {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .quick-btn {
-  padding: 6px 16px;
-  border-radius: 16px;
+  padding: 6px 14px;
+  border-radius: $radius-md;
   background: $bg-card;
-  font-size: 13px;
+  border: 1px solid $border-subtle;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-secondary;
   cursor: pointer;
+  transition: all 0.15s ease;
 
   &:active {
-    background: $accent-purple;
+    background: $bg-card-hover;
+    color: $accent-gold;
+    border-color: rgba(212, 168, 67, 0.3);
   }
 }
 

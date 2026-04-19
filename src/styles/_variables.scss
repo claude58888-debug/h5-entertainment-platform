@@ -1,27 +1,45 @@
-// Colors - Enriched Dark Luxury Theme
-$bg-primary: #0e0b1f;           // Deepest dark purple-black (page background)
-$bg-secondary: #150f2e;         // Slightly lighter, for sections
-$bg-card: #1c1640;              // Card background - rich dark purple
-$bg-card-hover: #231b50;        // Card hover state
-$bg-header: #110d28;            // Header - deep dark
-$bg-sidebar: #160f35;           // Sidebar panels
-$bg-input: #1a1540;             // Input fields
+// Colors - Stake-inspired Dark Theme
+// Deep charcoal / dark navy surfaces with gold accents
+$bg-primary: #0f212e;           // Deepest - page background
+$bg-secondary: #1a2c38;         // Lighter - section backgrounds, header
+$bg-card: #213743;              // Card surface
+$bg-card-hover: #2f4553;        // Card hover / active
+$bg-header: #1a2c38;            // Header
+$bg-sidebar: #1a2c38;           // Sidebar / panels
+$bg-input: #0f212e;             // Input fields - deeper than cards
 
-$accent-purple: #7c3aed;        // Primary purple
-$accent-purple-light: #a78bfa;  // Light purple
-$accent-purple-glow: #9333ea;   // Glow purple
-$accent-blue: #3b82f6;          // Electric blue accent
-$accent-cyan: #06b6d4;          // Cyan highlight
-$accent-gold: #f59e0b;          // Gold
-$accent-gold-light: #fbbf24;    // Light gold
-$accent-red: #ef4444;           // Alert red
-$accent-green: #10b981;         // Success green
+// Accent — brand gold replaces the old purple CTAs.
+// Variable names preserved for backward compatibility with scoped styles.
+$accent-purple: #d4a843;        // Primary CTA (gold)
+$accent-purple-light: #e8c27a;  // Light gold
+$accent-purple-glow: #ffc952;   // Hover / glow gold
+$accent-blue: #1475e1;          // Informational blue
+$accent-cyan: #00bfd8;          // Cyan highlight
+$accent-gold: #d4a843;          // Gold
+$accent-gold-light: #e8c27a;    // Light gold
+$accent-red: #ed4163;           // Alert red
+$accent-green: #00e701;         // Success / positive green (Stake green)
 
 $text-primary: #ffffff;
-$text-secondary: rgba(255, 255, 255, 0.75);
-$text-muted: rgba(255, 255, 255, 0.45);
-$border-color: rgba(124, 58, 237, 0.25);  // Purple-tinted border
-$border-glow: rgba(167, 139, 250, 0.3);   // Glow border
+$text-secondary: #b1bad3;       // Cool slate - secondary copy
+$text-muted: #7c8ba1;           // Muted labels
+$border-color: rgba(255, 255, 255, 0.06);  // Subtle divider
+$border-glow: rgba(212, 168, 67, 0.25);    // Gold-tinted glow
+
+// Stake-style semantic surfaces
+$surface-translucent: rgba(255, 255, 255, 0.05);
+$surface-translucent-hover: rgba(255, 255, 255, 0.08);
+$border-subtle: rgba(255, 255, 255, 0.06);
+
+// Typography
+$font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-mono: 'SF Mono', 'JetBrains Mono', 'Roboto Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
+
+// Radius - consistent rounded corners
+$radius-sm: 6px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-pill: 999px;
 
 // Layout
 $max-width: 450px;

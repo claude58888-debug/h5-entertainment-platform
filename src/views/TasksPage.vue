@@ -271,10 +271,11 @@ function claimTask(task) {
 
 /* Sign-in Card */
 .signin-card {
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  border-radius: 16px;
-  padding: 18px;
-  margin-bottom: 20px;
+  background: $bg-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .signin-header {
@@ -284,14 +285,16 @@ function claimTask(task) {
   margin-bottom: 14px;
 
   h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
+    color: $text-primary;
   }
 }
 
 .signin-streak {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: $accent-gold;
+  font-weight: 600;
 }
 
 .signin-days {
@@ -301,8 +304,9 @@ function claimTask(task) {
 
 .signin-day {
   flex: 1;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  background: $bg-primary;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-sm;
   padding: 8px 4px;
   text-align: center;
   display: flex;
@@ -311,31 +315,39 @@ function claimTask(task) {
   gap: 2px;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
+  color: $text-secondary;
 
   &.claimed {
-    background: rgba(255, 255, 255, 0.25);
+    background: $bg-card-hover;
+    border-color: rgba(0, 231, 1, 0.25);
+    color: $text-muted;
   }
 
   &.today {
-    background: rgba(245, 158, 11, 0.3);
-    border: 1px solid rgba(245, 158, 11, 0.5);
+    background: rgba(212, 168, 67, 0.12);
+    border-color: $accent-gold;
+    color: $text-primary;
   }
 }
 
 .day-label {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.6);
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .day-reward {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
+  font-family: $font-mono;
+  color: inherit;
 }
 
 .day-unit {
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.5);
+  color: $text-muted;
 }
 
 .day-check {
@@ -343,34 +355,35 @@ function claimTask(task) {
   top: 2px;
   right: 4px;
   font-size: 10px;
-  color: #10b981;
+  color: $accent-green;
 }
 
 /* Task Tabs */
 .task-tabs {
   display: flex;
   gap: 0;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   background: $bg-card;
-  border-radius: 12px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
   padding: 3px;
 }
 
 .task-tab {
   flex: 1;
-  padding: 10px 0;
+  padding: 9px 0;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   color: $text-secondary;
   cursor: pointer;
-  border-radius: 10px;
-  transition: all 0.2s;
+  border-radius: $radius-sm;
+  transition: all 0.15s ease;
   position: relative;
 
   &.active {
-    background: $accent-purple;
-    color: #fff;
-    font-weight: 600;
+    background: $bg-card-hover;
+    color: $accent-gold;
   }
 }
 
@@ -378,12 +391,12 @@ function claimTask(task) {
   position: absolute;
   top: 2px;
   right: 12px;
-  background: #ef4444;
+  background: $accent-red;
   color: #fff;
   font-size: 10px;
   min-width: 16px;
   height: 16px;
-  border-radius: 8px;
+  border-radius: $radius-pill;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -395,9 +408,10 @@ function claimTask(task) {
   display: flex;
   align-items: center;
   background: $bg-card;
-  border-radius: 12px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
   padding: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .summary-item {
@@ -409,8 +423,10 @@ function claimTask(task) {
 }
 
 .summary-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
+  font-family: $font-mono;
+  color: $text-primary;
 
   &.highlight {
     color: $accent-gold;
@@ -431,7 +447,8 @@ function claimTask(task) {
 /* Task Cards */
 .task-card {
   background: $bg-card;
-  border-radius: 12px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
   padding: 14px;
   margin-bottom: 10px;
 }
@@ -446,8 +463,8 @@ function claimTask(task) {
 .task-icon-wrap {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  background: rgba(124, 58, 237, 0.15);
+  border-radius: $radius-sm;
+  background: rgba(212, 168, 67, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -565,16 +582,16 @@ function claimTask(task) {
 }
 
 .tier-step.active .step-num {
-  background: $accent-purple;
-  border-color: $accent-purple;
-  color: #fff;
-  box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+  background: $accent-gold;
+  border-color: $accent-gold;
+  color: #0b1a23;
+  box-shadow: 0 0 8px rgba(212, 168, 67, 0.4);
 }
 
 .tier-step.completed .step-num {
-  background: rgba(124, 58, 237, 0.3);
-  border-color: $accent-purple;
-  color: #fff;
+  background: rgba(212, 168, 67, 0.25);
+  border-color: $accent-gold;
+  color: $text-primary;
 }
 
 .step-arrow {
@@ -586,7 +603,7 @@ function claimTask(task) {
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid $accent-purple;
+  border-top: 5px solid $accent-gold;
 }
 
 .step-reward {
@@ -620,13 +637,14 @@ function claimTask(task) {
 
 .progress-fill {
   height: 100%;
-  background: $accent-purple;
+  background: $accent-gold;
   border-radius: 3px;
   transition: width 0.3s;
 }
 
 .progress-text {
   font-size: 10px;
+  font-family: $font-mono;
   color: $text-muted;
   white-space: nowrap;
 }

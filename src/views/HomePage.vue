@@ -39,6 +39,9 @@
 
       <!-- Main Content -->
       <template v-else>
+        <!-- Search Bar -->
+        <GameSearchBar @search="onSearch" />
+
         <!-- Banner -->
         <BannerSwiper />
 
@@ -53,58 +56,61 @@
 
         <!-- Content based on active category -->
         <template v-if="activeCategory === 'home'">
-          <!-- Recent Browsing -->
+          <!-- Recently Played -->
         <template v-if="recentGames.length > 0">
-          <SectionHeader :title="$t('home.recent')" icon="🕒" />
+          <SectionHeader :title="$t('home.recent')" />
           <div class="scroll-row hide-scrollbar">
             <GameCard v-for="game in recentGames" :key="'recent-'+game.id" :game="game" />
           </div>
         </template>
 
+        <!-- Live Activity Feed (Stake-style) -->
+        <LiveActivityFeed />
+
         <!-- Hot Games -->
-        <SectionHeader :title="$t('home.hot')" icon="🔥" more="/games/hot" :scrollable="true" @scroll-left="scrollHot(-1)" @scroll-right="scrollHot(1)" />
+        <SectionHeader :title="$t('home.hot')" more="/games/hot" :scrollable="true" @scroll-left="scrollHot(-1)" @scroll-right="scrollHot(1)" />
         <div class="scroll-row hide-scrollbar" ref="hotScrollRef">
           <GameCard v-for="game in hotGames" :key="game.id" :game="game" />
         </div>
 
         <!-- Slots -->
-        <SectionHeader :title="$t('home.slots')" icon="🎰" more="/games/slots" :scrollable="true" />
+        <SectionHeader :title="$t('home.slots')" more="/games/slots" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in slotsProviders" :key="p.id" :provider="p" category="slots" />
         </div>
 
         <!-- Live -->
-        <SectionHeader :title="$t('home.live')" icon="🎲" more="/games/live" :scrollable="true" />
+        <SectionHeader :title="$t('home.live')" more="/games/live" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in liveProviders" :key="p.id" :provider="p" category="live" />
         </div>
 
         <!-- Fishing -->
-        <SectionHeader :title="$t('home.fishing')" icon="🐟" more="/games/fishing" :scrollable="true" />
+        <SectionHeader :title="$t('home.fishing')" more="/games/fishing" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in fishingProviders" :key="p.id" :provider="p" category="fishing" />
         </div>
 
         <!-- Lottery -->
-        <SectionHeader :title="$t('home.lottery')" icon="🎱" more="/games/lottery" :scrollable="true" />
+        <SectionHeader :title="$t('home.lottery')" more="/games/lottery" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in lotteryProviders" :key="p.id" :provider="p" category="lottery" />
         </div>
 
         <!-- Sports -->
-        <SectionHeader :title="$t('home.sports')" icon="⚽" more="/games/sports" :scrollable="true" />
+        <SectionHeader :title="$t('home.sports')" more="/games/sports" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in sportsProviders" :key="p.id" :provider="p" category="sports" />
         </div>
 
         <!-- Chess -->
-        <SectionHeader :title="$t('home.chess')" icon="♟️" more="/games/chess" :scrollable="true" />
+        <SectionHeader :title="$t('home.chess')" more="/games/chess" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in chessProviders" :key="p.id" :provider="p" category="chess" />
         </div>
 
         <!-- Video -->
-        <SectionHeader :title="$t('home.video')" icon="🎬" />
+        <SectionHeader :title="$t('home.video')" />
         <div class="scroll-row hide-scrollbar">
           <ProviderCard v-for="p in videoProviders" :key="p.id" :provider="p" category="video" />
         </div>
@@ -225,6 +231,8 @@ import AppNotice from '@/components/common/AppNotice.vue'
 import BannerSwiper from '@/components/home/BannerSwiper.vue'
 import QuickActions from '@/components/home/QuickActions.vue'
 import GameCategoryTabs from '@/components/home/GameCategoryTabs.vue'
+import GameSearchBar from '@/components/home/GameSearchBar.vue'
+import LiveActivityFeed from '@/components/home/LiveActivityFeed.vue'
 import SectionHeader from '@/components/home/SectionHeader.vue'
 import GameCard from '@/components/home/GameCard.vue'
 import ProviderCard from '@/components/home/ProviderCard.vue'
@@ -234,6 +242,7 @@ const appStore = useAppStore()
 const gameStore = useGameStore()
 
 const activeCategory = ref('home')
+const searchQuery = ref('')
 const refreshing = ref(false)
 const hotScrollRef = ref(null)
 const hasError = ref(false)
@@ -251,10 +260,25 @@ const sportsProviders = computed(() => gameStore.getProvidersByCategory('sports'
 const chessProviders = computed(() => gameStore.getProvidersByCategory('chess'))
 const videoProviders = computed(() => gameStore.getProvidersByCategory('video'))
 
-const categoryGames = computed(() => gameStore.getGamesByCategory(activeCategory.value))
+const categoryGames = computed(() => {
+  const byCategory = gameStore.getGamesByCategory(activeCategory.value) || []
+  const q = searchQuery.value.toLowerCase()
+  if (!q) return byCategory
+  return byCategory.filter(g =>
+    (g.name || '').toLowerCase().includes(q) ||
+    (g.category || '').toLowerCase().includes(q)
+  )
+})
 
 function onCategoryChange(category) {
   activeCategory.value = category
+}
+
+function onSearch(value) {
+  searchQuery.value = value || ''
+  if (searchQuery.value && activeCategory.value === 'home') {
+    activeCategory.value = 'slots'
+  }
 }
 
 function scrollHot(direction) {
@@ -435,11 +459,12 @@ onUnmounted(() => {
 
 .vpn-btn {
   padding: 4px 12px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  color: #fff;
+  border-radius: $radius-md;
+  background: $accent-gold;
+  color: #0b1a23;
   border: none;
   font-size: 11px;
+  font-weight: 700;
   cursor: pointer;
 }
 

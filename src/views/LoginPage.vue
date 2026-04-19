@@ -69,7 +69,9 @@ async function onSubmit() {
 
 <style lang="scss" scoped>
 .login-page {
-  padding: 40px 16px;
+  padding: 48px 20px 40px;
+  min-height: 100vh;
+  background: $bg-primary;
 }
 
 .page-header {
@@ -77,11 +79,10 @@ async function onSubmit() {
   margin-bottom: 32px;
 
   h2 {
-    font-size: 24px;
-    background: linear-gradient(135deg, $accent-purple-light, $accent-gold);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 22px;
+    font-weight: 700;
+    color: $text-primary;
+    letter-spacing: 0.3px;
   }
 }
 
@@ -92,24 +93,29 @@ async function onSubmit() {
   }
   :deep(.van-cell) {
     background: $bg-card;
-    margin-bottom: 12px;
-    border-radius: 8px;
+    margin-bottom: 10px;
+    border-radius: $radius-md;
+    border: 1px solid $border-subtle;
+  }
+  :deep(.van-cell::after) {
+    display: none;
   }
 }
 
 .form-actions {
-  margin-top: 32px;
+  margin-top: 28px;
 }
 
 .form-footer {
   text-align: center;
   margin-top: 20px;
-  font-size: 14px;
+  font-size: 13px;
   color: $text-secondary;
 
   a {
-    color: $accent-purple-light;
+    color: $accent-gold;
     margin-left: 4px;
+    font-weight: 600;
   }
 }
 </style>
