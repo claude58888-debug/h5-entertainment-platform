@@ -23,6 +23,7 @@
             <p class="banner-subtitle">{{ banner.subtitle }}</p>
           </div>
           <div v-if="!bannerHasImage(banner)" class="banner-decos">
+            <span v-if="banner.highlight" class="deco-big-number" :data-len="banner.highlight.length">{{ banner.highlight }}</span>
             <div class="deco-gold-sheen"></div>
             <div class="deco-circle d1"></div>
             <div class="deco-circle d2"></div>
@@ -127,6 +128,7 @@ function onImgError(e, bannerId) {
 .banner-content {
   position: relative;
   z-index: 3;
+  max-width: 62%;
 }
 
 .banner-title {
@@ -234,6 +236,32 @@ function onImgError(e, bannerId) {
     border-radius: 50%;
     background: rgba(255,255,255,0.2);
   }
+}
+
+// Large faded number/highlight text as background decoration
+.deco-big-number {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Manrope', 'SF Pro Display', system-ui, sans-serif;
+  font-size: 78px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: transparent;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.04) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.22);
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+  font-feature-settings: "tnum";
+
+  &[data-len="4"] { font-size: 68px; }
+  &[data-len="5"] { font-size: 60px; letter-spacing: -3px; }
 }
 
 // Gold sheen overlay for 2.5D feel

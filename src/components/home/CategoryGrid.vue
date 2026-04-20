@@ -149,11 +149,11 @@
 <script setup>
 const categories = [
   { key: 'live',    name: '真人视讯', subtitle: '百家乐·龙虎·轮盘', icon: 'spade',    gradient: 'linear-gradient(135deg, #c21b5b 0%, #7a2582 100%)', providers: ['DG', 'EVO', 'BG'],     path: '/games/live' },
-  { key: 'slots',   name: '电子',     subtitle: '老虎机·爆奖',       icon: 'seven',    gradient: 'linear-gradient(135deg, #3b5bff 0%, #7a3cff 100%)', providers: ['PG', 'PP', 'CQ9'],     path: '/games/slots' },
-  { key: 'sports',  name: '体育',     subtitle: '足球·篮球·电竞',    icon: 'football', gradient: 'linear-gradient(135deg, #15896b 0%, #2fbc6f 100%)', providers: ['IM', 'FB', 'SB'],      path: '/games/sports' },
-  { key: 'lottery', name: '彩票',     subtitle: '时时彩·11选5',      icon: 'lottery',  gradient: 'linear-gradient(135deg, #e4892a 0%, #f0c34e 100%)', providers: ['官方', 'VR'],          path: '/games/lottery' },
-  { key: 'fishing', name: '捕鱼',     subtitle: '海王·深海猎杀',     icon: 'fish',     gradient: 'linear-gradient(135deg, #0a4474 0%, #0d9ab8 100%)', providers: ['JILI', 'CQ9'],         path: '/games/fishing' },
-  { key: 'chess',   name: '棋牌',     subtitle: '德州·麻将·斗地主',  icon: 'cards',    gradient: 'linear-gradient(135deg, #6b3f1c 0%, #c4913b 100%)', providers: ['KY', 'BBIN'],          path: '/games/chess' },
+  { key: 'slots',   name: '电子',     subtitle: '老虎机·街机·爆分', icon: 'seven',    gradient: 'linear-gradient(135deg, #3b5bff 0%, #7a3cff 100%)', providers: ['PG', 'PP', 'CQ9'],     path: '/games/slots' },
+  { key: 'sports',  name: '体育',     subtitle: '足球·篮球·电竞',   icon: 'football', gradient: 'linear-gradient(135deg, #15896b 0%, #2fbc6f 100%)', providers: ['IM', 'FB', 'SB'],      path: '/games/sports' },
+  { key: 'lottery', name: '彩票',     subtitle: '时时彩·快3·PK10',  icon: 'lottery',  gradient: 'linear-gradient(135deg, #e4892a 0%, #f0c34e 100%)', providers: ['官方', 'VR'],          path: '/games/lottery' },
+  { key: 'fishing', name: '捕鱼',     subtitle: '千炮·3D·对战',     icon: 'fish',     gradient: 'linear-gradient(135deg, #0a4474 0%, #0d9ab8 100%)', providers: ['JILI', 'CQ9'],         path: '/games/fishing' },
+  { key: 'chess',   name: '棋牌',     subtitle: '德州·炸金花·斗地主', icon: 'cards',  gradient: 'linear-gradient(135deg, #6b3f1c 0%, #c4913b 100%)', providers: ['KY', 'BBIN'],          path: '/games/chess' },
   { key: 'video',   name: '影视',     subtitle: '电影·电视剧·综艺',  icon: 'play',     gradient: 'linear-gradient(135deg, #3a1a6b 0%, #6a2bb8 100%)', providers: ['HBO', 'NF'],           path: '/video' },
   { key: 'crash',   name: '弹珠',     subtitle: 'Crash·倍率爆奖',    icon: 'crash',    gradient: 'linear-gradient(135deg, #0f8a9a 0%, #2dd0d8 100%)', providers: ['Spribe'],              path: '/games/crash' }
 ]

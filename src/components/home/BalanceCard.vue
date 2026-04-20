@@ -265,16 +265,29 @@ function handleAction(a) {
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
-// Deposit gets the prominent gold-gradient treatment
+// Deposit gets the prominent rectangular gold-gradient CTA treatment
+.qa-primary {
+  background: none;
+  border: none;
+  padding: 0;
+
+  &:hover { background: none; }
+}
+
 .qa-primary .qa-icon {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
   background: $gold-gradient;
-  border-color: rgba(240, 215, 140, 0.6);
+  border: 1px solid rgba(240, 215, 140, 0.65);
   color: #1a1407;
   box-shadow:
     0 4px 20px rgba(212, 168, 67, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
   position: relative;
   overflow: hidden;
+
+  svg { width: 22px; height: 22px; }
 
   // subtle diagonal shine sweep
   &::after {
@@ -284,21 +297,23 @@ function handleAction(a) {
     left: -60%;
     width: 40%;
     height: 200%;
-    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.6) 50%, transparent 70%);
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
     transform: skewX(-20deg);
     animation: qaShine 3.5s ease-in-out infinite;
   }
+}
+
+// Primary deposit button caption sits below the rect CTA
+.qa-primary .qa-label {
+  color: $gold-light;
+  font-weight: 700;
+  margin-top: 2px;
 }
 
 @keyframes qaShine {
   0%, 60% { left: -60%; opacity: 0; }
   65% { opacity: 1; }
   100% { left: 140%; opacity: 0; }
-}
-
-.qa-primary .qa-label {
-  color: $gold-light;
-  font-weight: 700;
 }
 
 .qa-label {
