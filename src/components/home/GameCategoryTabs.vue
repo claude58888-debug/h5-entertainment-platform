@@ -58,8 +58,10 @@ onMounted(() => {
   position: sticky;
   top: $header-height;
   z-index: 50;
-  background: rgba(21, 15, 46, 0.9);
-  padding: 2px 0;
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 8px 0 6px;
 }
 
 .category-tabs {
@@ -73,25 +75,24 @@ onMounted(() => {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.06);
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: $radius-pill;
+  background: rgba(255,255,255,0.04);
   color: $text-secondary;
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  border: 1px solid transparent;
 
   &.active {
-    background: linear-gradient(90deg, $accent-purple, $accent-purple-glow);
-    color: #fff;
-    border: 1px solid rgba($accent-purple-light, 0.3);
-    box-shadow: 0 0 12px rgba(124, 58, 237, 0.5);
-  }
-
-  &:not(.active) {
-    border: 1px solid transparent;
+    background: $gold-gradient;
+    color: #1a1407;
+    font-weight: 700;
+    border-color: rgba(240, 215, 140, 0.6);
+    box-shadow: $shadow-gold-soft;
   }
 }
 
@@ -106,7 +107,7 @@ onMounted(() => {
   top: 0;
   bottom: 0;
   width: 40px;
-  background: linear-gradient(to right, transparent, rgba(21, 15, 46, 0.9));
+  background: linear-gradient(to right, transparent, rgba(10, 14, 26, 0.9));
   pointer-events: none;
   z-index: 10;
 }

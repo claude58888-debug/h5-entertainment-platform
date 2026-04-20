@@ -93,6 +93,28 @@
       </div>
     </div>
 
+    <!-- Stats panel: today PnL / realtime rebate / pending commission -->
+    <div class="stats-section">
+      <div class="stats-card">
+        <div class="stat-cell">
+          <span class="stat-label">{{ t('profile.todayPnl') }}</span>
+          <span class="stat-value" :class="{ positive: todayPnl >= 0, negative: todayPnl < 0 }">
+            {{ todayPnl >= 0 ? '+' : '' }}{{ todayPnl.toFixed(2) }}
+          </span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-cell">
+          <span class="stat-label">{{ t('profile.liveRebate') }}</span>
+          <span class="stat-value gold">{{ liveRebate.toFixed(2) }}</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-cell" @click="$router.push('/commission')">
+          <span class="stat-label">{{ t('profile.pendingCommission') }}</span>
+          <span class="stat-value gold">{{ pendingCommission.toFixed(2) }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 2b: Quick Menu Icons Grid -->
     <div class="quick-menu-section">
       <div class="quick-menu-grid">
@@ -355,6 +377,20 @@ const currentPrivileges = computed(() => {
 const showLevelUpNotification = ref(false)
 const levelUpTarget = ref(0)
 
+// Profile stats (PnL / rebate / commission) — pulled from wallet store with safe fallbacks.
+const todayPnl = computed(() => {
+  const v = walletStore.todayPnl
+  return typeof v === 'number' ? v : 0
+})
+const liveRebate = computed(() => {
+  const v = walletStore.liveRebate
+  return typeof v === 'number' ? v : 0
+})
+const pendingCommission = computed(() => {
+  const v = walletStore.pendingCommission
+  return typeof v === 'number' ? v : 0
+})
+
 // Password change
 const showPasswordDialog = ref(false)
 const passwordForm = ref({
@@ -513,28 +549,53 @@ onMounted(() => {
 }
 
 .profile-header {
-  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
-  padding: 24px 16px;
+  background:
+    radial-gradient(500px 180px at 20% 0%, rgba(212, 168, 67, 0.18), transparent 60%),
+    linear-gradient(180deg, rgba(20, 28, 46, 0.7), rgba(10, 14, 26, 0.4));
+  padding: 28px 16px 22px;
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.3);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .avatar {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.3);
   position: relative;
   cursor: pointer;
+  padding: 3px;
+  background: conic-gradient(
+    from 180deg,
+    #d4a843,
+    #f0d78c,
+    #c9a654,
+    #f0d78c,
+    #d4a843
+  );
+  box-shadow:
+    0 0 24px rgba(212, 168, 67, 0.45),
+    0 6px 18px rgba(0, 0, 0, 0.35);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(240, 215, 140, 0.25), transparent 70%);
+    filter: blur(8px);
+    z-index: -1;
+    pointer-events: none;
+  }
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
+    background: $bg-3;
+    display: block;
   }
 }
 
@@ -572,14 +633,16 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: linear-gradient(135deg, $accent-gold, #b45309);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 12px;
-  border-radius: 10px;
+  background: $gold-gradient;
+  color: #1a1407;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
   cursor: pointer;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  box-shadow: $shadow-gold-soft;
 }
 
 .vip-badge-icon {
@@ -588,12 +651,24 @@ onMounted(() => {
 
 /* VIP Progress Section */
 .vip-progress-section {
-  margin: 12px 16px 0;
-  background: linear-gradient(135deg, rgba($accent-gold, 0.1), rgba(180, 83, 9, 0.1));
-  border: 1px solid rgba($accent-gold, 0.25);
-  border-radius: 12px;
+  margin: 12px 14px 0;
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  border-radius: $radius-lg;
   padding: 14px;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px 120px at 10% 0%, rgba(201, 166, 84, 0.12), transparent 70%);
+    pointer-events: none;
+  }
 }
 
 .vip-progress-header {
@@ -606,7 +681,7 @@ onMounted(() => {
 .vip-current {
   font-size: 14px;
   font-weight: 700;
-  color: $accent-gold;
+  color: $gold-light;
 }
 
 .vip-xp {
@@ -617,7 +692,7 @@ onMounted(() => {
 .vip-next {
   font-size: 14px;
   font-weight: 700;
-  color: $accent-gold-light;
+  color: $gold-pale;
 
   &.max {
     color: $accent-red;
@@ -626,17 +701,24 @@ onMounted(() => {
 
 .progress-bar {
   height: 10px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 5px;
   overflow: hidden;
+  border: 1px solid rgba(201, 166, 84, 0.15);
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, $accent-gold, $accent-gold-light);
+  background: $gold-gradient-horizontal;
   border-radius: 5px;
   transition: width 0.6s ease;
-  box-shadow: 0 0 8px rgba($accent-gold, 0.5);
+  box-shadow: 0 0 12px rgba(201, 166, 84, 0.6);
+  animation: goldShimmer 3s ease-in-out infinite;
+}
+
+@keyframes goldShimmer {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.15); }
 }
 
 .vip-hint {
@@ -646,7 +728,7 @@ onMounted(() => {
   text-align: center;
 
   &.max-hint {
-    color: $accent-gold;
+    color: $gold-light;
   }
 }
 
@@ -655,7 +737,9 @@ onMounted(() => {
   justify-content: space-around;
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px solid rgba($accent-gold, 0.15);
+  border-top: 1px solid rgba(212, 168, 67, 0.18);
+  position: relative;
+  z-index: 1;
 }
 
 .priv-item {
@@ -678,10 +762,12 @@ onMounted(() => {
 .vip-view-all {
   text-align: center;
   margin-top: 8px;
+  position: relative;
+  z-index: 1;
 
   span {
     font-size: 11px;
-    color: $accent-gold;
+    color: $gold-light;
     cursor: pointer;
   }
 }
@@ -699,8 +785,8 @@ onMounted(() => {
 
 .level-up-card {
   position: relative;
-  background: linear-gradient(135deg, #1c1640, #2d1b69);
-  border: 2px solid $accent-gold;
+  background: linear-gradient(135deg, #141c2e, #0a0e1a);
+  border: 2px solid $gold;
   border-radius: 20px;
   padding: 40px 32px;
   text-align: center;
@@ -711,8 +797,8 @@ onMounted(() => {
   position: absolute;
   inset: -4px;
   border-radius: 22px;
-  background: linear-gradient(135deg, $accent-gold, transparent, $accent-gold);
-  opacity: 0.3;
+  background: linear-gradient(135deg, $gold, transparent, $gold-light);
+  opacity: 0.35;
   animation: glowPulse 1.5s ease-in-out infinite;
 }
 
@@ -726,7 +812,10 @@ onMounted(() => {
 .level-up-card h2 {
   font-size: 32px;
   font-weight: 800;
-  color: $accent-gold;
+  background: $gold-gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 8px;
 }
 
@@ -763,15 +852,27 @@ onMounted(() => {
 }
 
 .balance-section {
-  padding: 12px 16px;
+  padding: 12px 14px;
 }
 
 .balance-card {
-  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
-  border-radius: 12px;
+  background: $glass-bg;
+  border-radius: $radius-lg;
   padding: 16px;
-  border: 1px solid rgba(167, 139, 250, 0.3);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  box-shadow: $shadow-card;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px 120px at 20% 0%, rgba(201, 166, 84, 0.14), transparent 70%);
+    pointer-events: none;
+  }
 }
 
 .balance-label {
@@ -781,12 +882,18 @@ onMounted(() => {
 }
 
 .balance-amount {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   display: block;
-  margin: 4px 0 12px;
-  color: #fbbf24;
-  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+  margin: 4px 0 14px;
+  font-family: $font-mono;
+  letter-spacing: 0.5px;
+  background: $gold-gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
 }
 
 .balance-actions {
@@ -794,23 +901,84 @@ onMounted(() => {
   gap: 10px;
 }
 
+.balance-actions {
+  position: relative;
+  z-index: 1;
+}
+
 .outline-btn {
-  background: transparent !important;
-  border-color: $accent-purple !important;
-  color: $accent-purple-light !important;
+  background: #fff !important;
+  border: none !important;
+  color: #0a0e1a !important;
+  font-weight: 700 !important;
+}
+
+/* Stats panel */
+.stats-section {
+  padding: 0 14px 12px;
+}
+
+.stats-card {
+  display: flex;
+  align-items: stretch;
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  border-radius: $radius-lg;
+  padding: 12px 4px;
+}
+
+.stat-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+
+  .stat-label {
+    font-size: 11px;
+    color: $text-muted;
+  }
+
+  .stat-value {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: $font-mono;
+    color: $text-primary;
+
+    &.gold {
+      background: $gold-gradient;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    &.positive { color: #22c55e; }
+    &.negative { color: #ef4444; }
+  }
+}
+
+.stat-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
 }
 
 /* 2b: Quick Menu Grid */
 .quick-menu-section {
-  padding: 0 16px 12px;
+  padding: 0 14px 12px;
 }
 
 .quick-menu-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
-  background: $bg-card;
-  border-radius: 12px;
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  border-radius: $radius-lg;
   padding: 16px 12px;
 }
 
@@ -837,7 +1005,8 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(108, 92, 231, 0.15);
+  background: rgba(201, 166, 84, 0.14);
+  border: 1px solid rgba(201, 166, 84, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -845,7 +1014,7 @@ onMounted(() => {
 
   .van-icon {
     font-size: 20px;
-    color: $accent-purple-light;
+    color: $gold-light;
   }
 }
 
@@ -875,9 +1044,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(168, 85, 247, 0.2));
-  border: 1px solid rgba(108, 92, 231, 0.3);
-  border-radius: 12px;
+  background: $gold-gradient-soft;
+  border: 1px solid rgba(201, 166, 84, 0.35);
+  border-radius: $radius-lg;
   padding: 14px 16px;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -895,7 +1064,7 @@ onMounted(() => {
 
 .detail-link {
   font-size: 12px;
-  color: $accent-purple-light;
+  color: $gold-light;
   white-space: nowrap;
 }
 
@@ -909,24 +1078,31 @@ onMounted(() => {
 
 /* Menu Section */
 .menu-section {
-  padding: 0 16px;
+  padding: 0 14px;
   margin-bottom: 24px;
 
   :deep(.van-cell-group) {
-    background: $bg-card;
-    border-radius: 12px;
+    background: $glass-bg;
+    border: $glass-border;
+    backdrop-filter: $glass-backdrop;
+    -webkit-backdrop-filter: $glass-backdrop;
+    border-radius: $radius-lg;
     overflow: hidden;
   }
 
   :deep(.van-cell) {
-    background: $bg-card;
+    background: transparent;
     color: $text-primary;
+
+    &::after {
+      border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
 
     .van-cell__right-icon {
       color: $text-muted;
     }
     .van-icon {
-      color: $accent-purple-light;
+      color: $gold-light;
     }
     .van-cell__value {
       color: $text-secondary;

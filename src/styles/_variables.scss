@@ -1,34 +1,130 @@
-// Colors - Enriched Dark Luxury Theme
-$bg-primary: #0e0b1f;           // Deepest dark purple-black (page background)
-$bg-secondary: #150f2e;         // Slightly lighter, for sections
-$bg-card: #1c1640;              // Card background - rich dark purple
-$bg-card-hover: #231b50;        // Card hover state
-$bg-header: #110d28;            // Header - deep dark
-$bg-sidebar: #160f35;           // Sidebar panels
-$bg-input: #1a1540;             // Input fields
+// ============================================================================
+// H5 UI V2 — Premium Black Gold Glassmorphism Theme
+// Tokens aligned to Claude Design (tokens.css)
+// ============================================================================
 
-$accent-purple: #7c3aed;        // Primary purple
-$accent-purple-light: #a78bfa;  // Light purple
-$accent-purple-glow: #9333ea;   // Glow purple
-$accent-blue: #3b82f6;          // Electric blue accent
-$accent-cyan: #06b6d4;          // Cyan highlight
-$accent-gold: #f59e0b;          // Gold
-$accent-gold-light: #fbbf24;    // Light gold
-$accent-red: #ef4444;           // Alert red
-$accent-green: #10b981;         // Success green
+// -- Background layers (from tokens.css --bg-0..5) --------------------------
+$bg-0: #05070d;
+$bg-1: #0a0e1a;
+$bg-2: #111827;
+$bg-3: #1a2338;
+$bg-4: #212b44;
+$bg-5: #2a3555;
 
-$text-primary: #ffffff;
-$text-secondary: rgba(255, 255, 255, 0.75);
-$text-muted: rgba(255, 255, 255, 0.45);
-$border-color: rgba(124, 58, 237, 0.25);  // Purple-tinted border
-$border-glow: rgba(167, 139, 250, 0.3);   // Glow border
+// Backwards-compatible aliases
+$bg-primary: $bg-1;
+$bg-secondary: $bg-2;
+$bg-elevated: $bg-3;
+$bg-card: rgba(26, 35, 56, 0.55);          // Glass card fill
+$bg-card-strong: rgba(26, 35, 56, 0.75);
+$bg-card-hover: rgba(33, 43, 68, 0.70);
+$bg-header: rgba(10, 14, 26, 0.85);
+$bg-sidebar: rgba(17, 24, 39, 0.75);
+$bg-input: rgba(255, 255, 255, 0.04);
 
-// Layout
+// Page background — main radial from tokens.css
+$page-gradient: radial-gradient(
+  ellipse 120% 60% at 50% 0%,
+  #141b33 0%,
+  #0a0e1a 60%,
+  #05070d 100%
+);
+// Legacy alias retained (now resolves to radial)
+$page-gradient-radial: $page-gradient;
+
+// -- Gold gradient system (from tokens.css --gold-1..4) -------------------
+$gold-1: #f0d78c;  // light gold
+$gold-2: #d4a843;  // main gold
+$gold-3: #c9a654;  // deep gold
+$gold-4: #8a6d22;  // dark gold
+
+// Aliases
+$gold-dark: $gold-4;
+$gold: $gold-2;
+$gold-mid: $gold-3;
+$gold-light: $gold-1;
+$gold-pale: #fff6d9;
+
+// Gradients (exact from tokens.css)
+$gold-gradient: linear-gradient(135deg, #f0d78c 0%, #d4a843 50%, #c9a654 100%);
+$gold-gradient-horizontal: linear-gradient(90deg, #f0d78c 0%, #d4a843 50%, #c9a654 100%);
+$gold-gradient-soft: linear-gradient(135deg, rgba(240, 215, 140, 0.15) 0%, rgba(212, 168, 67, 0.08) 100%);
+$gold-shine: linear-gradient(110deg, #c9a654 0%, #f0d78c 35%, #fff6d9 50%, #f0d78c 65%, #c9a654 100%);
+
+// CTA shadow
+$cta-shadow: 0 4px 20px rgba(212, 168, 67, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+// -- Legacy accent names (kept for backwards compatibility) ---------------
+$accent-gold: $gold-2;
+$accent-gold-light: $gold-1;
+$accent-purple: $gold-2;
+$accent-purple-light: $gold-1;
+$accent-purple-glow: $gold-3;
+$accent-blue: #3b82f6;
+$accent-cyan: #06b6d4;
+$accent-red: #ef4444;
+$accent-green: #10b981;
+
+// -- Text --------------------------------------------------------------------
+$text-1: #ffffff;
+$text-2: #c4cae0;
+$text-3: #7a8199;
+
+$text-primary: $text-1;
+$text-secondary: $text-2;
+$text-muted: $text-3;
+$text-faint: rgba(122, 129, 153, 0.65);
+
+// -- Borders & separators ---------------------------------------------------
+$border-color: rgba(255, 255, 255, 0.08);
+$border-strong: rgba(255, 255, 255, 0.12);
+$border-gold: rgba(212, 168, 67, 0.35);
+$border-gold-strong: rgba(212, 168, 67, 0.55);
+$border-glow: rgba(240, 215, 140, 0.45);
+
+// -- Shadows & glows --------------------------------------------------------
+$shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35);
+$shadow-gold: 0 8px 24px rgba(212, 168, 67, 0.25);
+$shadow-gold-soft: 0 4px 20px rgba(212, 168, 67, 0.35);
+
+// -- Category gradient palette (homepage 2-column grid) --------------------
+$cat-live:    linear-gradient(135deg, #c21b5b 0%, #7a2582 100%); // 真人视讯 red-purple
+$cat-slots:   linear-gradient(135deg, #3b5bff 0%, #7a3cff 100%); // 电子 blue-purple
+$cat-sports:  linear-gradient(135deg, #15896b 0%, #2fbc6f 100%); // 体育 green
+$cat-lottery: linear-gradient(135deg, #e4892a 0%, #f0c34e 100%); // 彩票 gold/orange
+$cat-fishing: linear-gradient(135deg, #0a4474 0%, #0d9ab8 100%); // 捕鱼 deep blue / cyan
+$cat-chess:   linear-gradient(135deg, #6b3f1c 0%, #c4913b 100%); // 棋牌 brown/gold
+$cat-video:   linear-gradient(135deg, #3a1a6b 0%, #6a2bb8 100%); // 影视 deep purple
+$cat-crash:   linear-gradient(135deg, #0f8a9a 0%, #2dd0d8 100%); // 弹珠 cyan
+
+// -- Radii -----------------------------------------------------------------
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 20px;
+$radius-pill: 999px;
+
+// -- Glassmorphism mixin values (from tokens.css) --------------------------
+$glass-blur: 20px;
+$glass-bg: rgba(26, 35, 56, 0.55);
+$glass-bg-strong: rgba(26, 35, 56, 0.75);
+$glass-border: 1px solid rgba(255, 255, 255, 0.08);
+// Full backdrop-filter value (blur + saturate)
+$glass-backdrop: blur(20px) saturate(180%);
+
+// -- Typography ------------------------------------------------------------
+$font-system: 'Manrope', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+$font-num: 'Manrope', 'SF Pro Display', system-ui, sans-serif;
+// Numbers use Manrope with tabular-nums feature — same stack, the feature is set via font-feature-settings
+$font-mono: 'Manrope', 'SF Pro Display', 'SF Mono', ui-monospace, 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+
+// -- Layout ----------------------------------------------------------------
 $max-width: 450px;
-$header-height: 50px;
-$tab-bar-height: 60px;
-$banner-height: 180px;
-$game-card-width: 105px;
-$game-card-height: 140px;
+$header-height: 52px;
+$tab-bar-height: 64px;
+$tab-bar-center-size: 56px;
+$banner-height: 170px;
+$game-card-width: 110px;
+$game-card-height: 146px;
 $provider-card-width: 140px;
 $provider-card-height: 120px;

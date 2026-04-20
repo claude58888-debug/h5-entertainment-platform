@@ -94,13 +94,26 @@ async function onSubmit() {
 }
 
 .balance-card {
-  background: linear-gradient(135deg, $accent-purple, #4c1d95);
-  border-radius: 16px;
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  border-radius: $radius-lg;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(500px 160px at 20% 0%, rgba(212, 168, 67, 0.18), transparent 70%);
+    pointer-events: none;
+  }
 }
 
 .balance-label {
@@ -111,6 +124,13 @@ async function onSubmit() {
 .balance-amount {
   font-size: 28px;
   font-weight: 700;
+  font-family: $font-mono;
+  background: $gold-gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
 }
 
 .method-section, .amount-section {
@@ -129,29 +149,57 @@ async function onSubmit() {
 }
 
 .method-item {
-  padding: 12px;
-  border-radius: 10px;
-  background: $bg-card;
+  padding: 14px 10px;
+  border-radius: $radius-md;
+  background: $glass-bg;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   text-align: center;
   font-size: 12px;
+  color: $text-secondary;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  border: 2px solid transparent;
+  transition: all 0.2s ease;
 
   &.active {
-    border-color: $accent-purple;
+    border-color: $gold;
+    background: rgba(201, 166, 84, 0.12);
+    color: $gold-light;
+    box-shadow: $shadow-gold-soft;
   }
 }
 
 .method-icon { font-size: 24px; }
 
-.amount-input {
-  background: $bg-card;
-  border-radius: 10px;
+:deep(.amount-input) {
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  border-radius: $radius-md;
   margin-bottom: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &::after { display: none; }
+
+  &:focus-within {
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.18);
+  }
+
+  input {
+    color: $text-primary;
+    caret-color: $gold-light;
+    font-size: 18px;
+    font-family: $font-mono;
+    font-weight: 600;
+
+    &::placeholder { color: $text-muted; }
+  }
 }
 
 .quick-amounts {
@@ -161,14 +209,20 @@ async function onSubmit() {
 }
 
 .quick-btn {
-  padding: 6px 16px;
-  border-radius: 16px;
-  background: $bg-card;
+  padding: 7px 16px;
+  border-radius: $radius-pill;
+  background: $glass-bg;
+  border: 1px solid rgba(201, 166, 84, 0.2);
+  color: $text-secondary;
   font-size: 13px;
+  font-family: $font-mono;
   cursor: pointer;
+  transition: all 0.2s ease;
 
   &:active {
-    background: $accent-purple;
+    background: $gold-gradient;
+    color: #1a1407;
+    border-color: $gold;
   }
 }
 
@@ -180,5 +234,10 @@ async function onSubmit() {
 
 .submit-btn {
   margin-top: 8px;
+  background: $gold-gradient !important;
+  border: none !important;
+  color: #1a1407 !important;
+  font-weight: 700 !important;
+  box-shadow: $shadow-gold !important;
 }
 </style>

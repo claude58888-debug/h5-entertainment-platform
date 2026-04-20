@@ -270,10 +270,25 @@ async function onSubmit() {
 }
 
 .balance-card {
-  background: linear-gradient(135deg, #10b981, #065f46);
-  border-radius: 16px;
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  border-radius: $radius-lg;
   padding: 20px;
   margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(500px 160px at 20% 0%, rgba(212, 168, 67, 0.18), transparent 70%);
+    pointer-events: none;
+  }
+
+  > * { position: relative; z-index: 1; }
 }
 
 .balance-row {
@@ -297,6 +312,11 @@ async function onSubmit() {
 .balance-amount {
   font-size: 32px;
   font-weight: 700;
+  font-family: $font-mono;
+  background: $gold-gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .balance-unit {
@@ -309,8 +329,8 @@ async function onSubmit() {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  color: $text-muted;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 10px;
 }
 
@@ -332,20 +352,25 @@ async function onSubmit() {
 
 .method-item {
   padding: 14px 12px;
-  border-radius: 12px;
-  background: $bg-card;
+  border-radius: $radius-md;
+  background: $glass-bg;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   text-align: center;
+  color: $text-secondary;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  border: 2px solid transparent;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 
   &.active {
-    border-color: $accent-purple;
-    background: rgba(124, 58, 237, 0.1);
+    border-color: $gold;
+    background: rgba(201, 166, 84, 0.12);
+    color: $gold-light;
+    box-shadow: $shadow-gold-soft;
   }
 }
 
@@ -363,10 +388,34 @@ async function onSubmit() {
   color: $text-muted;
 }
 
-.form-input {
-  background: $bg-card;
-  border-radius: 10px;
+:deep(.form-input) {
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  border-radius: $radius-md;
   margin-bottom: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &::after { display: none; }
+
+  &:focus-within {
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.18);
+  }
+
+  input {
+    color: $text-primary;
+    caret-color: $gold-light;
+
+    &::placeholder { color: $text-muted; }
+  }
+}
+
+:deep(.amount-field) input {
+  font-family: $font-mono;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .field-tip {
@@ -376,9 +425,9 @@ async function onSubmit() {
 }
 
 .amount-all {
-  color: $accent-purple;
+  color: $gold-light;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -390,23 +439,29 @@ async function onSubmit() {
 }
 
 .quick-amount-btn {
-  padding: 6px 16px;
-  border-radius: 20px;
-  background: $bg-card;
+  padding: 7px 16px;
+  border-radius: $radius-pill;
+  background: $glass-bg;
+  border: 1px solid rgba(201, 166, 84, 0.2);
   font-size: 13px;
+  font-family: $font-mono;
   color: $text-secondary;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 
   &.active {
-    background: $accent-purple;
-    color: #fff;
+    background: $gold-gradient;
+    color: #1a1407;
+    border-color: $gold;
   }
 }
 
 .fee-info {
-  background: $bg-card;
-  border-radius: 12px;
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: $glass-backdrop;
+  -webkit-backdrop-filter: $glass-backdrop;
+  border-radius: $radius-md;
   padding: 14px;
   margin-bottom: 20px;
 }
@@ -421,15 +476,25 @@ async function onSubmit() {
 
 .fee-value {
   font-weight: 600;
+  font-family: $font-mono;
   color: $text-primary;
 
   &.highlight {
-    color: $accent-gold;
+    background: $gold-gradient;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
   }
 }
 
 .submit-btn {
   margin-bottom: 24px;
+  background: $gold-gradient !important;
+  border: none !important;
+  color: #1a1407 !important;
+  font-weight: 700 !important;
+  box-shadow: $shadow-gold !important;
 }
 
 .records-section {
@@ -444,8 +509,11 @@ async function onSubmit() {
 }
 
 .record-card {
-  background: $bg-card;
-  border-radius: 12px;
+  background: $glass-bg;
+  border: $glass-border;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: $radius-md;
   padding: 14px;
   margin-bottom: 8px;
   display: flex;
@@ -484,6 +552,7 @@ async function onSubmit() {
 .record-amount {
   font-size: 16px;
   font-weight: 700;
+  font-family: $font-mono;
   color: #ef4444;
 }
 
@@ -497,8 +566,8 @@ async function onSubmit() {
     background: rgba(16, 185, 129, 0.1);
   }
   &.pending {
-    color: $accent-gold;
-    background: rgba(245, 158, 11, 0.1);
+    color: $gold-light;
+    background: rgba(201, 166, 84, 0.12);
   }
   &.failed {
     color: #ef4444;

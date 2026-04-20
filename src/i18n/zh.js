@@ -32,10 +32,13 @@ export default {
     backToHome: '返回首页',
     skipToContent: '跳转到主要内容',
     noMoreData: '没有更多了',
-    mainNav: '主导航'
+    mainNav: '主导航',
+    refresh: '刷新'
   },
   nav: {
     home: '首页',
+    games: '游戏',
+    deposit: '充值',
     activity: '活动',
     service: '客服',
     download: '下载',
@@ -65,7 +68,9 @@ export default {
     vpnDesc: '安全访问交易所，保护您的隐私',
     huobi: '火币网',
     binance: '币安',
-    okx: '欧易'
+    okx: '欧易',
+    availableBalance: '可用余额',
+    liveWins: '实时战报'
   },
   auth: {
     phone: '手机号',
@@ -102,6 +107,8 @@ export default {
   actions: {
     deposit: '充值',
     withdraw: '提现',
+    transfer: '转账',
+    support: '客服',
     tasks: '任务',
     income: '收益',
     invite: '邀请'
@@ -128,6 +135,9 @@ export default {
     inviteBanner: '邀请好友最高获得0.6% 的返佣',
     details: '详情',
     vipHint: '您再存50U即可升级VIP会员体系',
+    todayPnl: '今日盈亏',
+    liveRebate: '实时返水',
+    pendingCommission: '待领佣金',
     accountSecurity: '账户安全',
     changePassword: '修改密码',
     loginHistory: '登录历史',

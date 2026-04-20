@@ -6,8 +6,11 @@
         <div class="deco-circle c1"></div>
         <div class="deco-circle c2"></div>
         <div class="deco-diamond"></div>
+        <div class="card-title">{{ game.name }}</div>
       </div>
+      <span v-if="badge" class="game-badge" :class="'badge-' + badge.toLowerCase()">{{ badge }}</span>
     </div>
+    <div v-if="game.name" class="card-caption">{{ game.name }}</div>
   </div>
 </template>
 
@@ -18,7 +21,8 @@ import { useUserStore } from '@/stores/user'
 import { addRecentGame } from '@/utils/recentBrowsing'
 
 const props = defineProps({
-  game: { type: Object, required: true }
+  game: { type: Object, required: true },
+  badge: { type: String, default: '' } // 'HOT' | 'NEW' | ''
 })
 
 const router = useRouter()
@@ -85,7 +89,7 @@ function handleClick() {
 
 <style lang="scss" scoped>
 .game-card {
-  width: 110px;
+  width: 108px;
   flex-shrink: 0;
   cursor: pointer;
   transition: transform 0.2s;
@@ -95,20 +99,77 @@ function handleClick() {
   }
 }
 
+// 3:4 aspect ratio cover (108x144)
 .card-image {
   width: 100%;
-  height: 140px;
-  border-radius: 10px;
+  aspect-ratio: 3 / 4;
+  min-height: 144px;
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
-  border: 1px solid rgba(124, 58, 237, 0.2);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -24px 40px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
-    border-color: rgba(167, 139, 250, 0.5);
-    box-shadow: 0 6px 25px rgba(124, 58, 237, 0.3);
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
   }
+}
+
+.card-title {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-caption {
+  margin-top: 6px;
+  color: $text-secondary;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// HOT / NEW badge top-left
+.game-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  font-family: $font-mono;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.badge-hot {
+  background: linear-gradient(135deg, #ff4b4b 0%, #ff7a1a 100%);
+}
+.badge-new {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
 }
 
 .game-img {
