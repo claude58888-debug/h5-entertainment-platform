@@ -67,7 +67,7 @@
         <!-- Hot Games -->
         <SectionHeader :title="$t('home.hot')" icon="🔥" more="/games/hot" :scrollable="true" @scroll-left="scrollHot(-1)" @scroll-right="scrollHot(1)" />
         <div class="scroll-row hide-scrollbar" ref="hotScrollRef">
-          <GameCard v-for="game in hotGames" :key="game.id" :game="game" />
+          <GameCard v-for="(game, idx) in hotGames" :key="game.id" :game="game" :badge="idx < 3 ? 'HOT' : ''" />
         </div>
 
         <!-- Live Wins Table -->

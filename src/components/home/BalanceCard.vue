@@ -26,9 +26,9 @@
     </div>
 
     <div class="balance-actions">
-      <button class="qa" v-for="a in actions" :key="a.key" @click="handleAction(a)">
+      <button class="qa" :class="{ 'qa-primary': a.key === 'deposit' }" v-for="a in actions" :key="a.key" @click="handleAction(a)">
         <span class="qa-icon">
-          <svg v-if="a.icon === 'deposit'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg v-if="a.icon === 'deposit'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
           <svg v-else-if="a.icon === 'withdraw'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -99,12 +99,30 @@ function handleAction(a) {
   padding: 14px 16px;
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(212, 168, 67, 0.28) !important;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 8px 32px rgba(212, 168, 67, 0.08);
 
+  // gold-tinted radial glow top-left + subtle inner gold hairline
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(400px 120px at 20% 0%, rgba(201, 166, 84, 0.14), transparent 70%);
+    background:
+      radial-gradient(420px 140px at 20% 0%, rgba(240, 215, 140, 0.18), transparent 70%),
+      radial-gradient(320px 180px at 100% 100%, rgba(212, 168, 67, 0.10), transparent 70%);
+    pointer-events: none;
+  }
+
+  // hairline gold top edge
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 16px; right: 16px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(240, 215, 140, 0.6) 50%, transparent 100%);
     pointer-events: none;
   }
 }
@@ -238,12 +256,49 @@ function handleAction(a) {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: $gold-gradient;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: $gold-light;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+// Deposit gets the prominent gold-gradient treatment
+.qa-primary .qa-icon {
+  background: $gold-gradient;
+  border-color: rgba(240, 215, 140, 0.6);
   color: #1a1407;
-  box-shadow: 0 2px 8px rgba(201, 166, 84, 0.35);
+  box-shadow:
+    0 4px 20px rgba(212, 168, 67, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  position: relative;
+  overflow: hidden;
+
+  // subtle diagonal shine sweep
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 40%;
+    height: 200%;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.6) 50%, transparent 70%);
+    transform: skewX(-20deg);
+    animation: qaShine 3.5s ease-in-out infinite;
+  }
+}
+
+@keyframes qaShine {
+  0%, 60% { left: -60%; opacity: 0; }
+  65% { opacity: 1; }
+  100% { left: 140%; opacity: 0; }
+}
+
+.qa-primary .qa-label {
+  color: $gold-light;
+  font-weight: 700;
 }
 
 .qa-label {

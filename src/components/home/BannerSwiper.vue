@@ -23,13 +23,31 @@
             <p class="banner-subtitle">{{ banner.subtitle }}</p>
           </div>
           <div v-if="!bannerHasImage(banner)" class="banner-decos">
+            <div class="deco-gold-sheen"></div>
             <div class="deco-circle d1"></div>
             <div class="deco-circle d2"></div>
             <div class="deco-circle d3"></div>
             <div class="deco-diamond"></div>
-            <div class="deco-coin">
-              <div class="coin-inner">$</div>
-            </div>
+            <!-- stacked coins -->
+            <svg class="deco-coin-stack" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+              <ellipse cx="40" cy="64" rx="28" ry="8" fill="#f0d78c" fill-opacity="0.65"/>
+              <ellipse cx="40" cy="56" rx="28" ry="8" fill="#d4a843" fill-opacity="0.55"/>
+              <rect x="12" y="56" width="56" height="8" fill="#c9a654" fill-opacity="0.55"/>
+              <ellipse cx="40" cy="44" rx="28" ry="8" fill="#f0d78c" fill-opacity="0.75"/>
+              <rect x="12" y="44" width="56" height="12" fill="#d4a843" fill-opacity="0.65"/>
+              <ellipse cx="40" cy="44" rx="28" ry="8" fill="none" stroke="#fff6d9" stroke-opacity="0.8" stroke-width="1"/>
+              <text x="40" y="49" text-anchor="middle" font-size="14" font-weight="900" fill="#1a1407" fill-opacity="0.9" font-family="Manrope, system-ui, sans-serif">$</text>
+            </svg>
+            <!-- sparkles -->
+            <svg class="deco-sparkle s1" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="#fff6d9" fill-opacity="0.95"/>
+            </svg>
+            <svg class="deco-sparkle s2" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="#f0d78c" fill-opacity="0.85"/>
+            </svg>
+            <svg class="deco-sparkle s3" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="#ffffff" fill-opacity="0.8"/>
+            </svg>
             <div class="deco-dots">
               <span></span><span></span><span></span>
             </div>
@@ -216,6 +234,45 @@ function onImgError(e, bannerId) {
     border-radius: 50%;
     background: rgba(255,255,255,0.2);
   }
+}
+
+// Gold sheen overlay for 2.5D feel
+.deco-gold-sheen {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(220px 120px at 90% 50%, rgba(240, 215, 140, 0.28), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.deco-coin-stack {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  width: 76px;
+  height: 76px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+  animation: coinBob 3.6s ease-in-out infinite;
+}
+
+@keyframes coinBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.deco-sparkle {
+  position: absolute;
+  animation: sparkleTwinkle 2.4s ease-in-out infinite;
+
+  &.s1 { top: 14px; right: 86px; width: 14px; height: 14px; animation-delay: 0s; }
+  &.s2 { bottom: 28px; right: 100px; width: 10px; height: 10px; animation-delay: 0.6s; }
+  &.s3 { top: 38px; right: 40px; width: 8px;  height: 8px;  animation-delay: 1.2s; }
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% { transform: scale(0.6); opacity: 0.3; }
+  50%      { transform: scale(1);   opacity: 1; }
 }
 
 .skeleton-banner {
