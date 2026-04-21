@@ -362,6 +362,128 @@ app.get('/api/admin/dashboard/stats', authMiddleware, (req, res) => {
   res.json(result)
 })
 
+// Dashboard trends - time-series for dashboard charts
+// Shape: { dates[], deposits[], withdrawals[], ggr[], newUsers[], activeUsers[], gameCategories[{name,value}] }
+app.get('/api/admin/dashboard/trends', authMiddleware, (req, res) => {
+  const range = ['1d', '7d', '30d'].includes(req.query.range) ? req.query.range : '7d'
+  const cacheKey = `dashboard:trends:${range}`
+  const cached = cacheGet(cacheKey)
+  if (cached) return res.json(cached)
+
+  const dates = []
+  const deposits = []
+  const withdrawals = []
+  const ggr = []
+  const newUsers = []
+  const activeUsers = []
+
+  if (range === '1d') {
+    // 24 hourly buckets for today
+    for (let h = 0; h < 24; h += 1) {
+      const hh = String(h).padStart(2, '0')
+      dates.push(`${hh}:00`)
+      const nextHh = String(h + 1).padStart(2, '0')
+      const endClause = h === 23 ? "< date('now', '+1 day')" : `< date('now') || ' ${nextHh}:00:00'`
+      const startExpr = `date('now') || ' ${hh}:00:00'`
+      // Using parameterized queries for safety even though bounds are derived
+      const depRow = db.prepare(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status='completed' AND time >= ${startExpr} AND time ${endClause}`
+      ).get()
+      const wdRow = db.prepare(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed','approved') AND time >= ${startExpr} AND time ${endClause}`
+      ).get()
+      const newRow = db.prepare(
+        `SELECT COUNT(*) as c FROM members WHERE registered >= ${startExpr} AND registered ${endClause}`
+      ).get()
+      const actRow = db.prepare(
+        `SELECT COUNT(DISTINCT member) as c FROM bets WHERE time >= ${startExpr} AND time ${endClause}`
+      ).get()
+      deposits.push(depRow.total || 0)
+      withdrawals.push(wdRow.total || 0)
+      ggr.push((depRow.total || 0) - (wdRow.total || 0))
+      newUsers.push(newRow.c || 0)
+      activeUsers.push(actRow.c || 0)
+    }
+  } else {
+    // Daily buckets. 7d → last 7 days ending today. 30d → last 30.
+    const n = range === '30d' ? 30 : 7
+    // Preload revenue_trend rows for the window into a map for O(1) lookup
+    const trendRows = db.prepare(
+      "SELECT date, deposit, withdrawal, revenue FROM revenue_trend WHERE date >= date('now', ?) AND date <= date('now')"
+    ).all(`-${n - 1} day`)
+    const trendByDate = new Map(trendRows.map(r => [r.date, r]))
+
+    // newUsers per day (one query, grouped)
+    const newByDate = new Map(
+      db.prepare(
+        "SELECT substr(registered,1,10) as d, COUNT(*) as c FROM members WHERE registered >= date('now', ?) GROUP BY d"
+      ).all(`-${n - 1} day`).map(r => [r.d, r.c])
+    )
+    // activeUsers per day = distinct bettors
+    const actByDate = new Map(
+      db.prepare(
+        "SELECT substr(time,1,10) as d, COUNT(DISTINCT member) as c FROM bets WHERE time >= date('now', ?) GROUP BY d"
+      ).all(`-${n - 1} day`).map(r => [r.d, r.c])
+    )
+    // Today's deposits/withdrawals (revenue_trend may not yet include today)
+    const depByDate = new Map(
+      db.prepare(
+        "SELECT substr(time,1,10) as d, COALESCE(SUM(amount),0) as s FROM deposits WHERE status='completed' AND time >= date('now', ?) GROUP BY d"
+      ).all(`-${n - 1} day`).map(r => [r.d, r.s])
+    )
+    const wdByDate = new Map(
+      db.prepare(
+        "SELECT substr(time,1,10) as d, COALESCE(SUM(amount),0) as s FROM withdrawals WHERE status IN ('completed','approved') AND time >= date('now', ?) GROUP BY d"
+      ).all(`-${n - 1} day`).map(r => [r.d, r.s])
+    )
+
+    for (let i = n - 1; i >= 0; i -= 1) {
+      const { date: d } = db.prepare("SELECT date('now', ?) as date").get(`-${i} day`)
+      const label = d.slice(5) // MM-DD
+      dates.push(label)
+      const hist = trendByDate.get(d)
+      // Prefer revenue_trend when present; otherwise fall back to live aggregates
+      const dep = hist ? (hist.deposit || 0) : (depByDate.get(d) || 0)
+      const wd = hist ? (hist.withdrawal || 0) : (wdByDate.get(d) || 0)
+      const rev = hist ? (hist.revenue ?? (dep - wd)) : ((depByDate.get(d) || 0) - (wdByDate.get(d) || 0))
+      deposits.push(dep)
+      withdrawals.push(wd)
+      ggr.push(rev)
+      newUsers.push(newByDate.get(d) || 0)
+      activeUsers.push(actByDate.get(d) || 0)
+    }
+  }
+
+  // Game categories — sum bet amounts by category (join bets → games). Fall back
+  // to games.revenue then games.bets if bets table is empty for the window.
+  let sinceExpr
+  if (range === '1d') sinceExpr = "date('now')"
+  else if (range === '30d') sinceExpr = "date('now', '-29 day')"
+  else sinceExpr = "date('now', '-6 day')"
+  let gameCategories = db.prepare(
+    `SELECT g.category as name, COALESCE(SUM(b.bet_amount), 0) as value
+       FROM bets b JOIN games g ON g.id = b.game
+       WHERE b.time >= ${sinceExpr}
+       GROUP BY g.category
+       ORDER BY value DESC`
+  ).all()
+  if (gameCategories.every(c => !c.value)) {
+    // No bet activity in window → fall back to all-time game revenue/bets per category
+    gameCategories = db.prepare(
+      `SELECT category as name, COALESCE(SUM(CASE WHEN revenue > 0 THEN revenue ELSE bets END), 0) as value
+         FROM games
+         WHERE category IS NOT NULL AND category != ''
+         GROUP BY category
+         ORDER BY value DESC`
+    ).all()
+  }
+  gameCategories = gameCategories.filter(c => c.name).map(c => ({ name: c.name, value: c.value || 0 }))
+
+  const result = { dates, deposits, withdrawals, ggr, newUsers, activeUsers, gameCategories }
+  cacheSet(cacheKey, result, 30000)
+  res.json(result)
+})
+
 // Dashboard alerts - counts of pending items and recent risk events
 app.get('/api/admin/dashboard/alerts', authMiddleware, (req, res) => {
   const pendingWithdrawals = db.prepare("SELECT COUNT(*) as count FROM withdrawals WHERE status = 'pending'").get().count
