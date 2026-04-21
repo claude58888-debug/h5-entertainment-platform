@@ -315,7 +315,22 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     { id: 5, type: 'warning', text: '会员 user_5521 连续提现3次，累计 ¥80,000', time: '25分钟前', level: 'high' }
   ]
 
-  const result = { kpi, revenueTrend: revenueTrendQuery, topGamesGGR, depositByChannel: depositByChannelQuery, realtimeAlerts }
+  // Flat KPI fields consumed by admin DashboardPage.vue.
+  // The nested `kpi` object above is kept for backward compat with older callers.
+  const flatKpis = {
+    totalUsers: totalMembers,
+    totalUsersDelta: calcChange(totalMembers, prevMembers),
+    todayDeposits: depositQuery || 0,
+    todayDepositsDelta: calcChange(depositQuery, prevDeposit),
+    todayWithdrawals: withdrawalQuery || 0,
+    todayWithdrawalsDelta: calcChange(withdrawalQuery, prevWithdrawal),
+    activeUsers: onlineNow,
+    activeUsersDelta: 0,
+    ggr: todayProfit,
+    ggrDelta: calcChange(todayProfit, prevProfit),
+  }
+
+  const result = { ...flatKpis, kpi, revenueTrend: revenueTrendQuery, topGamesGGR, depositByChannel: depositByChannelQuery, realtimeAlerts }
   cacheSet(cacheKey, result, 30000)
   res.json(result)
 })
