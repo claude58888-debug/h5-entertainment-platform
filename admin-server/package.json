@@ -8,6 +8,7 @@
     "seed": "node seed.js"
   },
   "dependencies": {
+    "axios": "^1.15.2",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^11.0.0",
     "compression": "^1.8.1",
@@ -18,5 +19,8 @@
     "express-validator": "^7.3.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0"
   }
 }
