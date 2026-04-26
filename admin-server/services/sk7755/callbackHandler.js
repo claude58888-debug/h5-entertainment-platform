@@ -1,7 +1,15 @@
 /**
- * Handle SK7755 WalletData push callbacks (settle / cancelBet).
+ * Handle SK7755 seamless wallet callbacks.
+ *
+ * Supported actions:
+ *   - getBalance: return player's current balance
+ *   - bet / placeBet / debit: deduct bet amount from player's balance
+ *   - settle / credit: settle a bet (add winnings to player's balance)
+ *   - betNSettle: combined bet + settle in one call
+ *   - cancelBet: cancel a previous bet
  *
  * Expects a `db` instance (better-sqlite3) to be injected via init().
+ * The user_account sent to SK7755 is `ddyl_{memberId}`, e.g. ddyl_M10018.
  */
 
 let db = null
@@ -48,63 +56,266 @@ export function ensureTable() {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_sk7755_settle_time ON sk7755_bets(settle_time)`)
 }
 
-const INSERT_BET = `
-  INSERT INTO sk7755_bets
-    (action, uid, acc_type, supplier, platform, order_no, main_order_no,
-     bonus_code, game_type, game_code, game_name, balance_before, balance_after,
-     bet_amount, win_amount, add_amount, sub_amount, bet_time, settle_time,
-     currency, bet_type, status)
-  VALUES
-    (@action, @uid, @accType, @supplier, @platform, @orderNo, @mainOrderNo,
-     @bonusCode, @gameType, @code, @gameName, @balance, @newBalance,
-     @betAmount, @winAmount, @addAmount, @subAmount, @betTime, @stime,
-     @currency, @betType, @status)
-`
+/**
+ * Extract memberId from SK7755 uid.
+ * uid format: "ddyl_M10018" → memberId: "M10018"
+ */
+function extractMemberId(uid) {
+  if (!uid) return null
+  const parts = uid.split('_')
+  return parts.length > 1 ? parts.slice(1).join('_') : uid
+}
 
-const UPDATE_CANCEL = `
-  UPDATE sk7755_bets
-  SET status = 'cancelled', updated_at = datetime('now')
-  WHERE order_no = @orderNo
-`
+function getMemberBalance(uid) {
+  const memberId = extractMemberId(uid)
+  if (!memberId) return 0
+  const row = db.prepare('SELECT balance FROM members WHERE id = ?').get(memberId)
+  return row ? row.balance : 0
+}
 
-function normalize(body) {
+function updateMemberBalance(uid, newBalance) {
+  const memberId = extractMemberId(uid)
+  if (!memberId) return false
+  const result = db.prepare('UPDATE members SET balance = ? WHERE id = ?').run(newBalance, memberId)
+  return result.changes > 0
+}
+
+function handleGetBalance(body) {
+  const balance = getMemberBalance(body.uid)
   return {
-    action: body.action ?? null,
-    uid: body.uid ?? null,
-    accType: body.accType ?? 0,
-    supplier: body.supplier ?? null,
-    platform: body.platform ?? null,
-    orderNo: body.orderNo ?? null,
-    mainOrderNo: body.mainOrderNo ?? null,
-    bonusCode: body.bonusCode ?? null,
-    gameType: body.gameType ?? null,
-    code: body.code ?? null,
-    gameName: body.gameName ?? null,
-    balance: body.balance ?? null,
-    newBalance: body.newBalance ?? null,
-    betAmount: body.betAmount ?? null,
-    winAmount: body.winAmount ?? null,
-    addAmount: body.addAmount ?? null,
-    subAmount: body.subAmount ?? null,
-    betTime: body.betTime ?? null,
-    stime: body.stime ?? null,
-    currency: body.currency ?? 'CNY',
-    betType: body.betType ?? null,
+    code: '0000',
+    message: 'Success',
+    balance: balance,
+    currency: 'CNY',
+  }
+}
+
+function handleBet(body) {
+  const uid = body.uid
+  const betAmount = Number(body.betAmount || body.subAmount || body.amount || 0)
+  const orderNo = body.orderNo
+
+  if (!orderNo) {
+    return { code: '9999', message: 'Missing orderNo' }
+  }
+
+  const currentBalance = getMemberBalance(uid)
+  if (currentBalance < betAmount) {
+    return { code: '1002', message: 'Insufficient balance', balance: currentBalance }
+  }
+
+  const newBalance = currentBalance - betAmount
+  updateMemberBalance(uid, newBalance)
+
+  // Record the bet
+  const insertStmt = db.prepare(`
+    INSERT OR IGNORE INTO sk7755_bets
+      (action, uid, acc_type, supplier, platform, order_no, main_order_no,
+       bonus_code, game_type, game_code, game_name, balance_before, balance_after,
+       bet_amount, win_amount, add_amount, sub_amount, bet_time, settle_time,
+       currency, bet_type, status)
+    VALUES
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `)
+
+  insertStmt.run(
+    body.action || 'bet',
+    uid || '',
+    body.accType || body.acc_type || 0,
+    body.supplier || null,
+    body.platform || '',
+    orderNo,
+    body.mainOrderNo || body.main_order_no || null,
+    body.bonusCode || body.bonus_code || null,
+    body.gameType || body.game_type || null,
+    body.code || body.game_code || null,
+    body.gameName || body.game_name || null,
+    currentBalance,
+    newBalance,
+    betAmount,
+    0,
+    0,
+    betAmount,
+    body.betTime || body.bet_time || null,
+    body.stime || body.settle_time || null,
+    body.currency || 'CNY',
+    body.betType || body.bet_type || null,
+    'pending'
+  )
+
+  return {
+    code: '0000',
+    message: 'Success',
+    balance: newBalance,
+    currency: 'CNY',
   }
 }
 
 function handleSettle(body) {
-  const stmt = db.prepare(INSERT_BET)
-  stmt.run({ ...normalize(body), status: 'settled' })
+  const uid = body.uid
+  const winAmount = Number(body.winAmount || body.addAmount || body.amount || 0)
+  const betAmount = Number(body.betAmount || body.subAmount || 0)
+  const orderNo = body.orderNo
+
+  if (!orderNo) {
+    return { code: '9999', message: 'Missing orderNo' }
+  }
+
+  const currentBalance = getMemberBalance(uid)
+  const newBalance = currentBalance + winAmount
+  updateMemberBalance(uid, newBalance)
+
+  // Insert or update bet record
+  const existing = db.prepare('SELECT id FROM sk7755_bets WHERE order_no = ?').get(orderNo)
+
+  if (existing) {
+    db.prepare(`
+      UPDATE sk7755_bets
+      SET status = 'settled', win_amount = ?, add_amount = ?, balance_after = ?,
+          settle_time = ?, updated_at = datetime('now')
+      WHERE order_no = ?
+    `).run(winAmount, winAmount, newBalance, body.stime || body.settle_time || null, orderNo)
+  } else {
+    const insertStmt = db.prepare(`
+      INSERT OR IGNORE INTO sk7755_bets
+        (action, uid, acc_type, supplier, platform, order_no, main_order_no,
+         bonus_code, game_type, game_code, game_name, balance_before, balance_after,
+         bet_amount, win_amount, add_amount, sub_amount, bet_time, settle_time,
+         currency, bet_type, status)
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+
+    insertStmt.run(
+      body.action || 'settle',
+      uid || '',
+      body.accType || body.acc_type || 0,
+      body.supplier || null,
+      body.platform || '',
+      orderNo,
+      body.mainOrderNo || body.main_order_no || null,
+      body.bonusCode || body.bonus_code || null,
+      body.gameType || body.game_type || null,
+      body.code || body.game_code || null,
+      body.gameName || body.game_name || null,
+      currentBalance,
+      newBalance,
+      betAmount,
+      winAmount,
+      winAmount,
+      betAmount,
+      body.betTime || body.bet_time || null,
+      body.stime || body.settle_time || null,
+      body.currency || 'CNY',
+      body.betType || body.bet_type || null,
+      'settled'
+    )
+  }
+
+  return {
+    code: '0000',
+    message: 'Success',
+    balance: newBalance,
+    currency: 'CNY',
+  }
+}
+
+function handleBetNSettle(body) {
+  const uid = body.uid
+  const betAmount = Number(body.betAmount || body.subAmount || 0)
+  const winAmount = Number(body.winAmount || body.addAmount || 0)
+  const orderNo = body.orderNo
+
+  if (!orderNo) {
+    return { code: '9999', message: 'Missing orderNo' }
+  }
+
+  const currentBalance = getMemberBalance(uid)
+  if (currentBalance < betAmount) {
+    return { code: '1002', message: 'Insufficient balance', balance: currentBalance }
+  }
+
+  const newBalance = currentBalance - betAmount + winAmount
+  updateMemberBalance(uid, newBalance)
+
+  const insertStmt = db.prepare(`
+    INSERT OR IGNORE INTO sk7755_bets
+      (action, uid, acc_type, supplier, platform, order_no, main_order_no,
+       bonus_code, game_type, game_code, game_name, balance_before, balance_after,
+       bet_amount, win_amount, add_amount, sub_amount, bet_time, settle_time,
+       currency, bet_type, status)
+    VALUES
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `)
+
+  insertStmt.run(
+    'betNSettle',
+    uid || '',
+    body.accType || body.acc_type || 0,
+    body.supplier || null,
+    body.platform || '',
+    orderNo,
+    body.mainOrderNo || body.main_order_no || null,
+    body.bonusCode || body.bonus_code || null,
+    body.gameType || body.game_type || null,
+    body.code || body.game_code || null,
+    body.gameName || body.game_name || null,
+    currentBalance,
+    newBalance,
+    betAmount,
+    winAmount,
+    winAmount,
+    betAmount,
+    body.betTime || body.bet_time || null,
+    body.stime || body.settle_time || null,
+    body.currency || 'CNY',
+    body.betType || body.bet_type || null,
+    'settled'
+  )
+
+  return {
+    code: '0000',
+    message: 'Success',
+    balance: newBalance,
+    currency: 'CNY',
+  }
 }
 
 function handleCancelBet(body) {
-  const upd = db.prepare(UPDATE_CANCEL)
-  const result = upd.run({ orderNo: body.orderNo })
+  const uid = body.uid
+  const orderNo = body.orderNo
 
-  if (result.changes === 0) {
-    const stmt = db.prepare(INSERT_BET)
-    stmt.run({ ...normalize(body), status: 'cancelled' })
+  if (!orderNo) {
+    return { code: '9999', message: 'Missing orderNo' }
+  }
+
+  const existing = db.prepare('SELECT * FROM sk7755_bets WHERE order_no = ?').get(orderNo)
+
+  if (existing && existing.status !== 'cancelled') {
+    const refundAmount = Number(existing.bet_amount || 0)
+    const currentBalance = getMemberBalance(uid)
+    const newBalance = currentBalance + refundAmount
+    updateMemberBalance(uid, newBalance)
+
+    db.prepare(`
+      UPDATE sk7755_bets
+      SET status = 'cancelled', balance_after = ?, updated_at = datetime('now')
+      WHERE order_no = ?
+    `).run(newBalance, orderNo)
+
+    return {
+      code: '0000',
+      message: 'Success',
+      balance: newBalance,
+      currency: 'CNY',
+    }
+  }
+
+  return {
+    code: '0000',
+    message: 'Success',
+    balance: getMemberBalance(uid),
+    currency: 'CNY',
   }
 }
 
@@ -113,11 +324,24 @@ export function processCallback(body) {
 
   const { action } = body
 
-  if (action === 'settle') {
-    handleSettle(body)
-  } else if (action === 'cancelBet') {
-    handleCancelBet(body)
-  } else {
-    throw new Error(`Unknown action: ${action}`)
+  console.log(`[SK7755 Callback] action=${action} uid=${body.uid || ''} orderNo=${body.orderNo || ''}`)
+
+  switch (action) {
+    case 'getBalance':
+      return handleGetBalance(body)
+    case 'bet':
+    case 'placeBet':
+    case 'debit':
+      return handleBet(body)
+    case 'settle':
+    case 'credit':
+      return handleSettle(body)
+    case 'betNSettle':
+      return handleBetNSettle(body)
+    case 'cancelBet':
+      return handleCancelBet(body)
+    default:
+      console.warn(`[SK7755 Callback] Unknown action: ${action}`)
+      return { code: '9999', message: `Unknown action: ${action}` }
   }
 }
