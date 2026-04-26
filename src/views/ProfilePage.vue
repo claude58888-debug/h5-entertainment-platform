@@ -453,7 +453,7 @@ function handleLogout() {
 
 async function onRefresh() {
   profileLoading.value = true
-  try { await walletStore.fetchBalance() } catch {}
+  try { await walletStore.fetchBalance() } catch (_) { /* ignore */ }
   setTimeout(() => {
     profileLoading.value = false
     refreshing.value = false
@@ -462,7 +462,7 @@ async function onRefresh() {
 
 onMounted(async () => {
   if (userStore.isLoggedIn) {
-    try { await walletStore.fetchBalance() } catch {}
+    try { await walletStore.fetchBalance() } catch (_) { /* ignore */ }
   }
   setTimeout(() => {
     profileLoading.value = false
