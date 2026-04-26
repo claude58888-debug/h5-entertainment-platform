@@ -67,9 +67,35 @@ const UPDATE_CANCEL = `
   WHERE order_no = @orderNo
 `
 
+function normalize(body) {
+  return {
+    action: body.action ?? null,
+    uid: body.uid ?? null,
+    accType: body.accType ?? 0,
+    supplier: body.supplier ?? null,
+    platform: body.platform ?? null,
+    orderNo: body.orderNo ?? null,
+    mainOrderNo: body.mainOrderNo ?? null,
+    bonusCode: body.bonusCode ?? null,
+    gameType: body.gameType ?? null,
+    code: body.code ?? null,
+    gameName: body.gameName ?? null,
+    balance: body.balance ?? null,
+    newBalance: body.newBalance ?? null,
+    betAmount: body.betAmount ?? null,
+    winAmount: body.winAmount ?? null,
+    addAmount: body.addAmount ?? null,
+    subAmount: body.subAmount ?? null,
+    betTime: body.betTime ?? null,
+    stime: body.stime ?? null,
+    currency: body.currency ?? 'CNY',
+    betType: body.betType ?? null,
+  }
+}
+
 function handleSettle(body) {
   const stmt = db.prepare(INSERT_BET)
-  stmt.run({ ...body, status: 'settled' })
+  stmt.run({ ...normalize(body), status: 'settled' })
 }
 
 function handleCancelBet(body) {
@@ -78,7 +104,7 @@ function handleCancelBet(body) {
 
   if (result.changes === 0) {
     const stmt = db.prepare(INSERT_BET)
-    stmt.run({ ...body, status: 'cancelled' })
+    stmt.run({ ...normalize(body), status: 'cancelled' })
   }
 }
 
