@@ -17,16 +17,26 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '@/components/common/AppHeader.vue'
 import BottomTabBar from '@/components/common/BottomTabBar.vue'
 import LoginModal from '@/components/common/LoginModal.vue'
 import BackToTop from '@/components/common/BackToTop.vue'
 import AgeVerificationGate from '@/components/common/AgeVerificationGate.vue'
+import { useUserStore } from '@/stores/user'
+import { useWalletStore } from '@/stores/wallet'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
+const walletStore = useWalletStore()
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    walletStore.fetchBalance().catch(() => {})
+  }
+})
 
 const transitionName = ref('slide-fade')
 

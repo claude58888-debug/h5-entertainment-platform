@@ -56,7 +56,7 @@
             </div>
             <div class="r-detail">
               <span class="r-label">{{ $t('bets.provider') }}</span>
-              <span>{{ r.provider }}</span>
+              <span>{{ r.platform }}</span>
             </div>
           </div>
         </div>
@@ -75,13 +75,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import request from '@/utils/request'
 
 const { t } = useI18n()
 
 const PAGE_SIZE = 10
 const currentPage = ref(1)
+const loading = ref(false)
 
 // Filters
 const gameFilter = ref(0)
@@ -111,69 +113,58 @@ const statusOptions = [
   { text: t('bets.pending'), value: 3 }
 ]
 
-const typeMap = { 1: 'Slots', 2: 'Live', 3: 'Fishing', 4: 'Sports', 5: 'Chess', 6: 'Lottery' }
+const gameTypeMap = { 1: 'SLOT', 2: 'LIVE', 3: 'FH', 4: 'SPORT', 5: 'CHESS', 6: 'LOTTERY' }
+const statusMap = { 1: 'win', 2: 'loss', 3: 'pending' }
+const daysMap = { 0: 30, 1: 1, 2: 7 }
 
-const betRecords = []
+const betRecords = ref([])
+const totalRecords = ref(0)
+const summary = ref({ totalBets: 0, totalBetAmount: 0, totalWinAmount: 0, profitLoss: 0 })
 
-function getDateThreshold(filter) {
-  const now = new Date()
-  if (filter === 1) {
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  } else if (filter === 2) {
-    return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+async function fetchBets() {
+  loading.value = true
+  try {
+    const params = { page: currentPage.value }
+    if (gameFilter.value !== 0) params.game = gameTypeMap[gameFilter.value]
+    if (statusFilter.value !== 0) params.status = statusMap[statusFilter.value]
+    params.days = daysMap[dateFilter.value] || 30
+
+    const res = await request.get('/bets', { params })
+    betRecords.value = res.list || []
+    totalRecords.value = res.total || 0
+    summary.value = res.summary || { totalBets: 0, totalBetAmount: 0, totalWinAmount: 0, profitLoss: 0 }
+  } catch {
+    betRecords.value = []
+    totalRecords.value = 0
+  } finally {
+    loading.value = false
   }
-  return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 }
 
-const filteredRecords = computed(() => {
-  let records = [...betRecords]
+const filteredRecords = computed(() => betRecords.value)
 
-  // Game type filter
-  if (gameFilter.value !== 0) {
-    const typeName = typeMap[gameFilter.value]
-    records = records.filter(r => r.type === typeName)
-  }
+const totalWins = computed(() => summary.value.totalWinAmount)
+const totalPL = computed(() => summary.value.profitLoss)
 
-  // Date filter
-  const threshold = getDateThreshold(dateFilter.value)
-  records = records.filter(r => new Date(r.time) >= threshold)
+const totalPages = computed(() => Math.ceil(totalRecords.value / PAGE_SIZE))
 
-  // Status filter
-  if (statusFilter.value === 1) {
-    records = records.filter(r => r.status === 'win')
-  } else if (statusFilter.value === 2) {
-    records = records.filter(r => r.status === 'loss')
-  } else if (statusFilter.value === 3) {
-    records = records.filter(r => r.status === 'pending')
-  }
-
-  return records
-})
-
-const totalWins = computed(() => {
-  return filteredRecords.value.filter(r => r.winAmount > 0).reduce((s, r) => s + r.winAmount, 0)
-})
-
-const totalPL = computed(() => {
-  return filteredRecords.value.reduce((s, r) => s + r.winAmount, 0)
-})
-
-const totalPages = computed(() => Math.ceil(filteredRecords.value.length / PAGE_SIZE))
-
-const paginatedRecords = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
-  return filteredRecords.value.slice(start, start + PAGE_SIZE)
-})
+const paginatedRecords = computed(() => betRecords.value)
 
 function resetPagination() {
   currentPage.value = 1
+  fetchBets()
 }
+
+watch(currentPage, () => fetchBets())
 
 function getStatus(record) {
   if (record.status === 'pending') return t('bets.pending')
-  if (record.status === 'win') return t('bets.win')
-  return t('bets.loss')
+  if (record.winAmount > record.betAmount) return t('bets.win')
+  if (record.winAmount < record.betAmount) return t('bets.loss')
+  return t('bets.pending')
 }
+
+onMounted(() => fetchBets())
 </script>
 
 <style lang="scss" scoped>

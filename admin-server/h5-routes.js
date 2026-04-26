@@ -670,6 +670,120 @@ router.get('/vip/info', h5Auth, (req, res) => {
   })
 })
 
+// ==================== BETS ====================
+
+// GET /api/h5/bets - User's bet history from sk7755_bets
+router.get('/bets', h5Auth, (req, res) => {
+  const memberId = req.h5user.memberId
+  const uid = `ddyl_${memberId}`
+  const { game, status, days, page: pageParam } = req.query
+  const page = Math.max(1, parseInt(pageParam) || 1)
+  const limit = 20
+  const offset = (page - 1) * limit
+
+  let where = 'WHERE uid = ?'
+  const params = [uid]
+
+  if (game && game !== 'all') {
+    where += ' AND game_type = ?'
+    params.push(game)
+  }
+  if (status === 'win') {
+    where += ' AND win_amount > bet_amount'
+  } else if (status === 'loss') {
+    where += ' AND win_amount < bet_amount'
+  } else if (status === 'pending') {
+    where += " AND status = 'pending'"
+  }
+  if (days) {
+    const d = parseInt(days)
+    if (d > 0) {
+      where += ` AND created_at >= datetime('now', '-${d} days')`
+    }
+  }
+
+  const total = db.prepare(`SELECT COUNT(*) as count FROM sk7755_bets ${where}`).get(...params).count
+
+  const rows = db.prepare(`SELECT * FROM sk7755_bets ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+    .all(...params, limit, offset)
+
+  const summary = db.prepare(`SELECT
+    COUNT(*) as totalBets,
+    COALESCE(SUM(bet_amount), 0) as totalBetAmount,
+    COALESCE(SUM(win_amount), 0) as totalWinAmount
+    FROM sk7755_bets ${where}`).get(...params)
+
+  res.json({
+    list: rows.map(r => ({
+      id: r.id,
+      orderNo: r.order_no,
+      game: r.game_name || r.game_code,
+      type: mapGameType(r.game_type),
+      platform: r.platform,
+      betAmount: r.bet_amount || 0,
+      winAmount: r.win_amount || 0,
+      status: r.status,
+      time: r.created_at
+    })),
+    total,
+    page,
+    pageSize: limit,
+    summary: {
+      totalBets: summary.totalBets,
+      totalBetAmount: summary.totalBetAmount,
+      totalWinAmount: summary.totalWinAmount,
+      profitLoss: summary.totalWinAmount - summary.totalBetAmount
+    }
+  })
+})
+
+// GET /api/h5/bets/report - Win/Loss report aggregated by game type
+router.get('/bets/report', h5Auth, (req, res) => {
+  const memberId = req.h5user.memberId
+  const uid = `ddyl_${memberId}`
+  const { days } = req.query
+  let dateFilter = ''
+  if (days) {
+    const d = parseInt(days)
+    if (d > 0) dateFilter = ` AND created_at >= datetime('now', '-${d} days')`
+  }
+
+  const summary = db.prepare(`SELECT
+    COUNT(*) as totalBets,
+    COALESCE(SUM(bet_amount), 0) as totalBetAmount,
+    COALESCE(SUM(win_amount), 0) as totalWinAmount
+    FROM sk7755_bets WHERE uid = ?${dateFilter}`).get(uid)
+
+  const byType = db.prepare(`SELECT
+    game_type,
+    COUNT(*) as bets,
+    COALESCE(SUM(bet_amount), 0) as amount,
+    COALESCE(SUM(win_amount), 0) - COALESCE(SUM(bet_amount), 0) as winLoss
+    FROM sk7755_bets WHERE uid = ?${dateFilter}
+    GROUP BY game_type ORDER BY amount DESC`).all(uid)
+
+  // Get rakeback total for this member
+  const rebateRow = db.prepare(`SELECT COALESCE(SUM(rakeback_amount), 0) as total FROM rakeback_records WHERE member_id = ?`).get(memberId)
+
+  res.json({
+    totalBets: summary.totalBets,
+    betAmount: summary.totalBetAmount,
+    winLoss: summary.totalWinAmount - summary.totalBetAmount,
+    rebate: rebateRow.total,
+    byType: byType.map(r => ({
+      type: mapGameType(r.game_type),
+      bets: r.bets,
+      amount: r.amount,
+      winLoss: r.winLoss
+    }))
+  })
+})
+
+function mapGameType(gt) {
+  const map = { SLOT: 'Slots', LIVE: 'Live Casino', FH: 'Fishing', SPORT: 'Sports', LOTTERY: 'Lottery', CHESS: 'Chess' }
+  return map[gt] || gt || 'Other'
+}
+
 // ==================== RAKEBACK ====================
 
 // GET /api/h5/rakeback/records
