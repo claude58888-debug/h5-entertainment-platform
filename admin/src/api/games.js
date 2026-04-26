@@ -67,3 +67,28 @@ export function updateHotScore(gameId, hotScore) {
 export function updateRecommend(gameId, isRecommended, recommendSort) {
   return api.put(`/api/games/${gameId}/recommend`, { is_recommended: isRecommended, recommend_sort: recommendSort })
 }
+
+// SK7755 Platform Management
+export function getSK7755Platforms() {
+  return api.get('/api/admin/sk7755/platforms')
+}
+
+export function toggleSK7755Platform(code, enabled) {
+  return api.put(`/api/admin/sk7755/platforms/${code}/toggle`, { enabled })
+}
+
+export function getSK7755PlatformGames(code) {
+  return api.get(`/api/admin/sk7755/platforms/${code}/games`)
+}
+
+export function toggleSK7755Game(platform, gameCode, status) {
+  return api.put('/api/admin/sk7755/games/toggle', { platform, game_code: gameCode, status })
+}
+
+export function syncSK7755Games() {
+  return api.post('/api/admin/sk7755/sync')
+}
+
+export function getSK7755Bets(params) {
+  return api.get('/api/admin/sk7755/bets', { params })
+}

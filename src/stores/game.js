@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getGamesApi, getGameDetailApi, getGameCategoriesApi } from '@/api/game'
+import { getGamesApi, getGameDetailApi, getGameCategoriesApi, getSK7755GamesApi } from '@/api/game'
 const defaultCategories = [
   { id: 'home', labelKey: 'nav.home', icon: 'home' },
   { id: 'hot', labelKey: 'home.hot', icon: 'fire' },
@@ -56,12 +56,23 @@ const defaultProviders = {
   ]
 }
 
+// SK7755 platform → H5 category mapping
+const sk7755CategoryMap = {
+  slots: 'slots',
+  live: 'live',
+  sports: 'sports',
+  fishing: 'fishing',
+  lottery: 'lottery',
+}
+
 export const useGameStore = defineStore('game', () => {
   const games = ref([])
+  const sk7755Games = ref([])
   const categories = ref(defaultCategories)
   const providers = ref(defaultProviders)
   const loading = ref(false)
   const fetched = ref(false)
+  const sk7755Fetched = ref(false)
 
   const hotGames = computed(() => games.value.filter(g => g.hot))
 
@@ -69,7 +80,10 @@ export const useGameStore = defineStore('game', () => {
     if (category === 'home' || category === 'hot') {
       return hotGames.value
     }
-    return games.value.filter(g => g.category === category)
+    // Merge local games + SK7755 games for the category
+    const local = games.value.filter(g => g.category === category)
+    const sk = sk7755Games.value.filter(g => g.category === category)
+    return [...local, ...sk]
   }
 
   function getProvidersByCategory(category) {
@@ -82,24 +96,45 @@ export const useGameStore = defineStore('game', () => {
       const res = await getGamesApi(params)
       const list = res?.list || res
       if (Array.isArray(list) && list.length) {
-        // Merge with existing games if fetching a subset
         if (!params.category && !params.provider && !params.search) {
           games.value = list
         }
         fetched.value = true
-        loading.value = false
-        return list
       }
     } catch (e) {
       console.warn('Games API failed, using default data', e)
     }
+    // Also fetch SK7755 games
+    await fetchSK7755Games()
     loading.value = false
     return games.value
   }
 
-  function getGameById(id) {
-    return games.value.find(g => g.id === id || g.id === String(id)) || null
+  async function fetchSK7755Games() {
+    try {
+      const res = await getSK7755GamesApi()
+      const list = res?.list || []
+      if (Array.isArray(list)) {
+        sk7755Games.value = list.map(g => ({
+          ...g,
+          source: 'sk7755',
+        }))
+        sk7755Fetched.value = true
+      }
+    } catch (e) {
+      console.warn('SK7755 games API failed', e)
+    }
   }
 
-  return { games, categories, providers, loading, hotGames, getGamesByCategory, getProvidersByCategory, fetchGames, getGameById }
+  function getGameById(id) {
+    // Search local games first, then SK7755 games
+    const local = games.value.find(g => g.id === id || g.id === String(id))
+    if (local) return local
+    return sk7755Games.value.find(g => g.id === id || g.id === String(id)) || null
+  }
+
+  return {
+    games, sk7755Games, categories, providers, loading, hotGames,
+    getGamesByCategory, getProvidersByCategory, fetchGames, fetchSK7755Games, getGameById,
+  }
 })
