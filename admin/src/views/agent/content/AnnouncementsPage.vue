@@ -54,11 +54,8 @@ import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const activeTab = ref('marquee')
-const marquee = reactive({ text: '欢迎来到金沙娱乐！首充送100%奖金，最高可领8888元！', duration: 15, enabled: true })
-const popups = ref([
-  { id: 1, title: '春节活动通知', content: '春节期间充值满1000送388红包！活动时间：2月10日-2月17日', trigger: '登录后', enabled: true },
-  { id: 2, title: '系统维护通知', content: '系统将于凌晨3:00-5:00进行维护升级，届时暂停服务', trigger: '首页加载', enabled: false }
-])
+const marquee = reactive({ text: '', duration: 15, enabled: false })
+const popups = ref([])
 const popupDialog = ref(false)
 const newPopup = reactive({ title: '', content: '', trigger: '登录后' })
 

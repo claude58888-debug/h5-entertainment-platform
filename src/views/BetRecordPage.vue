@@ -37,16 +37,7 @@ const gameTypes = [
   { text: 'Fishing', value: 3 }, { text: 'Sports', value: 4 }, { text: 'Chess', value: 5 }
 ]
 const typeMap = { 1: 'Slots', 2: 'Live', 3: 'Fishing', 4: 'Sports', 5: 'Chess' }
-const betRecords = [
-  { id: 1, game: 'Fortune Tiger', type: 'Slots', provider: 'PG', time: '2024-03-15 15:30', betAmount: 50, winAmount: 120 },
-  { id: 2, game: 'Baccarat A', type: 'Live', provider: 'PP', time: '2024-03-15 14:20', betAmount: 200, winAmount: -200 },
-  { id: 3, game: 'Fish Party', type: 'Fishing', provider: 'JDB', time: '2024-03-15 13:00', betAmount: 30, winAmount: 65 },
-  { id: 4, game: 'Lucky Slots', type: 'Slots', provider: 'CQ9', time: '2024-03-15 12:00', betAmount: 100, winAmount: 250 },
-  { id: 5, game: 'Crown Sports', type: 'Sports', provider: 'Crown', time: '2024-03-14 22:00', betAmount: 500, winAmount: 380 },
-  { id: 6, game: 'Golden Dragon', type: 'Slots', provider: 'JILI', time: '2024-03-14 20:00', betAmount: 80, winAmount: -80 },
-  { id: 7, game: 'Texas Hold', type: 'Chess', provider: 'FC', time: '2024-03-14 19:00', betAmount: 150, winAmount: 90 },
-  { id: 8, game: 'Speed Baccarat', type: 'Live', provider: 'PP', time: '2024-03-14 18:00', betAmount: 300, winAmount: -300 }
-]
+const betRecords = []
 const filteredRecords = computed(() => gameType.value === 0 ? betRecords : betRecords.filter(r => r.type === typeMap[gameType.value]))
 const totalBetAmount = computed(() => filteredRecords.value.reduce((s, r) => s + r.betAmount, 0))
 const totalWinLoss = computed(() => filteredRecords.value.reduce((s, r) => s + r.winAmount, 0))

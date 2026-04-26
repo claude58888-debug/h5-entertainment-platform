@@ -318,13 +318,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
 
   const topGamesGGR = db.prepare('SELECT name, revenue as ggr FROM games ORDER BY revenue DESC LIMIT 5').all()
 
-  const realtimeAlerts = [
-    { id: 1, type: 'warning', text: '会员 user_8823 发起大额提现 ¥50,000', time: '2分钟前', level: 'high' },
-    { id: 2, type: 'danger', text: '检测到疑似多开账号 IP: 103.45.67.89', time: '5分钟前', level: 'high' },
-    { id: 3, type: 'warning', text: '代理 "金沙娱乐" 余额不足 ¥10,000', time: '12分钟前', level: 'medium' },
-    { id: 4, type: 'info', text: 'PG电子 API 响应延迟升高 (>2s)', time: '18分钟前', level: 'medium' },
-    { id: 5, type: 'warning', text: '会员 user_5521 连续提现3次，累计 ¥80,000', time: '25分钟前', level: 'high' }
-  ]
+  const realtimeAlerts = []
 
   const result = { kpi, revenueTrend: revenueTrendQuery, topGamesGGR, depositByChannel: depositByChannelQuery, realtimeAlerts }
   cacheSet(cacheKey, result, 30000)
@@ -342,7 +336,7 @@ app.get('/api/admin/dashboard/stats', authMiddleware, (req, res) => {
   const totalWithdrawals = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved')").get().total
   const todayDeposits = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= date('now')").get().total
   const todayWithdrawals = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= date('now')").get().total
-  const activeOnline = Math.floor(Math.random() * 500) + 100 // placeholder
+  const activeOnline = db.prepare("SELECT COUNT(*) as count FROM members WHERE last_login >= datetime('now', '-30 minutes')").get().count
 
   const result = {
     totalMembers,
@@ -960,12 +954,7 @@ app.get('/api/finance/deposit-stats', authMiddleware, (req, res) => {
 app.get('/api/finance/deposit-channels', authMiddleware, (req, res) => {
   const cols = db.prepare("PRAGMA table_info(deposit_channels)").all().map(c => c.name)
   if (cols.length === 0) {
-    // Table doesn't exist yet, return mock data
-    return res.json([
-      { id: 1, name: 'USDT-TRC20', network: 'TRC20', address: 'TJYs8PfDhEbh1pNWDFrSvjA9HkHfDB8W6o', enabled: true, todayAmount: 1250000 },
-      { id: 2, name: 'USDT-ERC20', network: 'ERC20', address: '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18', enabled: true, todayAmount: 650000 },
-      { id: 3, name: 'BTC-TRC20', network: 'TRC20', address: 'TN8Rz5PCYN6fRQdqSqkchGeT3MyVZ3GXR7', enabled: false, todayAmount: 0 }
-    ])
+    return res.json([])
   }
   const rows = db.prepare('SELECT * FROM deposit_channels ORDER BY id').all()
   res.json(rows.map(r => ({ ...r, enabled: !!r.enabled })))
@@ -1065,14 +1054,7 @@ app.get('/api/finance/game-category-revenue', authMiddleware, (req, res) => {
     }))
     res.json(result)
   } catch (err) {
-    // Fallback mock data
-    res.json([
-      { category: '真人', totalBets: 5800000, totalWins: 5510000, ggr: 290000, percentage: 25 },
-      { category: '体育', totalBets: 4200000, totalWins: 3990000, ggr: 210000, percentage: 18 },
-      { category: '电竞', totalBets: 3500000, totalWins: 3325000, ggr: 175000, percentage: 15 },
-      { category: '彩票', totalBets: 3000000, totalWins: 2700000, ggr: 300000, percentage: 26 },
-      { category: '棋牌', totalBets: 2000000, totalWins: 1820000, ggr: 180000, percentage: 16 }
-    ])
+    res.json([])
   }
 })
 

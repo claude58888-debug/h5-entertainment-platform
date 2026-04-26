@@ -103,7 +103,7 @@ const totals = computed(() => {
   return t
 })
 
-function updateData() { /* mock */ }
+function updateData() { /* TODO: fetch real data based on period and date range */ }
 
 const financialChart = computed(() => ({
   tooltip: { trigger: 'axis' },
@@ -118,47 +118,28 @@ const financialChart = computed(() => ({
   ]
 }))
 
-const memberData = ref([
-  { date: '03-01', newMembers: 45, activeMembers: 320, depositMembers: 85, firstDeposit: 12, conversionRate: 26.7 },
-  { date: '03-02', newMembers: 52, activeMembers: 345, depositMembers: 92, firstDeposit: 18, conversionRate: 34.6 },
-  { date: '03-03', newMembers: 38, activeMembers: 310, depositMembers: 78, firstDeposit: 10, conversionRate: 26.3 },
-  { date: '03-04', newMembers: 61, activeMembers: 380, depositMembers: 105, firstDeposit: 22, conversionRate: 36.1 },
-  { date: '03-05', newMembers: 55, activeMembers: 365, depositMembers: 98, firstDeposit: 15, conversionRate: 27.3 },
-  { date: '03-06', newMembers: 48, activeMembers: 340, depositMembers: 88, firstDeposit: 14, conversionRate: 29.2 },
-  { date: '03-07', newMembers: 58, activeMembers: 370, depositMembers: 102, firstDeposit: 20, conversionRate: 34.5 }
-])
+const memberData = ref([])
 
 const memberChart = {
   tooltip: { trigger: 'axis' },
   legend: { data: ['新增', '活跃', '充值'], textStyle: { color: '#a0a0b0' } },
   grid: { left: 50, right: 20, top: 40, bottom: 30 },
-  xAxis: { type: 'category', data: ['03-01','03-02','03-03','03-04','03-05','03-06','03-07'], axisLabel: { color: '#888' } },
+  xAxis: { type: 'category', data: [], axisLabel: { color: '#888' } },
   yAxis: { type: 'value', axisLabel: { color: '#888' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
   series: [
-    { name: '新增', type: 'bar', data: [45,52,38,61,55,48,58], itemStyle: { color: '#409eff' } },
-    { name: '活跃', type: 'line', smooth: true, data: [320,345,310,380,365,340,370], itemStyle: { color: '#67c23a' } },
-    { name: '充值', type: 'line', smooth: true, data: [85,92,78,105,98,88,102], itemStyle: { color: '#e6a23c' } }
+    { name: '新增', type: 'bar', data: [], itemStyle: { color: '#409eff' } },
+    { name: '活跃', type: 'line', smooth: true, data: [], itemStyle: { color: '#67c23a' } },
+    { name: '充值', type: 'line', smooth: true, data: [], itemStyle: { color: '#e6a23c' } }
   ]
 }
 
-const gameData = ref([
-  { provider: 'PG', category: '电子', totalBet: 2850000, totalPayout: 2650000, ggr: 200000, players: 450 },
-  { provider: 'PP', category: '电子', totalBet: 1920000, totalPayout: 1780000, ggr: 140000, players: 380 },
-  { provider: 'EVO', category: '真人', totalBet: 3200000, totalPayout: 3050000, ggr: 150000, players: 220 },
-  { provider: 'JDB', category: '捕鱼', totalBet: 850000, totalPayout: 780000, ggr: 70000, players: 180 },
-  { provider: 'CQ9', category: '电子', totalBet: 1100000, totalPayout: 1020000, ggr: 80000, players: 250 }
-])
+const gameData = ref([])
 
 const gameChart = {
   tooltip: { trigger: 'item' },
   legend: { right: 10, top: 'center', orient: 'vertical', textStyle: { color: '#a0a0b0' } },
   series: [{ type: 'pie', radius: ['40%','70%'],
-    data: [
-      { value: 420000, name: '电子游戏', itemStyle: { color: '#409eff' } },
-      { value: 150000, name: '真人视讯', itemStyle: { color: '#67c23a' } },
-      { value: 70000, name: '捕鱼游戏', itemStyle: { color: '#e6a23c' } },
-      { value: 45000, name: '体育竞猜', itemStyle: { color: '#f56c6c' } }
-    ],
+    data: [],
     label: { color: '#a0a0b0' }
   }]
 }

@@ -73,7 +73,7 @@ import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const activeTab = ref('brand')
-const brand = reactive({ name: '金沙娱乐', domain: 'jinsha.com', contact: '@jinsha_admin', themeColor: '#e6a23c' })
+const brand = reactive({ name: '', domain: '', contact: '', themeColor: '#e6a23c' })
 const pwdRef = ref(null)
 const pwdForm = reactive({ current: '', newPwd: '', confirm: '' })
 const pwdRules = {
@@ -85,14 +85,7 @@ const pwdRules = {
 }
 const twoFA = reactive({ enabled: false, code: '' })
 
-const operationLogs = ref([
-  { time: '2026-03-07 15:30', action: '登录', ip: '103.45.67.89', detail: '登录成功' },
-  { time: '2026-03-07 14:20', action: '修改密码', ip: '103.45.67.89', detail: '密码修改成功' },
-  { time: '2026-03-07 10:00', action: '会员调额', ip: '103.45.67.89', detail: 'player_001 +¥5,000' },
-  { time: '2026-03-06 18:30', action: '审批提现', ip: '103.45.67.89', detail: '批准 W20260306001 ¥8,000' },
-  { time: '2026-03-06 15:00', action: '创建活动', ip: '103.45.67.89', detail: '首充奖金活动' },
-  { time: '2026-03-06 09:00', action: '登录', ip: '103.45.67.89', detail: '登录成功' }
-])
+const operationLogs = ref([])
 
 async function changePwd() {
   await pwdRef.value?.validate()

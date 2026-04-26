@@ -113,33 +113,7 @@ const statusOptions = [
 
 const typeMap = { 1: 'Slots', 2: 'Live', 3: 'Fishing', 4: 'Sports', 5: 'Chess', 6: 'Lottery' }
 
-const betRecords = [
-  { id: 1, game: 'Fortune Tiger', type: 'Slots', provider: 'PG', time: '2026-03-30 07:30', betAmount: 50, winAmount: 120, status: 'win' },
-  { id: 2, game: 'Baccarat A', type: 'Live', provider: 'PP', time: '2026-03-30 06:20', betAmount: 200, winAmount: -200, status: 'loss' },
-  { id: 3, game: 'Fish Party', type: 'Fishing', provider: 'JDB', time: '2026-03-30 05:00', betAmount: 30, winAmount: 65, status: 'win' },
-  { id: 4, game: 'Lucky Slots', type: 'Slots', provider: 'CQ9', time: '2026-03-29 22:00', betAmount: 100, winAmount: 250, status: 'win' },
-  { id: 5, game: 'Crown Sports', type: 'Sports', provider: 'Crown', time: '2026-03-29 20:00', betAmount: 500, winAmount: 0, status: 'pending' },
-  { id: 6, game: 'Golden Dragon', type: 'Slots', provider: 'JILI', time: '2026-03-29 18:00', betAmount: 80, winAmount: -80, status: 'loss' },
-  { id: 7, game: 'Texas Hold', type: 'Chess', provider: 'FC', time: '2026-03-29 16:00', betAmount: 150, winAmount: 90, status: 'win' },
-  { id: 8, game: 'Speed Baccarat', type: 'Live', provider: 'PP', time: '2026-03-29 14:00', betAmount: 300, winAmount: -300, status: 'loss' },
-  { id: 9, game: 'Mega Wheel', type: 'Slots', provider: 'PG', time: '2026-03-28 21:00', betAmount: 25, winAmount: 175, status: 'win' },
-  { id: 10, game: 'Football Match', type: 'Sports', provider: 'Crown', time: '2026-03-28 19:00', betAmount: 100, winAmount: -100, status: 'loss' },
-  { id: 11, game: 'Ocean King', type: 'Fishing', provider: 'JILI', time: '2026-03-28 17:00', betAmount: 60, winAmount: 45, status: 'win' },
-  { id: 12, game: 'Blackjack VIP', type: 'Live', provider: 'EVO', time: '2026-03-28 15:00', betAmount: 500, winAmount: 500, status: 'win' },
-  { id: 13, game: 'Candy Burst', type: 'Slots', provider: 'PG', time: '2026-03-27 23:00', betAmount: 40, winAmount: -40, status: 'loss' },
-  { id: 14, game: 'Mahjong Ways', type: 'Chess', provider: 'PG', time: '2026-03-27 20:00', betAmount: 75, winAmount: 120, status: 'win' },
-  { id: 15, game: 'Roulette Live', type: 'Live', provider: 'EVO', time: '2026-03-27 18:00', betAmount: 200, winAmount: -200, status: 'loss' },
-  { id: 16, game: 'Wild Bandito', type: 'Slots', provider: 'PG', time: '2026-03-26 22:00', betAmount: 60, winAmount: 300, status: 'win' },
-  { id: 17, game: 'Fishing God', type: 'Fishing', provider: 'JDB', time: '2026-03-26 16:00', betAmount: 50, winAmount: -50, status: 'loss' },
-  { id: 18, game: 'NBA Live', type: 'Sports', provider: 'Crown', time: '2026-03-26 10:00', betAmount: 200, winAmount: 380, status: 'win' },
-  { id: 19, game: 'Dragon Tiger', type: 'Live', provider: 'WM', time: '2026-03-25 21:00', betAmount: 100, winAmount: 100, status: 'win' },
-  { id: 20, game: 'Lucky 7', type: 'Lottery', provider: 'TCG', time: '2026-03-25 15:00', betAmount: 10, winAmount: -10, status: 'loss' },
-  { id: 21, game: 'Mark Six', type: 'Lottery', provider: 'TCG', time: '2026-03-24 20:00', betAmount: 20, winAmount: 500, status: 'win' },
-  { id: 22, game: 'Sweet Bonanza', type: 'Slots', provider: 'PP', time: '2026-03-24 18:00', betAmount: 100, winAmount: -100, status: 'loss' },
-  { id: 23, game: 'Sic Bo', type: 'Live', provider: 'WM', time: '2026-03-24 14:00', betAmount: 80, winAmount: 160, status: 'win' },
-  { id: 24, game: 'Treasure Hunt', type: 'Fishing', provider: 'JILI', time: '2026-03-23 20:00', betAmount: 45, winAmount: -45, status: 'loss' },
-  { id: 25, game: 'Premier League', type: 'Sports', provider: 'Crown', time: '2026-03-23 15:00', betAmount: 300, winAmount: 0, status: 'pending' }
-]
+const betRecords = []
 
 function getDateThreshold(filter) {
   const now = new Date()

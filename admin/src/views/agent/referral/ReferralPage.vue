@@ -89,37 +89,17 @@ import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const activeTab = ref('links')
-const referralLink = ref('https://jinsha.com/r/AGT001?ref=promo1')
+const referralLink = ref('')
 const trackingParam = ref('')
 const referralData = ref({ totalRegistrations: 0, activeDepositors: 0, totalCommission: 0 })
 const commissionConfig = reactive({ level1: 15, level2: 5, level3: 2 })
 
-const teamTree = ref([
-  { name: '金沙娱乐(总代)', level: 1, members: 1280, commission: 156000, children: [
-    { name: 'sub_agent_01', level: 2, members: 450, commission: 52000, children: [
-      { name: 'player_group_a', level: 3, members: 120, commission: 8500 },
-      { name: 'player_group_b', level: 3, members: 85, commission: 6200 }
-    ]},
-    { name: 'sub_agent_02', level: 2, members: 380, commission: 45000, children: [
-      { name: 'player_group_c', level: 3, members: 200, commission: 12000 }
-    ]}
-  ]}
-])
+const teamTree = ref([])
 
-const teamMembers = ref([
-  { username: 'sub_01', level: 1, referrer: '金沙娱乐', deposit: 85000, bet: 520000, commission: 15200, registered: '2026-01-15' },
-  { username: 'sub_02', level: 1, referrer: '金沙娱乐', deposit: 62000, bet: 380000, commission: 11400, registered: '2026-01-20' },
-  { username: 'player_a1', level: 2, referrer: 'sub_01', deposit: 15000, bet: 98000, commission: 2940, registered: '2026-02-01' },
-  { username: 'player_a2', level: 2, referrer: 'sub_01', deposit: 8500, bet: 55000, commission: 1650, registered: '2026-02-10' },
-  { username: 'player_b1', level: 2, referrer: 'sub_02', deposit: 22000, bet: 145000, commission: 4350, registered: '2026-02-05' }
-])
+const teamMembers = ref([])
 
-const settlementList = ref([
-  { id: 'CS20260307', period: '2026-03-01 ~ 2026-03-07', amount: 18500, status: 'pending', settledAt: '-' },
-  { id: 'CS20260228', period: '2026-02-22 ~ 2026-02-28', amount: 22300, status: 'paid', settledAt: '2026-03-01 10:00' },
-  { id: 'CS20260221', period: '2026-02-15 ~ 2026-02-21', amount: 19800, status: 'paid', settledAt: '2026-02-22 10:00' }
-])
+const settlementList = ref([])
 
 function copyLink() { navigator.clipboard?.writeText(referralLink.value); ElMessage.success('链接已复制') }
-function generateLink() { referralLink.value = `https://jinsha.com/r/AGT001?ref=${trackingParam.value || Date.now()}`; ElMessage.success('新链接已生成') }
+function generateLink() { referralLink.value = `${window.location.origin}/r/?ref=${trackingParam.value || Date.now()}`; ElMessage.success('新链接已生成') }
 </script>

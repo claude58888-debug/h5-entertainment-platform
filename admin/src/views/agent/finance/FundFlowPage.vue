@@ -51,18 +51,7 @@ const search = ref('')
 const typeFilter = ref('')
 const dateRange = ref(null)
 
-const flows = ref([
-  { id: 'FL20260307001', member: 'player_001', type: 'deposit', amount: 5000, beforeBalance: 3200, afterBalance: 8200, remark: 'USDT-TRC20充值', time: '2026-03-07 14:30' },
-  { id: 'FL20260307002', member: 'player_001', type: 'bet', amount: -500, beforeBalance: 8200, afterBalance: 7700, remark: '麻将胡了2 投注', time: '2026-03-07 14:35' },
-  { id: 'FL20260307003', member: 'player_001', type: 'payout', amount: 1250, beforeBalance: 7700, afterBalance: 8950, remark: '麻将胡了2 派彩', time: '2026-03-07 14:35' },
-  { id: 'FL20260307004', member: 'player_002', type: 'deposit', amount: 10000, beforeBalance: 500, afterBalance: 10500, remark: '银行转账充值', time: '2026-03-07 13:20' },
-  { id: 'FL20260307005', member: 'player_003', type: 'withdrawal', amount: -8000, beforeBalance: 15000, afterBalance: 7000, remark: 'USDT提现', time: '2026-03-07 12:15' },
-  { id: 'FL20260307006', member: 'player_002', type: 'bonus', amount: 500, beforeBalance: 10500, afterBalance: 11000, remark: '首充奖金', time: '2026-03-07 13:21' },
-  { id: 'FL20260307007', member: 'player_004', type: 'adjust', amount: 1000, beforeBalance: 2000, afterBalance: 3000, remark: '客服手动加款-补偿', time: '2026-03-07 11:00' },
-  { id: 'FL20260307008', member: 'player_005', type: 'bet', amount: -2000, beforeBalance: 12000, afterBalance: 10000, remark: 'EVO真人 投注', time: '2026-03-07 10:45' },
-  { id: 'FL20260307009', member: 'player_005', type: 'payout', amount: 800, beforeBalance: 10000, afterBalance: 10800, remark: 'EVO真人 派彩', time: '2026-03-07 10:46' },
-  { id: 'FL20260307010', member: 'player_006', type: 'deposit', amount: 3000, beforeBalance: 100, afterBalance: 3100, remark: 'USDT-ERC20充值', time: '2026-03-07 09:30' }
-])
+const flows = ref([])
 
 const filteredFlows = computed(() => flows.value.filter(f => {
   if (search.value && !f.member.includes(search.value) && !f.id.includes(search.value)) return false

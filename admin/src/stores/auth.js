@@ -34,21 +34,6 @@ export const useAuthStore = defineStore('auth', () => {
     return Math.ceil((lockoutUntil.value - Date.now()) / 1000 / 60)
   })
 
-  // Demo credentials for mock login when backend is unavailable
-  const DEMO_ACCOUNTS = {
-    admin: { password: 'demo', roles: ['superadmin', 'agent'], displayName: '管理员' }
-  }
-
-  function tryMockLogin(username, password, selectedRole) {
-    const account = DEMO_ACCOUNTS[username]
-    if (account && account.password === password && account.roles.includes(selectedRole)) {
-      return {
-        user: { username, displayName: account.displayName },
-        access_token: 'demo-token-' + Date.now()
-      }
-    }
-    return null
-  }
 
   async function login(username, password, selectedRole) {
     clearExpiredLock()
@@ -60,8 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       res = await adminLogin(username, password, selectedRole)
     } catch (err) {
-      // Backend unavailable — fall back to mock login
-      res = tryMockLogin(username, password, selectedRole)
+      console.warn('Login API failed', err)
     }
 
     if (res) {
@@ -75,7 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
         ...res.user,
         token: res.access_token,
         role: selectedRole,
-        agentName: selectedRole === 'agent' ? '金沙娱乐' : '总平台',
+        agentName: selectedRole === 'agent' ? (res.user.agentName || '代理') : '总平台',
         loginTime: new Date().toISOString()
       }
       localStorage.setItem('admin_user', JSON.stringify(user.value))

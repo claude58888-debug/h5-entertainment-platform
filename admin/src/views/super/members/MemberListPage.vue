@@ -421,7 +421,7 @@ onMounted(async () => {
     loading.value = false
   }
 })
-const agents = ['金沙娱乐', '皇冠体育', '新濠天地', '永利娱乐', '澳门威尼斯']
+const agents = []
 
 function memberStatusType(status) {
   return status === 'active' ? 'success' : status === 'frozen' ? 'warning' : 'danger'

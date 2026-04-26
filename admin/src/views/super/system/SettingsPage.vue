@@ -350,14 +350,7 @@ onUnmounted(() => {
   if (countdownTimer.value) clearInterval(countdownTimer.value)
 })
 
-const assets = ref([
-  { name: '首充活动模板', size: '1920x600', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
-  { name: '返水活动模板', size: '1920x600', color: 'linear-gradient(135deg, #f093fb, #f5576c)' },
-  { name: '签到活动模板', size: '1920x600', color: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
-  { name: '推荐好友模板', size: '1920x600', color: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
-  { name: 'VIP晋级模板', size: '1920x600', color: 'linear-gradient(135deg, #fa709a, #fee140)' },
-  { name: '节日活动模板', size: '1920x600', color: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' }
-])
+const assets = ref([])
 
 async function save() {
   try {
