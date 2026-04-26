@@ -592,7 +592,11 @@ app.post('/api/admin/members/:id/balance-adjust', authMiddleware, validateBalanc
     return res.status(400).json({ error: '余额不足，无法扣减' })
   }
 
-  db.prepare('UPDATE members SET balance = ? WHERE id = ?').run(newBalance, req.params.id)
+  if (type === 'deduction') {
+    db.prepare('UPDATE members SET balance = ?, total_withdraw = total_withdraw + ? WHERE id = ?').run(newBalance, Math.abs(amount), req.params.id)
+  } else {
+    db.prepare('UPDATE members SET balance = ?, total_deposit = total_deposit + ? WHERE id = ?').run(newBalance, Math.abs(amount), req.params.id)
+  }
 
   // Record in h5_transactions
   const txType = type === 'deduction' ? 'admin_deduction' : 'admin_deposit'
@@ -1088,34 +1092,8 @@ app.get('/api/finance/financial-report/export', authMiddleware, (req, res) => {
 })
 
 // ==================== PHASE 18A: BALANCE ADJUSTMENT ====================
-
-// POST /api/admin/members/:id/balance-adjust - Manual balance adjustment
-app.post('/api/admin/members/:id/balance-adjust', authMiddleware, (req, res) => {
-  const { amount, type, reason } = req.body
-  if (!amount || !type || !reason) {
-    return res.status(400).json({ error: 'Amount, type, and reason are required' })
-  }
-  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id)
-  if (!member) return res.status(404).json({ error: '会员不存在' })
-
-  const balanceBefore = member.balance || 0
-  let newBalance
-  if (type === 'deposit') {
-    newBalance = balanceBefore + amount
-    db.prepare('UPDATE members SET balance = balance + ? WHERE id = ?').run(amount, req.params.id)
-  } else {
-    if (amount > balanceBefore) return res.status(400).json({ error: '扣减金额超过当前余额' })
-    newBalance = balanceBefore - amount
-    db.prepare('UPDATE members SET balance = balance - ? WHERE id = ?').run(amount, req.params.id)
-  }
-
-  auditLog(req.user.username, type === 'deposit' ? '手动增加余额' : '手动扣减余额', req.params.id,
-    (type === 'deposit' ? '增加' : '扣减') + ' ¥' + amount + ' (原因: ' + reason + ') 调整前: ¥' + balanceBefore + ' 调整后: ¥' + newBalance,
-    req.ip || '0.0.0.0')
-
-  cacheInvalidate('dashboard')
-  res.json({ success: true, newBalance, operator: req.user.username })
-})
+// NOTE: Primary balance-adjust handler is defined earlier (around line 583).
+// This duplicate was removed to avoid routing conflicts.
 
 // GET /api/finance/balance-adjust-logs - Recent balance adjustment audit logs
 app.get('/api/finance/balance-adjust-logs', authMiddleware, (req, res) => {

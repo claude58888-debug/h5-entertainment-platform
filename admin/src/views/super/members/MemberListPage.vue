@@ -74,10 +74,10 @@
           <template #default="{ row }">¥{{ row.balance.toLocaleString() }}</template>
         </el-table-column>
         <el-table-column label="总充值" width="120">
-          <template #default="{ row }">¥{{ (row.totalDeposit / 10000).toFixed(1) }}万</template>
+          <template #default="{ row }">¥{{ formatAmount(row.totalDeposit) }}</template>
         </el-table-column>
         <el-table-column label="总提现" width="120">
-          <template #default="{ row }">¥{{ (row.totalWithdraw / 10000).toFixed(1) }}万</template>
+          <template #default="{ row }">¥{{ formatAmount(row.totalWithdraw) }}</template>
         </el-table-column>
         <el-table-column label="标签" width="140">
           <template #default="{ row }">
@@ -185,11 +185,11 @@
               </div>
               <div class="detail-summary-item">
                 <span class="detail-label">总充值</span>
-                <span class="detail-value">¥{{ ((detailData.totalDeposit || 0) / 10000).toFixed(1) }}万</span>
+                <span class="detail-value">¥{{ formatAmount(detailData.totalDeposit || 0) }}</span>
               </div>
               <div class="detail-summary-item">
                 <span class="detail-label">总提现</span>
-                <span class="detail-value">¥{{ ((detailData.totalWithdraw || 0) / 10000).toFixed(1) }}万</span>
+                <span class="detail-value">¥{{ formatAmount(detailData.totalWithdraw || 0) }}</span>
               </div>
               <div class="detail-summary-item">
                 <span class="detail-label">总投注次数</span>
@@ -512,6 +512,11 @@ const allTransactions = computed(() => {
   const txs = [...(detailData.value.transactions || []), ...(detailData.value.h5Transactions || [])]
   return txs.sort((a, b) => ((b.time || b.created_at) || '').localeCompare((a.time || a.created_at) || ''))
 })
+
+function formatAmount(val) {
+  if (val >= 10000) return (val / 10000).toFixed(1) + '万'
+  return val.toLocaleString()
+}
 
 function tagType(tag) {
   if (tag === '高价值' || tag === 'VIP') return 'warning'
