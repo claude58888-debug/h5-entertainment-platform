@@ -98,7 +98,7 @@ export function settleRakeback(targetDate) {
     if (rakebackAmount < 0.01) continue
 
     // Get member info
-    const member = db.prepare('SELECT * FROM members WHERE uid = ?').get(memberId)
+    const member = db.prepare('SELECT * FROM members WHERE id = ?').get(memberId)
     if (!member) continue
 
     insertRakeback.run(
@@ -110,7 +110,7 @@ export function settleRakeback(targetDate) {
       bet.bet_amount,
       rakebackAmount,
       rakebackAmount,
-      member.vip_level || 0
+      member.vip || 0
     )
 
     // Accumulate balance updates per member
@@ -120,7 +120,7 @@ export function settleRakeback(targetDate) {
   }
 
   // Update member balances
-  const updateBalance = db.prepare('UPDATE members SET balance = balance + ? WHERE uid = ?')
+  const updateBalance = db.prepare('UPDATE members SET balance = balance + ? WHERE id = ?')
   for (const [memberId, amount] of memberBalanceUpdates) {
     updateBalance.run(amount, memberId)
   }
