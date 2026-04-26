@@ -454,7 +454,9 @@ export default {
     totalGames: '{count} games total',
     noGames: 'No games',
     loadFailed: 'Load failed',
-    noMoreData: 'No more data'
+    noMoreData: 'No more data',
+    loadMore: 'Load More',
+    gamesUnit: 'games'
   },
   errors: {
     pageNotFound: 'Page Not Found',

@@ -454,7 +454,9 @@ export default {
     totalGames: '共 {count} 款游戏',
     noGames: '暂无游戏',
     loadFailed: '加载失败',
-    noMoreData: '没有更多了'
+    noMoreData: '没有更多了',
+    loadMore: '加载更多',
+    gamesUnit: '款'
   },
   errors: {
     pageNotFound: '页面未找到',
