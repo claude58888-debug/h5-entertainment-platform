@@ -316,7 +316,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     }
   }
 
-  const topGamesGGR = db.prepare('SELECT name, revenue as ggr FROM games ORDER BY revenue DESC LIMIT 5').all()
+  const topGamesGGR = db.prepare('SELECT name, revenue as ggr FROM games WHERE revenue > 0 ORDER BY revenue DESC LIMIT 5').all()
 
   const realtimeAlerts = []
 
