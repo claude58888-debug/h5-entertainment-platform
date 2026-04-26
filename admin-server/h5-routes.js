@@ -507,12 +507,12 @@ router.post('/sk7755/launch', h5Auth, async (req, res) => {
   }
 
   try {
-    const uid = req.h5user.memberId
-    const result = await sk7755Login(uid, { platform, game_code })
-    if (result.code === '0000' && result.data) {
+    const userAccount = `ddyl_${req.h5user.memberId}`
+    const result = await sk7755Login(userAccount, { platform, game_code })
+    if (result.code === '0000' && result.result?.url) {
       res.json({
         success: true,
-        launchUrl: result.data,
+        launchUrl: result.result.url,
         game: { platform, game_code },
       })
     } else {

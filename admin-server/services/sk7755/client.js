@@ -28,8 +28,8 @@ export async function getGameList(platform) {
   return res.data
 }
 
-export async function login(uid, { platform, game_code, nickname = '', currency = 'CNY', language = 'zh', device = 0, accType = 0 } = {}) {
-  const data = buildSignedParams({ uid, platform, game_code, nickname, currency, language, device, accType })
+export async function login(userAccount, { platform, game_code } = {}) {
+  const data = buildSignedParams({ user_account: userAccount, platform, game_code })
   const res = await http.post('/api/login', data)
   return res.data
 }
