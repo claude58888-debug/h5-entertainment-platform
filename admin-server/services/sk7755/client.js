@@ -8,9 +8,9 @@ const http = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-function buildParams(extra = {}) {
+function buildSignedParams(extra = {}) {
   const params = {
-    agentid: config.agentId,
+    agent_id: config.agentId,
     timestamp: Math.floor(Date.now() / 1000),
     ...extra,
   }
@@ -18,38 +18,35 @@ function buildParams(extra = {}) {
   return params
 }
 
-export async function getPlatformList(uid) {
-  const data = buildParams({ uid })
-  const res = await http.post('/api/platform', data)
+export async function getPlatformList() {
+  const res = await http.post('/api/platform', { agent_id: config.agentId })
   return res.data
 }
 
-export async function getGameList(uid, platform) {
-  const data = buildParams({ uid, platform })
-  const res = await http.post('/api/gamelist', data)
+export async function getGameList(platform) {
+  const res = await http.post('/api/gamelist', { agent_id: config.agentId, platform })
   return res.data
 }
 
-export async function login(uid, platform, code) {
-  const data = buildParams({ uid, platform, code })
+export async function login(uid, { platform, game_code, nickname = '', currency = 'CNY', language = 'zh', device = 0, accType = 0 } = {}) {
+  const data = buildSignedParams({ uid, platform, game_code, nickname, currency, language, device, accType })
   const res = await http.post('/api/login', data)
   return res.data
 }
 
-export async function getGameInfo(uid, platform, code) {
-  const data = buildParams({ uid, platform, code })
+export async function getGameInfo(uid, platform, game_code) {
+  const data = buildSignedParams({ uid, platform, game_code })
   const res = await http.post('/api/gameInfo', data)
   return res.data
 }
 
 export async function getBalance(uid) {
-  const data = buildParams({ uid })
-  const res = await http.post('/api/balance', data)
+  const res = await http.post('/api/balance', { uid, agent_id: config.agentId })
   return res.data
 }
 
 export async function scoreDown(uid, amount) {
-  const data = buildParams({ uid, amount })
+  const data = buildSignedParams({ uid, amount })
   const res = await http.post('/api/scoreDown', data)
   return res.data
 }

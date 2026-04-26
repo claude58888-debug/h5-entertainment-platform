@@ -7,13 +7,13 @@ const MOCK_KEY = 'test_key_12345'
 
 describe('generateSign', () => {
   it('sorts params by ASCII ascending key order', () => {
-    const params = { uid: '10001', agentid: 'TEST', timestamp: 1700000000 }
+    const params = { uid: '10001', agent_id: 'TEST', timestamp: 1700000000 }
     const sign = generateSign(params, MOCK_KEY)
 
-    // Manual: agentid=TEST&timestamp=1700000000&uid=10001&key=test_key_12345
+    // Manual: agent_id=TEST&timestamp=1700000000&uid=10001&key=test_key_12345
     const expected = crypto
       .createHash('md5')
-      .update('agentid=TEST&timestamp=1700000000&uid=10001&key=test_key_12345')
+      .update('agent_id=TEST&timestamp=1700000000&uid=10001&key=test_key_12345')
       .digest('hex')
 
     assert.equal(sign, expected)
