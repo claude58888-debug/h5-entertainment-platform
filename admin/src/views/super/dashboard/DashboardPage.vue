@@ -262,7 +262,7 @@ const lineOption = computed(() => {
     legend: { data: ['收入', '充值', '提现'], textStyle: { color: '#a0a0b0' } },
     grid: { left: 60, right: 20, top: 40, bottom: 30 },
     xAxis: { type: 'category', data: xDates, boundaryGap: false, axisLabel: { color: '#888' }, axisLine: { lineStyle: { color: '#333' } } },
-    yAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
+    yAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => parseFloat((v / 10000).toFixed(2)) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
     series: [
       { name: '收入', type: 'line', data: revenueData, smooth: true, itemStyle: { color: '#f56c6c' }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(245,108,108,0.25)' }, { offset: 1, color: 'rgba(245,108,108,0.02)' }] } }, showSymbol: true, symbolSize: 6 },
       { name: '充值', type: 'line', data: depositData, smooth: true, itemStyle: { color: '#409eff' }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(64,158,255,0.25)' }, { offset: 1, color: 'rgba(64,158,255,0.02)' }] } }, showSymbol: true, symbolSize: 6 },
