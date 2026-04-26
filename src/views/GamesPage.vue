@@ -59,24 +59,40 @@
         </div>
 
         <!-- Provider cards view (when 'all' is selected and not searching) -->
-        <div v-if="activeProvider === 'all' && !searchQuery && currentProviders.length > 0" class="provider-grid">
-          <div
-            v-for="p in currentProviders"
-            :key="p.id"
-            class="provider-card-large"
-            :style="{ background: p.gradient }"
-            @click="activeProvider = p.id"
-          >
-            <div class="provider-card-info">
-              <span class="provider-card-name">{{ p.name }}</span>
-              <span class="provider-card-label">{{ p.label }}</span>
-              <span class="provider-card-count">{{ t('games.gamesCount', { count: p.gameCount }) }}</span>
+        <div v-if="activeProvider === 'all' && !searchQuery && currentProviders.length > 0">
+          <div class="provider-grid">
+            <div
+              v-for="p in currentProviders"
+              :key="p.id"
+              class="provider-card-large"
+              :style="{ background: p.gradient }"
+              @click="activeProvider = p.id"
+            >
+              <div class="provider-card-info">
+                <span class="provider-card-name">{{ p.name }}</span>
+                <span class="provider-card-label">{{ p.label }}</span>
+                <span class="provider-card-count">{{ t('games.gamesCount', { count: p.gameCount }) }}</span>
+              </div>
+              <div class="provider-card-deco">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" opacity="0.12">
+                  <circle cx="40" cy="40" r="35" stroke="white" stroke-width="2"/>
+                  <circle cx="40" cy="40" r="20" stroke="white" stroke-width="2"/>
+                </svg>
+              </div>
             </div>
-            <div class="provider-card-deco">
-              <svg width="80" height="80" viewBox="0 0 80 80" fill="none" opacity="0.12">
-                <circle cx="40" cy="40" r="35" stroke="white" stroke-width="2"/>
-                <circle cx="40" cy="40" r="20" stroke="white" stroke-width="2"/>
-              </svg>
+          </div>
+
+          <!-- SK7755 games section below provider cards -->
+          <div v-if="sk7755CategoryGames.length > 0" class="sk7755-section">
+            <div class="sk7755-section-header">
+              <span class="sk7755-section-title">SK7755 {{ pageTitle }}</span>
+              <span class="sk7755-section-count">{{ sk7755CategoryGames.length }} {{ t('games.gamesUnit') || '款' }}</span>
+            </div>
+            <div class="games-grid">
+              <GameCard v-for="game in sk7755VisibleGames" :key="game.id" :game="game" />
+            </div>
+            <div v-if="sk7755CategoryGames.length > sk7755ShowCount" class="sk7755-load-more" @click="sk7755ShowCount += 18">
+              {{ t('games.loadMore') || '加载更多' }}
             </div>
           </div>
         </div>
@@ -128,6 +144,7 @@ const pageSize = 18
 const currentPage = ref(1)
 
 const category = computed(() => route.params.category)
+const sk7755ShowCount = ref(18)
 
 const titleMap = {
   hot: 'games.hot',
@@ -153,7 +170,15 @@ const allCategoryGames = computed(() => {
   return gameStore.getGamesByCategory(category.value)
 })
 
-const hasData = computed(() => allCategoryGames.value.length > 0)
+const sk7755CategoryGames = computed(() => {
+  return gameStore.sk7755Games.filter(g => g.category === category.value)
+})
+
+const sk7755VisibleGames = computed(() => {
+  return sk7755CategoryGames.value.slice(0, sk7755ShowCount.value)
+})
+
+const hasData = computed(() => allCategoryGames.value.length > 0 || sk7755CategoryGames.value.length > 0)
 
 const filteredGames = computed(() => {
   let games = allCategoryGames.value
@@ -184,6 +209,7 @@ watch(category, () => {
   activeProvider.value = 'all'
   searchQuery.value = ''
   currentPage.value = 1
+  sk7755ShowCount.value = 18
 })
 
 watch([activeProvider, searchQuery], () => {
@@ -398,6 +424,41 @@ onMounted(async () => {
     font-size: 48px;
     display: block;
     margin-bottom: 12px;
+  }
+}
+
+.sk7755-section {
+  margin-top: 16px;
+}
+
+.sk7755-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+.sk7755-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e6a23c;
+}
+
+.sk7755-section-count {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.sk7755-load-more {
+  text-align: center;
+  padding: 12px;
+  color: #e6a23c;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.7;
   }
 }
 </style>
