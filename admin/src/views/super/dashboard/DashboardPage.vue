@@ -233,7 +233,12 @@ onMounted(() => {
 
 
 function formatNum(n) { return n?.toLocaleString() || '0' }
-function formatMoney(n) { return ((n || 0) / 10000).toFixed(1) + '万' }
+function formatMoney(n) {
+  const v = n || 0
+  if (v === 0) return '0'
+  if (Math.abs(v) < 10000) return v.toFixed(2)
+  return (v / 10000).toFixed(1) + '万'
+}
 function changeClass(val) { return val > 0 ? 'up' : val < 0 ? 'down' : '' }
 function changeArrow(val) { return val > 0 ? '↑' : val < 0 ? '↓' : '→' }
 
@@ -274,22 +279,31 @@ const barOption = computed(() => {
   return {
     tooltip: { trigger: 'axis', formatter: (params) => { const p = params[0]; return p.name + ': ¥' + (p.value / 10000).toFixed(1) + '万' } },
     grid: { left: 110, right: 30, top: 10, bottom: 30 },
-    xAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
+    xAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => { const m = v / 10000; return parseFloat(m.toFixed(2)) + '万' } }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
     yAxis: { type: 'category', data: names, axisLabel: { color: '#e0e0e0' } },
-    series: [{ type: 'bar', data: values.map((v, i) => ({ value: v, itemStyle: { color: colors[i % colors.length] } })), barWidth: 20, itemStyle: { borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', color: '#ccc', formatter: (p) => '¥' + (p.value / 10000).toFixed(1) + '万' } }]
+    series: [{ type: 'bar', data: values.map((v, i) => ({ value: v, itemStyle: { color: colors[i % colors.length] } })), barWidth: 20, itemStyle: { borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', color: '#ccc', formatter: (p) => { const m = p.value / 10000; return '¥' + parseFloat(m.toFixed(2)) + '万' } } }]
   }
 })
 
-const pieOption = computed(() => ({
-  tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
-  legend: { orient: 'vertical', right: 20, top: 'center', textStyle: { color: '#a0a0b0' } },
-  series: [{
-    type: 'pie', radius: ['40%', '70%'], center: ['40%', '50%'],
-    data: depositChannelData.value,
-    label: { show: false },
-    itemStyle: { borderRadius: 6, borderColor: '#1e1e2e', borderWidth: 2 }
-  }]
-}))
+const pieOption = computed(() => {
+  const hasData = depositChannelData.value && depositChannelData.value.length > 0
+  if (!hasData) {
+    return {
+      title: { text: '暂无充值数据', left: 'center', top: 'center', textStyle: { color: '#666', fontSize: 14 } },
+      series: []
+    }
+  }
+  return {
+    tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
+    legend: { orient: 'vertical', right: 20, top: 'center', textStyle: { color: '#a0a0b0' } },
+    series: [{
+      type: 'pie', radius: ['40%', '70%'], center: ['40%', '50%'],
+      data: depositChannelData.value,
+      label: { show: false },
+      itemStyle: { borderRadius: 6, borderColor: '#1e1e2e', borderWidth: 2 }
+    }]
+  }
+})
 </script>
 
 <style scoped>
