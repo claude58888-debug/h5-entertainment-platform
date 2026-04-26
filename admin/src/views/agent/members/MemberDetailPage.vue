@@ -86,26 +86,10 @@ onMounted(async () => {
   } catch (e) { console.warn('API request failed', e) }
 })
 
-const deposits = ref([
-  { id: 'D202603071001', amount: 5000, channel: 'USDT-TRC20', status: '已完成', time: '2026-03-07 10:01' },
-  { id: 'D202603061502', amount: 10000, channel: '银行转账', status: '已完成', time: '2026-03-06 15:02' },
-  { id: 'D202603051201', amount: 2000, channel: 'USDT-TRC20', status: '已完成', time: '2026-03-05 12:01' }
-])
-const withdrawals = ref([
-  { id: 'W202603071101', amount: 3000, channel: 'USDT-TRC20', status: '审核中', time: '2026-03-07 11:01' },
-  { id: 'W202603060901', amount: 8000, channel: '银行卡', status: '已完成', time: '2026-03-06 09:01' }
-])
-const bets = ref([
-  { game: '麻将胡了2', bet: 500, payout: 1250, time: '2026-03-07 14:30' },
-  { game: '极速糖果1000', bet: 200, payout: 80, time: '2026-03-07 14:15' },
-  { game: 'PG电子-宝石传说', bet: 100, payout: 350, time: '2026-03-07 13:50' },
-  { game: '奥林匹斯之门', bet: 1000, payout: 200, time: '2026-03-07 12:20' }
-])
-const operationLogs = ref([
-  { action: '登录', operator: '系统', detail: 'IP: 103.45.67.89', time: '2026-03-07 09:00' },
-  { action: '充值', operator: '系统', detail: '¥5,000 USDT-TRC20', time: '2026-03-07 10:01' },
-  { action: 'VIP升级', operator: '系统', detail: 'VIP2 → VIP3', time: '2026-03-06 20:00' }
-])
+const deposits = ref([])
+const withdrawals = ref([])
+const bets = ref([])
+const operationLogs = ref([])
 
 function adjustBalance() {
   ElMessageBox.prompt('请输入调整金额和原因 (格式: 金额,原因)', '手动调额').then(({ value }) => {

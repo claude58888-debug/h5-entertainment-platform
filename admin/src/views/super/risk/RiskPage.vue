@@ -238,7 +238,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { getRiskRules, getBlacklist, addBlacklist, removeBlacklist, createRiskRule, updateRiskRule, deleteRiskRule, getRiskAlerts, getIpMonitoring, getMemberRiskLevels, updateMemberRiskLevel as apiUpdateMemberRiskLevel } from '@/api/risk'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, ArrowDown } from '@element-plus/icons-vue'
@@ -250,7 +250,6 @@ const ips = ref([])
 const rules = ref([])
 const alerts = ref([])
 const realtimeAlerts = ref([])
-let realtimeTimer = null
 const newIp = reactive({ ip: '', type: 'blacklist', reason: '' })
 const ruleDialogVisible = ref(false)
 const editingRule = ref(null)
@@ -258,35 +257,13 @@ const ruleForm = ref({ name: '', description: '', ruleType: 'general', threshold
 
 const filteredIps = computed(() => ips.value.filter(ip => !ipSearch.value || ip.ip.includes(ipSearch.value)))
 
-const abnormalBets = ref([
-  { member: 'M10023', pattern: '马丁格尔策略', riskScore: 92, betAmount: 580000, betCount: 128, timeRange: '03-28 ~ 03-30', description: '连续加倍投注,疑似使用马丁格尔策略' },
-  { member: 'M10088', pattern: '对冲投注', riskScore: 85, betAmount: 320000, betCount: 64, timeRange: '03-29 ~ 03-30', description: '在不同游戏中进行对冲投注' },
-  { member: 'M10045', pattern: '异常频率', riskScore: 78, betAmount: 150000, betCount: 890, timeRange: '03-30', description: '短时间内大量小额投注' },
-  { member: 'M10012', pattern: '异常时段', riskScore: 65, betAmount: 420000, betCount: 45, timeRange: '03-29 02:00-05:00', description: '凌晨异常大额投注' },
-  { member: 'M10067', pattern: '规律投注', riskScore: 55, betAmount: 98000, betCount: 200, timeRange: '03-25 ~ 03-30', description: '固定金额固定时间投注' },
-])
+const abnormalBets = ref([])
 
-const ipMonitorData = ref([
-  { ip: '203.156.78.12', region: '广东深圳', accountCount: 7, accounts: ['M10001', 'M10023', 'M10045', 'M10067', 'M10089', 'M10102', 'M10115'], lastActive: '2026-03-30 08:15' },
-  { ip: '118.89.34.56', region: '上海', accountCount: 5, accounts: ['M10005', 'M10012', 'M10088', 'M10099', 'M10120'], lastActive: '2026-03-30 07:42' },
-  { ip: '42.120.67.89', region: '浙江杭州', accountCount: 3, accounts: ['M10008', 'M10055', 'M10078'], lastActive: '2026-03-29 23:10' },
-  { ip: '183.36.112.45', region: '广东广州', accountCount: 3, accounts: ['M10033', 'M10044', 'M10066'], lastActive: '2026-03-29 20:30' },
-])
+const ipMonitorData = ref([])
 
-const memberRiskData = ref([
-  { memberId: 'M10023', username: 'player_tiger', riskLevel: 'high', riskScore: 92, totalBets: 2800000, totalWithdrawals: 1500000, riskFactors: '马丁格尔策略, 多IP登录, 高额提现' },
-  { memberId: 'M10088', username: 'lucky_star88', riskLevel: 'high', riskScore: 85, totalBets: 1650000, totalWithdrawals: 980000, riskFactors: '对冲投注, 频繁提现' },
-  { memberId: 'M10045', username: 'fast_player', riskLevel: 'medium', riskScore: 65, totalBets: 890000, totalWithdrawals: 420000, riskFactors: '异常投注频率' },
-  { memberId: 'M10012', username: 'night_owl', riskLevel: 'medium', riskScore: 58, totalBets: 1200000, totalWithdrawals: 650000, riskFactors: '凌晨大额投注' },
-  { memberId: 'M10067', username: 'steady_bet', riskLevel: 'low', riskScore: 35, totalBets: 450000, totalWithdrawals: 180000, riskFactors: '规律投注模式' },
-  { memberId: 'M10001', username: 'new_player1', riskLevel: 'low', riskScore: 15, totalBets: 120000, totalWithdrawals: 30000, riskFactors: '无异常' },
-])
+const memberRiskData = ref([])
 
-const deviceBlacklist = ref([
-  { fingerprint: 'fp_abc123def456', relatedAccounts: 3, accounts: 'user_1001, user_1005, user_1009', addedAt: '2026-03-05 14:00' },
-  { fingerprint: 'fp_xyz789ghi012', relatedAccounts: 2, accounts: 'user_1003, user_1012', addedAt: '2026-03-04 09:30' },
-  { fingerprint: 'fp_mno345pqr678', relatedAccounts: 4, accounts: 'user_1007, user_1008, user_1015, user_1020', addedAt: '2026-03-02 18:45' },
-])
+const deviceBlacklist = ref([])
 
 onMounted(async () => {
   try {
@@ -380,23 +357,5 @@ async function updateRiskLevel(row, level) {
   } catch (e) { ElMessage.error('调整失败') }
 }
 
-function startRealtimeFeed() {
-  const sampleTypes = ['异常登录', '大额提现', '多设备登录', '频繁下注', '异常IP', '可疑充值']
-  const sampleLevels = ['high', 'medium', 'low']
-  const sampleMembers = ['M10001', 'M10005', 'M10012', 'M10088', 'M10023']
-  realtimeTimer = setInterval(() => {
-    if (realtimeAlerts.value.length >= 50) realtimeAlerts.value.pop()
-    realtimeAlerts.value.unshift({
-      id: Date.now(),
-      type: sampleTypes[Math.floor(Math.random() * sampleTypes.length)],
-      level: sampleLevels[Math.floor(Math.random() * sampleLevels.length)],
-      member: sampleMembers[Math.floor(Math.random() * sampleMembers.length)],
-      description: '系统自动检测到可疑活动',
-      time: new Date().toLocaleString('zh-CN')
-    })
-  }, 5000)
-}
 
-startRealtimeFeed()
-onBeforeUnmount(() => { if (realtimeTimer) clearInterval(realtimeTimer) })
 </script>

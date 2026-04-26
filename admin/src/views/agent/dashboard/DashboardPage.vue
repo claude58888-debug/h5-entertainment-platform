@@ -82,22 +82,18 @@ onMounted(async () => {
   } catch (e) { console.warn('API request failed', e) }
 })
 
-const pendingTasks = ref([
-  { type: '提现审批', count: 8, amount: '¥125,000', urgent: true },
-  { type: '充值确认', count: 3, amount: '¥45,000', urgent: false },
-  { type: '客服工单', count: 5, amount: '-', urgent: false }
-])
+const pendingTasks = ref([])
 
 const profitChart = {
   tooltip: { trigger: 'axis' },
   legend: { data: ['充值', '提现', '净利润'], textStyle: { color: '#a0a0b0' } },
   grid: { left: 50, right: 20, top: 40, bottom: 30 },
-  xAxis: { type: 'category', data: ['03-01', '03-02', '03-03', '03-04', '03-05', '03-06', '03-07'], axisLabel: { color: '#888' } },
+  xAxis: { type: 'category', data: [], axisLabel: { color: '#888' } },
   yAxis: { type: 'value', axisLabel: { color: '#888', formatter: v => (v/10000)+'万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
   series: [
-    { name: '充值', type: 'bar', data: [85000, 92000, 78000, 105000, 88000, 96000, 110000], itemStyle: { color: '#409eff' } },
-    { name: '提现', type: 'bar', data: [62000, 71000, 55000, 82000, 68000, 74000, 85000], itemStyle: { color: '#e6a23c' } },
-    { name: '净利润', type: 'line', smooth: true, data: [23000, 21000, 23000, 23000, 20000, 22000, 25000], itemStyle: { color: '#67c23a' } }
+    { name: '充值', type: 'bar', data: [], itemStyle: { color: '#409eff' } },
+    { name: '提现', type: 'bar', data: [], itemStyle: { color: '#e6a23c' } },
+    { name: '净利润', type: 'line', smooth: true, data: [], itemStyle: { color: '#67c23a' } }
   ]
 }
 
@@ -106,13 +102,7 @@ const categoryChart = {
   legend: { orient: 'vertical', right: 10, top: 'center', textStyle: { color: '#a0a0b0' } },
   series: [{
     type: 'pie', radius: ['40%', '70%'],
-    data: [
-      { value: 45, name: '电子游戏', itemStyle: { color: '#409eff' } },
-      { value: 20, name: '真人视讯', itemStyle: { color: '#67c23a' } },
-      { value: 15, name: '捕鱼游戏', itemStyle: { color: '#e6a23c' } },
-      { value: 10, name: '体育竞猜', itemStyle: { color: '#f56c6c' } },
-      { value: 10, name: '其他', itemStyle: { color: '#909399' } }
-    ],
+    data: [],
     label: { color: '#a0a0b0' }
   }]
 }

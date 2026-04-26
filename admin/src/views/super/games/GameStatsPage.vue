@@ -99,48 +99,27 @@ const providerGGR = ref([])
 
 function formatNum(n) { return n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toLocaleString() }
 
-const mockPopularity = [
-  { name: 'Fortune Tiger', provider: 'PG', playerCount: 12580, betCount: 89420, betAmount: 2850000, activePlayers: 3200, totalPlayers: 12580 },
-  { name: 'Sweet Bonanza', provider: 'PP', playerCount: 10230, betCount: 72300, betAmount: 2340000, activePlayers: 2800, totalPlayers: 10230 },
-  { name: 'Starlight Princess', provider: 'PP', playerCount: 9870, betCount: 68900, betAmount: 1980000, activePlayers: 2100, totalPlayers: 9870 },
-  { name: 'Gates of Olympus', provider: 'PP', playerCount: 8920, betCount: 61200, betAmount: 1850000, activePlayers: 1900, totalPlayers: 8920 },
-  { name: 'Lucky Neko', provider: 'PG', playerCount: 7650, betCount: 54300, betAmount: 1620000, activePlayers: 1600, totalPlayers: 7650 },
-  { name: 'Mahjong Ways', provider: 'PG', playerCount: 6890, betCount: 48700, betAmount: 1450000, activePlayers: 1400, totalPlayers: 6890 },
-  { name: 'Wild Bandito', provider: 'PG', playerCount: 6230, betCount: 43200, betAmount: 1280000, activePlayers: 1200, totalPlayers: 6230 },
-  { name: 'Dragon Tiger', provider: 'EVO', playerCount: 5890, betCount: 39800, betAmount: 1150000, activePlayers: 1100, totalPlayers: 5890 },
-  { name: 'Baccarat', provider: 'EVO', playerCount: 5420, betCount: 36500, betAmount: 980000, activePlayers: 900, totalPlayers: 5420 },
-  { name: 'Fishing God', provider: 'JDB', playerCount: 4980, betCount: 32100, betAmount: 860000, activePlayers: 800, totalPlayers: 4980 },
-]
 
-const mockGameGGR = mockPopularity.map(g => {
-  const win = Math.round(g.betAmount * (0.88 + Math.random() * 0.1))
-  return { ...g, winAmount: win, ggr: g.betAmount - win, ggrPercent: ((g.betAmount - win) / g.betAmount) * 100 }
-})
-
-const mockProviderGGR = ['PG', 'PP', 'EVO', 'JDB', 'JILI', 'CQ9', 'AG', 'FC', 'WM'].map((p, i) => {
-  const bet = Math.round(5000000 - i * 450000 + Math.random() * 200000)
-  const win = Math.round(bet * (0.9 + Math.random() * 0.06))
-  return { provider: p, gameCount: Math.round(15 - i * 1.2), betAmount: bet, winAmount: win, ggr: bet - win, ggrPercent: ((bet - win) / bet) * 100 }
-})
 
 async function loadData() {
   try {
     const stats = await getGameStats({ period: period.value })
     if (stats) overview.value = stats
   } catch (e) {
-    overview.value = { totalGames: 156, activeGames: 128, totalBets: 18500000, totalGGR: 1850000 }
+    console.warn('Failed to load game stats', e)
   }
   try {
     const ranking = await getGameRanking({ period: period.value })
     if (ranking?.length) popularityRanking.value = ranking
-    else popularityRanking.value = mockPopularity
-  } catch (e) { popularityRanking.value = mockPopularity }
+  } catch (e) { console.warn('Failed to load game ranking', e) }
   try {
     const pgGGR = await fetchProviderGGR({ period: period.value })
     if (pgGGR?.length) providerGGR.value = pgGGR
-    else providerGGR.value = mockProviderGGR
-  } catch (e) { providerGGR.value = mockProviderGGR }
-  gameGGR.value = mockGameGGR
+  } catch (e) { console.warn('Failed to load provider GGR', e) }
+  gameGGR.value = popularityRanking.value.map(g => {
+    const win = Math.round((g.betAmount || 0) * 0.93)
+    return { ...g, winAmount: win, ggr: (g.betAmount || 0) - win, ggrPercent: g.betAmount ? (((g.betAmount - win) / g.betAmount) * 100) : 0 }
+  })
   await nextTick()
   renderChart()
 }

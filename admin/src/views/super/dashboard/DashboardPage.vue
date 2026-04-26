@@ -122,7 +122,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
 import { getDashboard, getDashboardAlerts } from '@/api/dashboard'
 
@@ -135,7 +135,7 @@ const depositChannelData = ref([])
 const alertData = ref({ pendingWithdrawals: 0, pendingKyc: 0, suspiciousActivities: 0 })
 const alertsLoaded = ref(false)
 const onlineUsers = ref(0)
-let onlineTimer = null
+
 
 const dateRange = ref('today')
 const customDateRange = ref(null)
@@ -227,16 +227,10 @@ function onCustomDateChange() {
 onMounted(() => {
   fetchDashboard()
   fetchAlerts()
-  // Simulate real-time online users counter
-  onlineUsers.value = kpi.value.onlineNow || 1893
-  onlineTimer = setInterval(() => {
-    const base = kpi.value.onlineNow || 1893
-    const variance = Math.floor(Math.random() * 60) - 30
-    onlineUsers.value = base + variance
-  }, 3000)
+  onlineUsers.value = kpi.value.onlineNow || 0
 })
 
-onUnmounted(() => { if (onlineTimer) clearInterval(onlineTimer) })
+
 
 function formatNum(n) { return n?.toLocaleString() || '0' }
 function formatMoney(n) { return ((n || 0) / 10000).toFixed(1) + '万' }
@@ -255,11 +249,9 @@ const lineOption = computed(() => {
     }
   }
   const xDates = dates.length ? dates : defaultDates
-  // Use API data if available, otherwise generate sample data for the chart
-  const hasData = revenueTrendData.value.length > 0
-  const revenueData = hasData ? revenueTrendData.value.map(i => i.revenue) : [1520000, 1680000, 1450000, 1890000, 1720000, 1950000, 1611000]
-  const depositData = hasData ? revenueTrendData.value.map(i => i.deposit) : [2100000, 2350000, 2000000, 2600000, 2400000, 2800000, 2856000]
-  const withdrawData = hasData ? revenueTrendData.value.map(i => i.withdrawal) : [980000, 1050000, 920000, 1150000, 1080000, 1200000, 1245000]
+  const revenueData = revenueTrendData.value.map(i => i.revenue)
+  const depositData = revenueTrendData.value.map(i => i.deposit)
+  const withdrawData = revenueTrendData.value.map(i => i.withdrawal)
   return {
     tooltip: { trigger: 'axis', formatter: (params) => { let s = params[0].axisValue + '<br/>'; params.forEach(p => { s += p.marker + p.seriesName + ': ¥' + (p.value / 10000).toFixed(1) + '万<br/>'; }); return s } },
     legend: { data: ['收入', '充值', '提现'], textStyle: { color: '#a0a0b0' } },
@@ -275,9 +267,7 @@ const lineOption = computed(() => {
 })
 
 const barOption = computed(() => {
-  const hasData = topGamesData.value.length > 0
-  const sampleGames = [{ name: '百家乐', ggr: 250000 }, { name: '闪电轮盘', ggr: 280000 }, { name: '奥林匹斯之门', ggr: 310000 }, { name: '极速糖果1000', ggr: 380000 }, { name: '麻将胡了2', ggr: 520000 }]
-  const source = hasData ? topGamesData.value : sampleGames
+  const source = topGamesData.value
   const names = source.map(i => i.name).reverse()
   const values = source.map(i => i.ggr).reverse()
   const colors = ['#f56c6c', '#e6a23c', '#409eff', '#67c23a', '#9b59b6'].reverse()

@@ -52,20 +52,15 @@
 import { ref, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-const messages = ref([
-  { id: 1, title: '欢迎加入金沙娱乐', target: '全部会员', content: '尊敬的会员，欢迎加入金沙娱乐！首充即享100%奖金...', readRate: 85, sentAt: '2026-03-07 10:00' },
-  { id: 2, title: '系统维护通知', target: '全部会员', content: '系统将于3月8日凌晨进行维护升级...', readRate: 62, sentAt: '2026-03-06 18:00' },
-  { id: 3, title: 'VIP升级通知', target: 'player_001', content: '恭喜您升级至VIP3！享受更多专属福利...', readRate: 100, sentAt: '2026-03-06 12:00' },
-  { id: 4, title: '返水到账通知', target: '全部会员', content: '本周返水已发放至您的账户，请查收...', readRate: 78, sentAt: '2026-03-05 09:00' }
-])
+const messages = ref([])
 
 const sendDialog = ref(false)
 const csConfig = reactive({
-  telegram: 'https://t.me/jinsha_support',
+  telegram: '',
   positions: ['home', 'game', 'finance'],
-  appDownload: 'https://download.jinsha.com/app.apk',
-  iosProfile: 'https://download.jinsha.com/ios/profile',
-  version: 'v2.1.0'
+  appDownload: '',
+  iosProfile: '',
+  version: ''
 })
 
 function remove(row) {

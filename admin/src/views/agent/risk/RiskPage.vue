@@ -66,18 +66,7 @@ const limits = reactive({
   depositMin: 50, depositMax: 500000
 })
 
-const betLimits = ref([
-  { category: '电子游戏', maxBet: 5000, maxRound: 50000, enabled: true },
-  { category: '真人视讯', maxBet: 10000, maxRound: 100000, enabled: true },
-  { category: '捕鱼游戏', maxBet: 2000, maxRound: 20000, enabled: true },
-  { category: '体育竞猜', maxBet: 20000, maxRound: 200000, enabled: true },
-  { category: '棋牌游戏', maxBet: 5000, maxRound: 50000, enabled: true }
-])
+const betLimits = ref([])
 
-const alerts = ref([
-  { id: 1, type: '大额提现', level: 'high', member: 'player_008', description: '单笔提现 ¥48,000，超过 ¥30,000 阈值', time: '2026-03-07 15:30' },
-  { id: 2, type: '异常登录', level: 'medium', member: 'player_012', description: '同一账号从3个不同IP登录', time: '2026-03-07 14:20' },
-  { id: 3, type: '高频投注', level: 'medium', member: 'player_005', description: '10分钟内投注52次，总额 ¥26,000', time: '2026-03-07 13:45' },
-  { id: 4, type: '大额提现', level: 'high', member: 'player_003', description: '今日累计提现 ¥185,000，超过日限额', time: '2026-03-07 11:10' }
-])
+const alerts = ref([])
 </script>
