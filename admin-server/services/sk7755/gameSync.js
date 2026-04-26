@@ -137,8 +137,10 @@ export function getCachedGames(category) {
 async function syncPlatform(platformCode) {
   try {
     const result = await getGameList(platformCode)
-    if (result.code !== '0000' || !Array.isArray(result.data)) {
-      console.warn(`[SK7755 Sync] Platform ${platformCode} returned code=${result.code}`)
+    // SK7755 API returns { code, result: { data: [...] } }
+    const gameList = result?.result?.data || result?.data || (Array.isArray(result?.result) ? result.result : null)
+    if (result.code !== '0000' || !Array.isArray(gameList)) {
+      console.warn(`[SK7755 Sync] Platform ${platformCode} code=${result.code}, no game array found`)
       return 0
     }
 
@@ -157,13 +159,13 @@ async function syncPlatform(platformCode) {
     `)
 
     const tx = db.transaction(() => {
-      for (const game of result.data) {
+      for (const game of gameList) {
         upsert.run(
           platformCode,
-          game.code || game.game_code || '',
-          game.name || game.gameName || game.code || '',
-          game.gameType || game.type || '',
-          game.imageUrl || game.icon || game.img || '',
+          game.game_code || game.code || '',
+          game.cn_name || game.en_name || game.name || game.gameName || game.game_code || '',
+          game.game_type || game.gameType || game.type || '',
+          game.image || game.imageUrl || game.icon || game.img || '',
           h5Category
         )
       }
@@ -172,9 +174,9 @@ async function syncPlatform(platformCode) {
 
     // Update platform game count and last sync time
     db.prepare('UPDATE sk7755_platforms SET game_count = ?, last_sync = datetime(\'now\') WHERE code = ?')
-      .run(result.data.length, platformCode)
+      .run(gameList.length, platformCode)
 
-    return result.data.length
+    return gameList.length
   } catch (err) {
     console.error(`[SK7755 Sync] Error syncing platform ${platformCode}:`, err.message)
     return 0
