@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import db from './db.js'
 import { getGameUrl } from './pp-integration.js'
+import { getCachedGames, CATEGORY_MAP } from './services/sk7755/gameSync.js'
+import { login as sk7755Login } from './services/sk7755/client.js'
 
 const router = Router()
 
@@ -462,6 +464,63 @@ router.post('/games/:id/demo', async (req, res) => {
     })
   } catch (err) {
     res.status(500).json({ error: 'Failed to launch demo', success: false })
+  }
+})
+
+// ==================== SK7755 GAMES ====================
+
+// GET /api/h5/sk7755/games — returns SK7755 games, optionally filtered by H5 category
+router.get('/sk7755/games', (req, res) => {
+  const { category } = req.query
+  const cacheKey = `h5:sk7755:games:${category || 'all'}`
+  const cached = h5CacheGet(cacheKey)
+  if (cached) return res.json(cached)
+
+  try {
+    const games = getCachedGames(category || null)
+    const result = {
+      list: games.map(g => ({
+        id: `sk7755_${g.platform}_${g.game_code}`,
+        name: g.game_name || g.game_code,
+        provider: g.platform_name || g.platform,
+        platform: g.platform,
+        game_code: g.game_code,
+        category: g.h5_category || g.category,
+        image: g.image_url || '',
+        source: 'sk7755',
+      })),
+      total: games.length,
+    }
+    h5CacheSet(cacheKey, result, 5 * 60 * 1000) // 5 min cache
+    res.json(result)
+  } catch (err) {
+    console.error('[SK7755] Games list error:', err.message)
+    res.json({ list: [], total: 0 })
+  }
+})
+
+// POST /api/h5/sk7755/launch — launch a SK7755 game
+router.post('/sk7755/launch', h5Auth, async (req, res) => {
+  const { platform, game_code } = req.body
+  if (!platform || !game_code) {
+    return res.status(400).json({ error: 'platform and game_code required', success: false })
+  }
+
+  try {
+    const uid = req.h5user.memberId
+    const result = await sk7755Login(uid, { platform, game_code })
+    if (result.code === '0000' && result.data) {
+      res.json({
+        success: true,
+        launchUrl: result.data,
+        game: { platform, game_code },
+      })
+    } else {
+      res.json({ success: false, error: result.message || 'Launch failed', code: result.code })
+    }
+  } catch (err) {
+    console.error('[SK7755] Game launch error:', err.message)
+    res.status(500).json({ error: 'Failed to launch game', success: false })
   }
 })
 

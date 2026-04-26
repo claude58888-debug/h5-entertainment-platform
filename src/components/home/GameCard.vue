@@ -7,7 +7,9 @@
         <div class="deco-circle c2"></div>
         <div class="deco-diamond"></div>
       </div>
+      <div v-if="game.source === 'sk7755'" class="sk7755-badge">SK</div>
     </div>
+    <div v-if="game.source === 'sk7755'" class="card-name">{{ game.name }}</div>
   </div>
 </template>
 
@@ -16,6 +18,8 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { addRecentGame } from '@/utils/recentBrowsing'
+import { launchSK7755GameApi } from '@/api/game'
+import { showToast } from 'vant'
 
 const props = defineProps({
   game: { type: Object, required: true }
@@ -68,12 +72,29 @@ const dedicatedRoutes = {
   65: '/games/canada-28'
 }
 
-function handleClick() {
+async function handleClick() {
   if (!userStore.isLoggedIn) {
     userStore.showLoginModal = true
     return
   }
   addRecentGame(props.game)
+
+  // SK7755 games: launch directly via API
+  if (props.game.source === 'sk7755' && props.game.platform && props.game.game_code) {
+    showToast({ message: '正在启动游戏...', position: 'bottom' })
+    try {
+      const res = await launchSK7755GameApi(props.game.platform, props.game.game_code)
+      if (res.success && res.launchUrl) {
+        window.open(res.launchUrl, '_blank')
+      } else {
+        showToast({ message: res.error || '启动失败', position: 'bottom' })
+      }
+    } catch (err) {
+      showToast({ message: '游戏启动失败', position: 'bottom' })
+    }
+    return
+  }
+
   const route = dedicatedRoutes[props.game.id]
   if (route) {
     router.push(route)
@@ -156,5 +177,29 @@ function handleClick() {
   border: 1.5px solid rgba(255,255,255,0.1);
 }
 
+.sk7755-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(124, 58, 237, 0.85);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  z-index: 3;
+  letter-spacing: 0.5px;
+}
+
+.card-name {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
 
 </style>

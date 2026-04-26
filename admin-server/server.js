@@ -11,6 +11,9 @@ import { fileURLToPath } from 'url'
 import db, { initDB } from './db.js'
 import h5Routes from './h5-routes.js'
 import ppRoutes from './pp-routes.js'
+import sk7755CallbackRouter from './services/sk7755/callbackRouter.js'
+import { init as initCallback, ensureTable as ensureCallbackTable } from './services/sk7755/callbackHandler.js'
+import { init as initGameSync, startAutoSync, syncAll, getPlatforms, togglePlatform, toggleGame, getGamesByPlatform, getCachedGames } from './services/sk7755/gameSync.js'
 import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateUpdateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, validateManualDeposit, validateBatchWithdrawal, validateAutoReviewRule, validateHotScore, validateRecommend, validateVipAdjust, validateTagsUpdate, validateBalanceAdjust, handleValidationErrors } from './validation.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -44,6 +47,12 @@ function cacheInvalidate(prefix) {
 
 // Initialize database
 initDB()
+
+// Initialize SK7755 callback handler + game sync
+initCallback(db)
+ensureCallbackTable()
+initGameSync(db)
+startAutoSync()
 
 // Trust proxy for correct IP detection behind reverse proxies (needed for rate limiting)
 app.set('trust proxy', 1)
@@ -166,6 +175,8 @@ function logLoginAttempt(username, success, ip) {
 app.use('/api/h5', h5Routes)
 // Mount PP (Pragmatic Play) API routes
 app.use('/api/pp', ppRoutes)
+// Mount SK7755 callback router
+app.use('/api/sk7755/callback', sk7755CallbackRouter)
 
 // JWT auth middleware
 function authMiddleware(req, res, next) {
@@ -1330,6 +1341,118 @@ app.put('/api/games/:id/recommend', authMiddleware, validateRecommend, handleVal
   cacheInvalidate('admin:games')
   cacheInvalidate('h5:games')
   res.json({ success: true })
+})
+
+// ==================== SK7755 ADMIN ====================
+
+// GET /api/admin/sk7755/platforms — list all SK7755 platforms with status
+app.get('/api/admin/sk7755/platforms', authMiddleware, (req, res) => {
+  try {
+    const platforms = getPlatforms()
+    res.json(platforms)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// PUT /api/admin/sk7755/platforms/:code/toggle — enable/disable a platform
+app.put('/api/admin/sk7755/platforms/:code/toggle', authMiddleware, (req, res) => {
+  try {
+    const { enabled } = req.body
+    togglePlatform(req.params.code, enabled)
+    auditLog(req.user.username, 'SK7755平台' + (enabled ? '启用' : '禁用'), req.params.code, '', req.ip || '0.0.0.0')
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET /api/admin/sk7755/platforms/:code/games — games under a platform
+app.get('/api/admin/sk7755/platforms/:code/games', authMiddleware, (req, res) => {
+  try {
+    const games = getGamesByPlatform(req.params.code)
+    res.json(games)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// PUT /api/admin/sk7755/games/toggle — enable/disable a single game
+app.put('/api/admin/sk7755/games/toggle', authMiddleware, (req, res) => {
+  try {
+    const { platform, game_code, status } = req.body
+    toggleGame(platform, game_code, status)
+    auditLog(req.user.username, 'SK7755游戏' + status, `${platform}/${game_code}`, '', req.ip || '0.0.0.0')
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/admin/sk7755/sync — trigger manual game sync
+app.post('/api/admin/sk7755/sync', authMiddleware, async (req, res) => {
+  try {
+    const count = await syncAll()
+    auditLog(req.user.username, 'SK7755手动同步', '', `同步了 ${count} 款游戏`, req.ip || '0.0.0.0')
+    res.json({ success: true, gameCount: count })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET /api/admin/sk7755/bets — SK7755 bet records with pagination
+app.get('/api/admin/sk7755/bets', authMiddleware, (req, res) => {
+  try {
+    const { page = 1, pageSize = 20, search, platform, startDate, endDate } = req.query
+    let where = []
+    let params = []
+
+    if (search) {
+      where.push('(uid LIKE ? OR order_no LIKE ? OR game_name LIKE ?)')
+      params.push('%' + search + '%', '%' + search + '%', '%' + search + '%')
+    }
+    if (platform) {
+      where.push('platform = ?')
+      params.push(platform)
+    }
+    if (startDate) {
+      where.push('created_at >= ?')
+      params.push(startDate)
+    }
+    if (endDate) {
+      where.push('created_at <= ?')
+      params.push(endDate + ' 23:59:59')
+    }
+
+    const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : ''
+    const total = db.prepare(`SELECT COUNT(*) as c FROM sk7755_bets ${whereClause}`).get(...params).c
+    const offset = (Number(page) - 1) * Number(pageSize)
+    const rows = db.prepare(`SELECT * FROM sk7755_bets ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+      .all(...params, Number(pageSize), offset)
+
+    res.json({
+      data: rows.map(r => ({
+        id: r.id,
+        action: r.action,
+        uid: r.uid,
+        platform: r.platform,
+        orderNo: r.order_no,
+        gameName: r.game_name || r.game_code || '',
+        gameCode: r.game_code,
+        betAmount: r.bet_amount || 0,
+        winAmount: r.win_amount || 0,
+        profit: (r.bet_amount || 0) - (r.win_amount || 0),
+        status: r.status,
+        settleTime: r.settle_time,
+        createdAt: r.created_at,
+      })),
+      total,
+      page: Number(page),
+      pageSize: Number(pageSize),
+    })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
 // ==================== VIP ====================
