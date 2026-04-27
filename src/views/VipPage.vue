@@ -1,6 +1,6 @@
 <template>
   <div class="vip-page">
-    <van-nav-bar title="VIP Center" left-arrow @click-left="$router.back()" fixed :style="{ maxWidth: '480px', margin: '0 auto' }" />
+    <van-nav-bar title="VIP等级" left-arrow @click-left="$router.back()" fixed :style="{ maxWidth: '480px', margin: '0 auto' }" />
     <div class="page-content" style="padding-top: 46px;">
       <div class="vip-header">
         <div class="current-vip">
@@ -9,12 +9,13 @@
         </div>
         <div class="vip-progress">
           <van-progress :percentage="progressPct" stroke-width="8" color="#f59e0b" track-color="#1e2a4a" />
-          <span class="progress-text">{{ currentDeposit }}/{{ nextRequirement }} USDT to VIP {{ currentLevel + 1 }}</span>
+          <span class="progress-text" v-if="currentDeposit < nextRequirement">{{ currentDeposit }}/{{ nextRequirement }} USDT 升级至 VIP {{ currentLevel + 1 }}</span>
+          <span class="progress-text" v-else>已满足 VIP{{ currentLevel + 1 }} 升级条件</span>
         </div>
       </div>
 
       <div class="vip-benefits">
-        <h3>VIP Benefits</h3>
+        <h3>VIP 权益</h3>
         <div class="benefit-grid">
           <div class="benefit-item" v-for="b in benefits" :key="b.label">
             <span class="benefit-icon">{{ b.icon }}</span>
@@ -24,10 +25,10 @@
       </div>
 
       <div class="vip-table-section">
-        <h3>VIP Levels</h3>
+        <h3>VIP 等级表</h3>
         <div class="vip-table">
           <div class="table-header">
-            <span>Level</span><span>Deposit</span><span>Turnover</span><span>Upgrade Bonus</span><span>Monthly</span>
+            <span>等级</span><span>充值</span><span>流水</span><span>升级奖金</span><span>月红包</span>
           </div>
           <div class="table-row" v-for="level in levels" :key="level.level" :class="{ current: level.level === currentLevel }">
             <span class="level-badge">VIP{{ level.level }}</span>
@@ -40,13 +41,13 @@
       </div>
 
       <div class="vip-rules">
-        <h3>Rules</h3>
+        <h3>规则说明</h3>
         <div class="rules-content">
-          <p>1. VIP level is calculated daily at 8:00 AM (UTC+8)</p>
-          <p>2. Deposit and turnover accumulated since registration</p>
-          <p>3. Upgrade bonus is credited automatically upon level-up</p>
-          <p>4. Monthly red packets can be claimed on the 1st of each month</p>
-          <p>5. VIP benefits are cumulative and permanent</p>
+          <p>1. VIP等级每日 8:00 (UTC+8) 自动计算</p>
+          <p>2. 充值和流水自注册起累计计算</p>
+          <p>3. 升级奖金在升级后自动发放</p>
+          <p>4. 每月红包可在每月1日领取</p>
+          <p>5. VIP权益永久有效，可叠加享受</p>
         </div>
       </div>
     </div>
@@ -67,9 +68,9 @@ const nextRequirement = computed(() => vipInfo.value?.nextLevelDeposit ?? 20000)
 const progressPct = computed(() => Math.min((currentDeposit.value / (nextRequirement.value || 1)) * 100, 100))
 
 const benefits = [
-  { icon: '💰', label: 'Upgrade Bonus' }, { icon: '🧧', label: 'Monthly Red Packet' },
-  { icon: '💸', label: 'Loss Rebate' }, { icon: '⚡', label: 'Fast Withdrawal' },
-  { icon: '🎁', label: 'Birthday Gift' }, { icon: '👤', label: 'Personal Manager' }
+  { icon: '💰', label: '升级奖金' }, { icon: '🧧', label: '每月红包' },
+  { icon: '💸', label: '亏损返水' }, { icon: '⚡', label: '极速提现' },
+  { icon: '🎁', label: '生日礼金' }, { icon: '👤', label: '专属客服' }
 ]
 
 const defaultLevels = [
