@@ -258,11 +258,11 @@ const lineOption = computed(() => {
   const depositData = revenueTrendData.value.map(i => i.deposit)
   const withdrawData = revenueTrendData.value.map(i => i.withdrawal)
   return {
-    tooltip: { trigger: 'axis', formatter: (params) => { let s = params[0].axisValue + '<br/>'; params.forEach(p => { s += p.marker + p.seriesName + ': ¥' + (p.value / 10000).toFixed(1) + '万<br/>'; }); return s } },
+    tooltip: { trigger: 'axis', formatter: (params) => { let s = params[0].axisValue + '<br/>'; params.forEach(p => { const v = p.value || 0; const label = Math.abs(v) >= 10000 ? parseFloat((v / 10000).toFixed(1)) + '万' : parseFloat(v.toFixed(2)); s += p.marker + p.seriesName + ': ¥' + label + '<br/>'; }); return s } },
     legend: { data: ['收入', '充值', '提现'], textStyle: { color: '#a0a0b0' } },
     grid: { left: 60, right: 20, top: 40, bottom: 30 },
     xAxis: { type: 'category', data: xDates, boundaryGap: false, axisLabel: { color: '#888' }, axisLine: { lineStyle: { color: '#333' } } },
-    yAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => (v / 10000) + '万' }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
+    yAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => { if (v === 0) return '0'; if (Math.abs(v) >= 10000) return parseFloat((v / 10000).toFixed(1)) + '万'; return '¥' + parseFloat(v.toFixed(2)) } }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
     series: [
       { name: '收入', type: 'line', data: revenueData, smooth: true, itemStyle: { color: '#f56c6c' }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(245,108,108,0.25)' }, { offset: 1, color: 'rgba(245,108,108,0.02)' }] } }, showSymbol: true, symbolSize: 6 },
       { name: '充值', type: 'line', data: depositData, smooth: true, itemStyle: { color: '#409eff' }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(64,158,255,0.25)' }, { offset: 1, color: 'rgba(64,158,255,0.02)' }] } }, showSymbol: true, symbolSize: 6 },
@@ -277,11 +277,11 @@ const barOption = computed(() => {
   const values = source.map(i => i.ggr).reverse()
   const colors = ['#f56c6c', '#e6a23c', '#409eff', '#67c23a', '#9b59b6'].reverse()
   return {
-    tooltip: { trigger: 'axis', formatter: (params) => { const p = params[0]; return p.name + ': ¥' + (p.value / 10000).toFixed(1) + '万' } },
+    tooltip: { trigger: 'axis', formatter: (params) => { const p = params[0]; const v = p.value || 0; const label = Math.abs(v) >= 10000 ? parseFloat((v / 10000).toFixed(1)) + '万' : parseFloat(v.toFixed(2)); return p.name + ': ¥' + label } },
     grid: { left: 110, right: 30, top: 10, bottom: 30 },
-    xAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => { const m = v / 10000; return parseFloat(m.toFixed(2)) + '万' } }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
+    xAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => { if (v === 0) return '0'; if (Math.abs(v) >= 10000) return parseFloat((v / 10000).toFixed(1)) + '万'; return '¥' + parseFloat(v.toFixed(2)) } }, splitLine: { lineStyle: { color: '#2a2a3e' } } },
     yAxis: { type: 'category', data: names, axisLabel: { color: '#e0e0e0' } },
-    series: [{ type: 'bar', data: values.map((v, i) => ({ value: v, itemStyle: { color: colors[i % colors.length] } })), barWidth: 20, itemStyle: { borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', color: '#ccc', formatter: (p) => { const m = p.value / 10000; return '¥' + parseFloat(m.toFixed(2)) + '万' } } }]
+    series: [{ type: 'bar', data: values.map((v, i) => ({ value: v, itemStyle: { color: colors[i % colors.length] } })), barWidth: 20, itemStyle: { borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', color: '#ccc', formatter: (p) => { const v = p.value || 0; if (Math.abs(v) >= 10000) return '¥' + parseFloat((v / 10000).toFixed(1)) + '万'; return '¥' + parseFloat(v.toFixed(2)) } } }]
   }
 })
 

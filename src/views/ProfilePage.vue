@@ -53,8 +53,11 @@
       <div class="progress-bar">
         <div class="progress-fill" :style="{ width: vipProgressPct + '%' }"></div>
       </div>
-      <p class="vip-hint" v-if="currentVipLevel < 10">
+      <p class="vip-hint" v-if="currentVipLevel < 10 && vipRequiredXP > vipCurrentXP">
         {{ t('vip.depositToUpgrade', { amount: (vipRequiredXP - vipCurrentXP).toLocaleString(), level: currentVipLevel + 1 }) }}
+      </p>
+      <p class="vip-hint" v-else-if="currentVipLevel < 10">
+        {{ t('vip.readyToUpgrade', { level: currentVipLevel + 1 }) }}
       </p>
       <p class="vip-hint max-hint" v-else>{{ t('vip.maxLevel') }}</p>
       <!-- VIP Privileges Preview -->
@@ -124,7 +127,7 @@
           <div class="menu-icon-wrapper">
             <van-icon name="records" />
           </div>
-          <span>{{ t('profile.betRecord') }}</span>
+          <span>{{ t('profile.prizeRecord') }}</span>
         </div>
         <div class="quick-menu-item" @click="$router.push('/buyBit')">
           <div class="menu-icon-wrapper">
@@ -316,7 +319,7 @@ const vipLevelRequirements = [
 ]
 
 const vipCurrentXP = computed(() => {
-  return user.value?.totalDeposit || 1200
+  return user.value?.totalDeposit ?? 0
 })
 
 const vipRequiredXP = computed(() => {
