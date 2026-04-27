@@ -14,6 +14,7 @@ import ppRoutes from './pp-routes.js'
 import sk7755CallbackRouter from './services/sk7755/callbackRouter.js'
 import { init as initCallback, ensureTable as ensureCallbackTable } from './services/sk7755/callbackHandler.js'
 import { init as initGameSync, startAutoSync, syncAll, getPlatforms, togglePlatform, toggleGame, getGamesByPlatform, getCachedGames } from './services/sk7755/gameSync.js'
+import { initRakebackScheduler, settleRakeback } from './services/rakebackScheduler.js'
 import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateUpdateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, validateManualDeposit, validateBatchWithdrawal, validateAutoReviewRule, validateHotScore, validateRecommend, validateVipAdjust, validateTagsUpdate, validateBalanceAdjust, handleValidationErrors } from './validation.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -53,6 +54,7 @@ initCallback(db)
 ensureCallbackTable()
 initGameSync(db)
 startAutoSync()
+initRakebackScheduler(db)
 
 // Trust proxy for correct IP detection behind reverse proxies (needed for rate limiting)
 app.set('trust proxy', 1)
@@ -251,13 +253,17 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
   let newMembersQuery, depositQuery, withdrawalQuery, revenueTrendQuery, depositByChannelQuery
   if (startDate && endDate) {
     newMembersQuery = db.prepare('SELECT COUNT(*) as count FROM members WHERE registered >= ? AND registered <= ?').get(startDate, endDate).count
-    depositQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= ? AND time <= ?").get(startDate, endDate + ' 23:59:59').total
+    const payDeposit = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= ? AND time <= ?").get(startDate, endDate + ' 23:59:59').total
+    const adminDeposit = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM h5_transactions WHERE type = 'admin_deposit' AND created_at >= ? AND created_at <= ?").get(startDate, endDate + ' 23:59:59').total
+    depositQuery = payDeposit + adminDeposit
     withdrawalQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= ? AND time <= ?").get(startDate, endDate + ' 23:59:59').total
     revenueTrendQuery = db.prepare('SELECT * FROM revenue_trend WHERE date >= ? AND date <= ? ORDER BY date').all(startDate, endDate)
     depositByChannelQuery = db.prepare("SELECT channel as name, SUM(amount) as value FROM deposits WHERE status = 'completed' AND time >= ? AND time <= ? GROUP BY channel").all(startDate, endDate + ' 23:59:59')
   } else {
     newMembersQuery = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now', '-1 day')").get().count
-    depositQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed'").get().total
+    const payDep = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed'").get().total
+    const adminDep = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM h5_transactions WHERE type = 'admin_deposit'").get().total
+    depositQuery = payDep + adminDep
     withdrawalQuery = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved')").get().total
     revenueTrendQuery = db.prepare("SELECT * FROM revenue_trend WHERE date >= date('now', '-30 days') ORDER BY date").all()
     depositByChannelQuery = db.prepare("SELECT channel as name, SUM(amount) as value FROM deposits WHERE status = 'completed' GROUP BY channel").all()
@@ -282,11 +288,13 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const prevEndStr = prevEnd.toISOString().slice(0, 10)
     prevNewMembers = db.prepare('SELECT COUNT(*) as count FROM members WHERE registered >= ? AND registered <= ?').get(prevStartStr, prevEndStr).count
     prevDeposit = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= ? AND time <= ?").get(prevStartStr, prevEndStr + ' 23:59:59').total
+      + db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM h5_transactions WHERE type = 'admin_deposit' AND created_at >= ? AND created_at <= ?").get(prevStartStr, prevEndStr + ' 23:59:59').total
     prevWithdrawal = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= ? AND time <= ?").get(prevStartStr, prevEndStr + ' 23:59:59').total
     prevMembers = db.prepare('SELECT COUNT(*) as count FROM members WHERE registered < ?').get(startDate).count
   } else {
     prevNewMembers = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now', '-2 day') AND registered < date('now', '-1 day')").get().count
     prevDeposit = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= date('now', '-1 day') AND time < date('now')").get().total
+      + db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM h5_transactions WHERE type = 'admin_deposit' AND created_at >= date('now', '-1 day') AND created_at < date('now')").get().total
     prevWithdrawal = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= date('now', '-1 day') AND time < date('now')").get().total
     prevMembers = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered < date('now', '-1 day')").get().count
   }
@@ -316,11 +324,39 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     }
   }
 
-  const topGamesGGR = db.prepare('SELECT name, revenue as ggr FROM games WHERE revenue > 0 ORDER BY revenue DESC LIMIT 5').all()
+  // Top 5 GGR: combine games table + sk7755_bets aggregation
+  const gamesGGR = db.prepare('SELECT name, revenue as ggr FROM games WHERE revenue > 0').all()
+  const sk7755GGR = db.prepare(`SELECT
+    COALESCE(game_name, game_code) as name,
+    COALESCE(SUM(bet_amount), 0) - COALESCE(SUM(win_amount), 0) as ggr
+    FROM sk7755_bets GROUP BY COALESCE(game_name, game_code) HAVING ggr > 0`).all()
+  const ggrMap = new Map()
+  for (const g of gamesGGR) ggrMap.set(g.name, (ggrMap.get(g.name) || 0) + g.ggr)
+  for (const g of sk7755GGR) ggrMap.set(g.name, (ggrMap.get(g.name) || 0) + g.ggr)
+  const topGamesGGR = [...ggrMap.entries()]
+    .map(([name, ggr]) => ({ name, ggr: parseFloat(ggr.toFixed(2)) }))
+    .sort((a, b) => b.ggr - a.ggr)
+    .slice(0, 5)
+
+  // Revenue trend: add SK7755 bet data to existing trend
+  const sk7755Revenue = db.prepare(`SELECT
+    date(created_at) as date,
+    COALESCE(SUM(bet_amount), 0) - COALESCE(SUM(win_amount), 0) as revenue
+    FROM sk7755_bets GROUP BY date(created_at)`).all()
+  const trendMap = new Map()
+  for (const r of revenueTrendQuery) trendMap.set(r.date, { ...r })
+  for (const r of sk7755Revenue) {
+    if (trendMap.has(r.date)) {
+      trendMap.get(r.date).revenue = (trendMap.get(r.date).revenue || 0) + r.revenue
+    } else {
+      trendMap.set(r.date, { date: r.date, revenue: r.revenue, deposit: 0, withdrawal: 0 })
+    }
+  }
+  const mergedRevenueTrend = [...trendMap.values()].sort((a, b) => a.date.localeCompare(b.date))
 
   const realtimeAlerts = []
 
-  const result = { kpi, revenueTrend: revenueTrendQuery, topGamesGGR, depositByChannel: depositByChannelQuery, realtimeAlerts }
+  const result = { kpi, revenueTrend: mergedRevenueTrend, topGamesGGR, depositByChannel: depositByChannelQuery, realtimeAlerts }
   cacheSet(cacheKey, result, 30000)
   res.json(result)
 })
@@ -332,9 +368,13 @@ app.get('/api/admin/dashboard/stats', authMiddleware, (req, res) => {
 
   const totalMembers = db.prepare('SELECT COUNT(*) as count FROM members').get().count
   const todayRegistrations = db.prepare("SELECT COUNT(*) as count FROM members WHERE registered >= date('now')").get().count
-  const totalDeposits = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed'").get().total
+  const payTotalDep = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed'").get().total
+  const adminTotalDep = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM h5_transactions WHERE type = 'admin_deposit'").get().total
+  const totalDeposits = payTotalDep + adminTotalDep
   const totalWithdrawals = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved')").get().total
-  const todayDeposits = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= date('now')").get().total
+  const payTodayDep = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'completed' AND time >= date('now')").get().total
+  const adminTodayDep = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM h5_transactions WHERE type = 'admin_deposit' AND created_at >= date('now')").get().total
+  const todayDeposits = payTodayDep + adminTodayDep
   const todayWithdrawals = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status IN ('completed', 'approved') AND time >= date('now')").get().total
   const activeOnline = db.prepare("SELECT COUNT(*) as count FROM members WHERE last_login >= datetime('now', '-30 minutes')").get().count
 
@@ -1510,6 +1550,18 @@ app.get('/api/admin/rakeback/records', authMiddleware, (req, res) => {
     vipLevel: r.vip_level
   }))
   res.json(records)
+})
+
+// POST /api/admin/rakeback/settle - Manually trigger rakeback settlement
+app.post('/api/admin/rakeback/settle', authMiddleware, (req, res) => {
+  const { date } = req.body
+  try {
+    const count = settleRakeback(date || undefined)
+    auditLog(req.user.username, '手动结算返水', 'rakeback', `日期: ${date || '昨日'}, 生成 ${count} 条记录`, req.ip || '0.0.0.0')
+    res.json({ success: true, count, message: `已生成 ${count} 条返水记录` })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
 // ==================== PROMOTIONS ====================

@@ -454,15 +454,19 @@ function handleLogout() {
   router.push('/home')
 }
 
-function onRefresh() {
+async function onRefresh() {
   profileLoading.value = true
+  try { await walletStore.fetchBalance() } catch (_) { /* ignore */ }
   setTimeout(() => {
     profileLoading.value = false
     refreshing.value = false
   }, 300)
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (userStore.isLoggedIn) {
+    try { await walletStore.fetchBalance() } catch (_) { /* ignore */ }
+  }
   setTimeout(() => {
     profileLoading.value = false
   }, 300)
