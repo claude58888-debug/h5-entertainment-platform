@@ -269,7 +269,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     depositByChannelQuery = db.prepare("SELECT channel as name, SUM(amount) as value FROM deposits WHERE status = 'completed' GROUP BY channel").all()
   }
 
-  const onlineNow = 1893 // simulated
+  const onlineNow = db.prepare("SELECT COUNT(*) as count FROM members WHERE last_login >= datetime('now', '-30 minutes')").get().count
   const todayProfit = (depositQuery || 0) - (withdrawalQuery || 0)
 
   // Agent stats

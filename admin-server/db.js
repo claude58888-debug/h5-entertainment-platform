@@ -605,19 +605,10 @@ export function initDB() {
     CREATE INDEX IF NOT EXISTS idx_pp_tx_round ON pp_transactions(round_id);
   `)
 
-  // ==================== SEED: Revenue Trend (last 30 days) ====================
-  const revTrendCount = db.prepare('SELECT COUNT(*) as c FROM revenue_trend').get().c
-  if (revTrendCount === 0) {
-    const stmtRT = db.prepare('INSERT OR IGNORE INTO revenue_trend (date, revenue, deposit, withdrawal) VALUES (?,?,?,?)')
-    for (let i = 30; i >= 0; i--) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const dateStr = d.toISOString().split('T')[0]
-      const deposit = Math.round(800000 + Math.random() * 1200000)
-      const withdrawal = Math.round(400000 + Math.random() * 600000)
-      const revenue = deposit - withdrawal
-      stmtRT.run(dateStr, revenue, deposit, withdrawal)
-    }
+  // Clean up any fake seed data from revenue_trend (values like 800000+ per day are unrealistic)
+  const maxRevTrend = db.prepare('SELECT MAX(ABS(deposit)) as m FROM revenue_trend').get().m || 0
+  if (maxRevTrend > 100000) {
+    db.prepare('DELETE FROM revenue_trend').run()
   }
 
   // ==================== SEED: Auto Review Rules ====================

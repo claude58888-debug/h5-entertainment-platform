@@ -1,6 +1,6 @@
 <template>
   <div class="report-page">
-    <van-nav-bar title="Win/Loss Report" left-arrow @click-left="$router.back()" fixed :style="{ maxWidth: '480px', margin: '0 auto' }" />
+    <van-nav-bar title="输赢报表" left-arrow @click-left="$router.back()" fixed :style="{ maxWidth: '480px', margin: '0 auto' }" />
     <div class="page-content" style="padding-top: 46px;">
       <div class="date-filter">
         <div class="quick-dates">
@@ -9,23 +9,23 @@
       </div>
 
       <div class="summary-cards">
-        <div class="s-card"><span class="s-label">Total Bets</span><span class="s-value">{{ stats.totalBets }}</span></div>
-        <div class="s-card"><span class="s-label">Bet Amount</span><span class="s-value">{{ formatAmount(stats.betAmount) }}</span></div>
-        <div class="s-card win"><span class="s-label">Win/Loss</span><span class="s-value" :class="stats.winLoss >= 0 ? 'green' : 'red'">{{ stats.winLoss >= 0 ? '+' : '' }}{{ formatAmount(stats.winLoss) }}</span></div>
-        <div class="s-card"><span class="s-label">Rebate</span><span class="s-value">{{ formatAmount(stats.rebate) }}</span></div>
+        <div class="s-card"><span class="s-label">总投注数</span><span class="s-value">{{ stats.totalBets }}</span></div>
+        <div class="s-card"><span class="s-label">投注金额</span><span class="s-value">{{ formatAmount(stats.betAmount) }}</span></div>
+        <div class="s-card win"><span class="s-label">输赢</span><span class="s-value" :class="stats.winLoss >= 0 ? 'green' : 'red'">{{ stats.winLoss >= 0 ? '+' : '' }}{{ formatAmount(stats.winLoss) }}</span></div>
+        <div class="s-card"><span class="s-label">返水</span><span class="s-value">{{ formatAmount(stats.rebate) }}</span></div>
       </div>
 
       <div class="report-table" v-if="reportData.length > 0">
-        <h3>By Game Type</h3>
+        <h3>按游戏类型</h3>
         <div class="table-wrap">
-          <div class="t-header"><span>Type</span><span>Bets</span><span>Amount</span><span>Win/Loss</span></div>
+          <div class="t-header"><span>类型</span><span>笔数</span><span>金额</span><span>输赢</span></div>
           <div class="t-row" v-for="r in reportData" :key="r.type">
             <span>{{ r.type }}</span><span>{{ r.bets }}</span><span>{{ formatAmount(r.amount) }}</span>
             <span :class="r.winLoss >= 0 ? 'green' : 'red'">{{ r.winLoss >= 0 ? '+' : '' }}{{ formatAmount(r.winLoss) }}</span>
           </div>
         </div>
       </div>
-      <van-empty v-else-if="!loading" description="No betting data" image="search" />
+      <van-empty v-else-if="!loading" description="暂无投注数据" image="search" />
     </div>
   </div>
 </template>
@@ -37,10 +37,10 @@ import request from '@/utils/request'
 const loading = ref(false)
 const activeDays = ref(30)
 const quickDates = [
-  { label: 'Today', value: 1 },
-  { label: 'Last 7 Days', value: 7 },
-  { label: 'Last 30 Days', value: 30 },
-  { label: 'All Time', value: 0 }
+  { label: '今日', value: 1 },
+  { label: '近7天', value: 7 },
+  { label: '近30天', value: 30 },
+  { label: '全部', value: 0 }
 ]
 
 const stats = ref({ totalBets: 0, betAmount: 0, winLoss: 0, rebate: 0 })
@@ -48,32 +48,33 @@ const reportData = ref([])
 
 function formatAmount(val) {
   const n = Number(val) || 0
-  return n.toFixed(2)
+  return n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+async function selectRange(days) {
+  activeDays.value = days
+  await fetchReport()
 }
 
 async function fetchReport() {
   loading.value = true
   try {
     const params = activeDays.value > 0 ? { days: activeDays.value } : {}
-    const res = await request.get('/bets/report', { params })
-    stats.value = {
-      totalBets: res.totalBets || 0,
-      betAmount: res.betAmount || 0,
-      winLoss: res.winLoss || 0,
-      rebate: res.rebate || 0
+    const res = await request.get('/user/report', { params })
+    if (res) {
+      stats.value = {
+        totalBets: res.totalBets || 0,
+        betAmount: res.betAmount || 0,
+        winLoss: res.winLoss || 0,
+        rebate: res.rebate || 0
+      }
+      reportData.value = res.byGameType || []
     }
-    reportData.value = res.byType || []
-  } catch {
-    stats.value = { totalBets: 0, betAmount: 0, winLoss: 0, rebate: 0 }
-    reportData.value = []
+  } catch (e) {
+    console.warn('Report API failed:', e)
   } finally {
     loading.value = false
   }
-}
-
-function selectRange(days) {
-  activeDays.value = days
-  fetchReport()
 }
 
 onMounted(() => fetchReport())
@@ -81,7 +82,6 @@ onMounted(() => fetchReport())
 
 <style lang="scss" scoped>
 .page-content { padding: 16px; }
-.date-input { background: $bg-card; border-radius: 10px; margin-bottom: 10px; }
 .quick-dates { display: flex; gap: 8px; margin-bottom: 16px; }
 .date-btn { padding: 6px 14px; border-radius: 16px; background: $bg-card; font-size: 12px; cursor: pointer; &.active { background: $accent-purple; } }
 .summary-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
