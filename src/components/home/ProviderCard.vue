@@ -70,12 +70,12 @@ function handleClick() {
   cursor: pointer;
   transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
   position: relative;
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(212, 168, 67, 0.15);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 
   &:hover {
-    border-color: rgba(167, 139, 250, 0.5);
-    box-shadow: 0 6px 25px rgba(124, 58, 237, 0.3);
+    border-color: rgba(212, 168, 67, 0.3);
+    box-shadow: 0 6px 25px rgba(212, 168, 67, 0.15);
   }
 
   &:active {

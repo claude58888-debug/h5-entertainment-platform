@@ -1,51 +1,34 @@
 <template>
-  <nav class="bottom-tab-bar" role="navigation" :aria-label="$t('common.mainNav')" @touchstart="onTouchStart" @touchend="onTouchEnd">
+  <nav class="bottom-tab-bar" role="navigation" :aria-label="$t('common.mainNav')">
     <a
-      v-for="tab in tabs"
+      v-for="(tab, idx) in tabs"
       :key="tab.path"
       class="tab-item"
-      :class="{ active: isActive(tab.path) }"
+      :class="{ active: isActive(tab.path), center: idx === 2 }"
       :aria-label="$t(tab.labelKey)"
       :aria-current="isActive(tab.path) ? 'page' : undefined"
       role="tab"
       @click.prevent="handleTabClick(tab)"
     >
-      <span class="tab-icon" v-html="tab.svg" aria-hidden="true"></span>
-      <span class="tab-label">{{ $t(tab.labelKey) }}</span>
+      <span v-if="idx === 2" class="center-btn">
+        <span class="center-glow"></span>
+        <span class="center-icon" v-html="tab.svg" aria-hidden="true"></span>
+      </span>
+      <template v-else>
+        <span class="tab-icon" v-html="tab.svg" aria-hidden="true"></span>
+        <span class="tab-label">{{ $t(tab.labelKey) }}</span>
+      </template>
     </a>
   </nav>
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-
-// Touch gesture support for swiping between tabs
-const touchStartX = ref(0)
-const SWIPE_THRESHOLD = 60
-
-function onTouchStart(e) {
-  touchStartX.value = e.touches[0].clientX
-}
-
-function onTouchEnd(e) {
-  const deltaX = e.changedTouches[0].clientX - touchStartX.value
-  if (Math.abs(deltaX) < SWIPE_THRESHOLD) return
-
-  const currentIndex = tabs.findIndex(t => isActive(t.path))
-  if (currentIndex === -1) return
-
-  if (deltaX < 0 && currentIndex < tabs.length - 1) {
-    handleTabClick(tabs[currentIndex + 1])
-  } else if (deltaX > 0 && currentIndex > 0) {
-    handleTabClick(tabs[currentIndex - 1])
-  }
-}
 
 const tabs = [
   {
@@ -64,7 +47,7 @@ const tabs = [
     path: '/support',
     labelKey: 'nav.service',
     requiresAuth: false,
-    svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>'
+    svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>'
   },
   {
     path: '/download',
@@ -102,12 +85,12 @@ function isActive(path) {
   width: 100%;
   max-width: $max-width;
   height: $tab-bar-height;
-  background: linear-gradient(180deg, #150f2e 0%, #110d28 100%);
+  background: linear-gradient(180deg, #140a24 0%, #0d0d0d 100%);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  border-top: 1px solid rgba(124, 58, 237, 0.3);
-  box-shadow: 0 -4px 20px rgba(124, 58, 237, 0.1);
+  border-top: 1px solid rgba(212, 168, 67, 0.12);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -116,7 +99,7 @@ function isActive(path) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
   color: $text-muted;
   transition: color 0.2s;
@@ -124,7 +107,12 @@ function isActive(path) {
   text-decoration: none;
 
   &.active {
-    color: $accent-purple-light;
+    color: $accent-gold-light;
+  }
+
+  &.center {
+    position: relative;
+    margin-top: -24px;
   }
 }
 
@@ -137,5 +125,45 @@ function isActive(path) {
 
 .tab-label {
   font-size: 10px;
+  font-weight: 500;
+}
+
+// V3: Floating center button with gold glow ring
+.center-btn {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d4a843, #f3c869);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(212, 168, 67, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:active {
+    transform: scale(0.94);
+    box-shadow: 0 2px 10px rgba(212, 168, 67, 0.3);
+  }
+}
+
+.center-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(243, 200, 105, 0.35);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+.center-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a0a2e;
 }
 </style>

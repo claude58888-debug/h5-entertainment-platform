@@ -24,18 +24,18 @@ const defaultProviders = {
   ],
   live: [
     { id: 'EVO', name: 'EVO真人', label: 'EVOLUTION', gradient: 'linear-gradient(135deg, #2d3436, #000000)', image: '/img/providers/provider_evo.png', gameCount: 50 },
-    { id: 'WM', name: 'WM真人', label: 'WM CASINO', gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)', image: '/img/providers/provider_wm.png', gameCount: 30 },
+    { id: 'WM', name: 'WM真人', label: 'WM CASINO', gradient: 'linear-gradient(135deg, #281850, #3d2070)', image: '/img/providers/provider_wm.png', gameCount: 30 },
     { id: 'GFG', name: 'GFG真人', label: 'GFG LIVE', gradient: 'linear-gradient(135deg, #e17055, #d63031)', image: '/img/providers/provider_gfg.png', gameCount: 25 },
     { id: 'AG', name: 'AG真人', label: 'ASIA GAMING', gradient: 'linear-gradient(135deg, #1565c0, #0d47a1)', gameCount: 35 }
   ],
   fishing: [
-    { id: 'JDB_FISH', name: 'JDB捕鱼', label: 'JDB FISHING', gradient: 'linear-gradient(135deg, #0984e3, #6c5ce7)', gameCount: 15 },
+    { id: 'JDB_FISH', name: 'JDB捕鱼', label: 'JDB FISHING', gradient: 'linear-gradient(135deg, #0984e3, #3b82f6)', gameCount: 15 },
     { id: 'FC_FISH', name: 'FC捕鱼', label: 'FC FISHING', gradient: 'linear-gradient(135deg, #00b894, #00cec9)', gameCount: 12 },
     { id: 'JILI_FISH', name: 'JILI捕鱼', label: 'JILI FISHING', gradient: 'linear-gradient(135deg, #e17055, #fdcb6e)', gameCount: 10 },
     { id: 'CQ9_FISH', name: 'CQ9捕鱼', label: 'CQ9 FISHING', gradient: 'linear-gradient(135deg, #00695c, #26a69a)', gameCount: 8 }
   ],
   lottery: [
-    { id: 'CANADA42', name: '加拿大4.2-4.6', gradient: 'linear-gradient(135deg, #6c5ce7, #a855f7)', link: '/canada28', backgroundImage: '/img/games/pc28-4.2.webp' },
+    { id: 'CANADA42', name: '加拿大4.2-4.6', gradient: 'linear-gradient(135deg, #d4a843, #f3c869)', link: '/canada28', backgroundImage: '/img/games/pc28-4.2.webp' },
     { id: 'CANADA_HIGH', name: '加拿大高倍网盘', gradient: 'linear-gradient(135deg, #e84393, #fd79a8)', link: '/canadaHigh', backgroundImage: '/img/games/pc28high.webp' },
     { id: 'HASH1M', name: '1分哈希', gradient: 'linear-gradient(135deg, #00b894, #55efc4)', link: '/hash1m' }
   ],
