@@ -386,7 +386,7 @@ router.get('/games', (req, res) => {
       rtp: r.rtp,
       hot: !!r.is_hot,
       isNew: !!r.is_new,
-      image: ''
+      image: r.image_url || ''
     })),
     total,
     page,
@@ -409,7 +409,7 @@ router.get('/games/:id', (req, res) => {
     isNew: !!game.is_new,
     bets: game.bets,
     revenue: game.revenue,
-    image: ''
+    image: game.image_url || ''
   })
 })
 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"const fs=require('fs');const {execSync}=require('child_process');const hash=execSync('git rev-parse --short HEAD').toString().trim();const ts=new Date().toISOString();fs.writeFileSync('dist/version.txt',hash+'\\n'+ts+'\\n');\"",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue src/",
     "test": "vitest run",

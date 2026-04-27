@@ -9,7 +9,7 @@
       </div>
       <div v-if="game.source === 'sk7755'" class="sk7755-badge">SK</div>
     </div>
-    <div v-if="game.source === 'sk7755'" class="card-name">{{ game.name }}</div>
+    <div class="card-name">{{ game.name }}</div>
   </div>
 </template>
 
