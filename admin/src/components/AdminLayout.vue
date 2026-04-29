@@ -8,9 +8,9 @@
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapsed"
-        background-color="#1a1a2e"
+        background-color="#0a0618"
         text-color="#a0a0b0"
-        active-text-color="#e6a23c"
+        active-text-color="#f3c869"
         router
       >
         <template v-if="isSuperAdmin">

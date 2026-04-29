@@ -723,11 +723,11 @@ async function submitBalanceAdjust() {
 }
 .detail-label {
   font-size: 12px;
-  color: #909399;
+  color: #a0a0b0;
 }
 .detail-value {
   font-size: 14px;
-  color: #e0e0e0;
+  color: #e8e8e8;
 }
 .detail-tags-section {
   display: flex;
@@ -735,8 +735,8 @@ async function submitBalanceAdjust() {
   flex-wrap: wrap;
   gap: 4px;
   padding: 12px 0;
-  border-top: 1px solid #2a2a3e;
-  border-bottom: 1px solid #2a2a3e;
+  border-top: 1px solid rgba(212, 168, 67, 0.12);
+  border-bottom: 1px solid rgba(212, 168, 67, 0.12);
 }
 .detail-info-grid {
   display: flex;
@@ -762,11 +762,11 @@ async function submitBalanceAdjust() {
 }
 .filter-label {
   font-size: 13px;
-  color: #909399;
+  color: #a0a0b0;
   white-space: nowrap;
 }
 .filter-separator {
-  color: #909399;
+  color: #a0a0b0;
 }
 .batch-toolbar {
   display: flex;
@@ -774,13 +774,13 @@ async function submitBalanceAdjust() {
   gap: 12px;
   padding: 10px 16px;
   margin-bottom: 12px;
-  background: rgba(64, 158, 255, 0.08);
-  border: 1px solid rgba(64, 158, 255, 0.2);
+  background: rgba(212, 168, 67, 0.05);
+  border: 1px solid rgba(212, 168, 67, 0.15);
   border-radius: 6px;
 }
 .batch-info {
   font-size: 14px;
-  color: #409eff;
+  color: #d4a843;
   margin-right: 8px;
 }
 </style>

@@ -230,13 +230,12 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
+  background: linear-gradient(90deg, $accent-gold, $accent-gold-light);
+  color: #1a0a2e;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 4px 12px;
   border-radius: 0 14px 0 10px;
-  backdrop-filter: blur(4px);
 }
 
 .promo-content {

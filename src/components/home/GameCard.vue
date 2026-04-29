@@ -1,15 +1,17 @@
 <template>
   <div class="game-card" @click="handleClick">
     <div class="card-image" :style="{ background: gameGradient }">
-      <img v-if="game.image && !imgFailed" :src="game.image" :alt="game.name" class="game-img" @error="onImgError" />
+      <img v-if="game.image && !imgFailed" :src="game.image" :alt="game.name" class="game-img" @error="onImgError" loading="lazy" />
       <div v-if="!hasImage" class="card-deco">
         <div class="deco-circle c1"></div>
         <div class="deco-circle c2"></div>
         <div class="deco-diamond"></div>
       </div>
       <div v-if="game.source === 'sk7755'" class="sk7755-badge">SK</div>
+      <div v-if="game.hot" class="hot-badge">HOT</div>
     </div>
     <div class="card-name">{{ game.name }}</div>
+    <div v-if="game.provider" class="card-provider">{{ game.provider }}</div>
   </div>
 </template>
 
@@ -31,35 +33,24 @@ const imgFailed = ref(false)
 
 const hasImage = computed(() => props.game.image && !imgFailed.value)
 
-const gradientMap = {
-  '极速糖果1000': 'linear-gradient(135deg, #6c5ce7, #e84393)',
-  '麻将胡了2': 'linear-gradient(135deg, #d63031, #f0c040)',
-  '麻将胡了': 'linear-gradient(135deg, #00b894, #f0c040)',
-  '奥林匹斯之门': 'linear-gradient(135deg, #0984e3, #6c5ce7)',
-  '甜入蜜境': 'linear-gradient(135deg, #e84393, #f39c12)',
-  '招财猫': 'linear-gradient(135deg, #f0c040, #d63031)',
-  '幸运尼柯': 'linear-gradient(135deg, #00b894, #0984e3)',
-  '淘金热': 'linear-gradient(135deg, #e67e22, #6d4c41)',
-  '宝石糖果': 'linear-gradient(135deg, #e84393, #a855f7)',
-  '闪电轮盘': 'linear-gradient(135deg, #f39c12, #e74c3c)',
-  '疯狂时间': 'linear-gradient(135deg, #6c5ce7, #00b894)',
-  '百家乐': 'linear-gradient(135deg, #b71c1c, #880e4f)',
-  '龙虎斗': 'linear-gradient(135deg, #e65100, #f57f17)',
-  '海洋之王': 'linear-gradient(135deg, #0277bd, #00acc1)',
-  '欢乐捕鱼': 'linear-gradient(135deg, #00695c, #4caf50)',
-  '捕鱼大战': 'linear-gradient(135deg, #01579b, #0288d1)',
-  '加拿大4.2-4.6': 'linear-gradient(135deg, #4a148c, #7b1fa2)',
-  '极速彩票': 'linear-gradient(135deg, #c62828, #e53935)',
-  'CR皇冠体育': 'linear-gradient(135deg, #b71c1c, #ff6f00)',
-  'IM体育': 'linear-gradient(135deg, #1565c0, #42a5f5)',
-  '德州扑克': 'linear-gradient(135deg, #2e7d32, #66bb6a)',
-  '中国象棋': 'linear-gradient(135deg, #6d4c41, #a1887f)',
-  '成人': 'linear-gradient(135deg, #e84393, #d63031)',
-  '电影': 'linear-gradient(135deg, #0984e3, #6c5ce7)',
+// V3: Generate gradient from game name hash
+function nameHash(str) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return Math.abs(hash)
 }
 
+const hueAngles = [
+  [280, 320], [200, 260], [340, 20], [160, 200], [40, 80],
+  [300, 350], [220, 270], [10, 50], [120, 160], [260, 310]
+]
+
 const gameGradient = computed(() => {
-  return gradientMap[props.game.name] || 'linear-gradient(135deg, #2d3436, #636e72)'
+  const h = nameHash(props.game.name || 'game')
+  const pair = hueAngles[h % hueAngles.length]
+  return `linear-gradient(135deg, hsl(${pair[0]}, 60%, 25%), hsl(${pair[1]}, 55%, 18%))`
 })
 
 function onImgError(e) {
@@ -67,7 +58,6 @@ function onImgError(e) {
   imgFailed.value = true
 }
 
-// Games with dedicated pages
 const dedicatedRoutes = {
   65: '/games/canada-28'
 }
@@ -79,7 +69,6 @@ async function handleClick() {
   }
   addRecentGame(props.game)
 
-  // SK7755 games: launch directly via API
   if (props.game.source === 'sk7755' && props.game.platform && props.game.game_code) {
     showToast({ message: '正在启动游戏...', position: 'bottom' })
     try {
@@ -122,13 +111,13 @@ async function handleClick() {
   border-radius: 10px;
   overflow: hidden;
   position: relative;
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  border: 1px solid var(--color-border, rgba(212, 168, 67, 0.15));
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.25s, box-shadow 0.25s;
 
   &:hover {
-    border-color: rgba(167, 139, 250, 0.5);
-    box-shadow: 0 6px 25px rgba(124, 58, 237, 0.3);
+    border-color: var(--color-border-gold, rgba(212, 168, 67, 0.3));
+    box-shadow: 0 6px 25px rgba(212, 168, 67, 0.15);
   }
 }
 
@@ -150,7 +139,7 @@ async function handleClick() {
 .deco-circle {
   position: absolute;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.12);
+  border: 2px solid rgba(212, 168, 67, 0.12);
 
   &.c1 {
     width: 80px;
@@ -163,7 +152,7 @@ async function handleClick() {
     height: 50px;
     left: -15px;
     bottom: 30px;
-    border-color: rgba(255,255,255,0.08);
+    border-color: rgba(212, 168, 67, 0.06);
   }
 }
 
@@ -174,7 +163,7 @@ async function handleClick() {
   right: 15px;
   top: 50%;
   transform: rotate(45deg);
-  border: 1.5px solid rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(212, 168, 67, 0.08);
 }
 
 .sk7755-badge {
@@ -191,15 +180,39 @@ async function handleClick() {
   letter-spacing: 0.5px;
 }
 
+.hot-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: linear-gradient(90deg, #d4a843, #f3c869);
+  color: #1a0a2e;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  z-index: 3;
+  letter-spacing: 0.5px;
+}
+
 .card-name {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.88);
   text-align: center;
-  margin-top: 4px;
+  margin-top: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.3;
+  font-weight: 500;
 }
 
+.card-provider {
+  font-size: 9px;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.42));
+  text-align: center;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 </style>

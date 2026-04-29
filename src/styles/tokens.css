@@ -1,0 +1,68 @@
+/* ═══════════════════════════════════════════════════════
+   Claude Design V3 — Black Gold Design Tokens
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Background ── */
+  --color-bg-primary: #1a0a2e;
+  --color-bg-secondary: #0d0d0d;
+  --color-bg-card: #1e1040;
+  --color-bg-card-hover: #281850;
+  --color-bg-header: #140a24;
+  --color-bg-input: #1a1040;
+  --color-bg-sidebar: #120a20;
+  --color-bg-overlay: rgba(0, 0, 0, 0.75);
+
+  /* ── Gold Palette ── */
+  --color-accent-gold: #d4a843;
+  --color-accent-gold-light: #f3c869;
+  --color-accent-gold-dim: rgba(212, 168, 67, 0.25);
+  --color-accent-gold-glow: rgba(243, 200, 105, 0.35);
+
+  /* ── Accent Colors ── */
+  --color-accent-purple: #7c3aed;
+  --color-accent-purple-light: #a78bfa;
+  --color-accent-blue: #3b82f6;
+  --color-accent-cyan: #06b6d4;
+  --color-accent-red: #ef4444;
+  --color-accent-green: #10b981;
+
+  /* ── Text ── */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.72);
+  --color-text-muted: rgba(255, 255, 255, 0.42);
+  --color-text-gold: #f3c869;
+
+  /* ── Border ── */
+  --color-border: rgba(212, 168, 67, 0.15);
+  --color-border-gold: rgba(212, 168, 67, 0.3);
+  --color-border-glow: rgba(243, 200, 105, 0.2);
+
+  /* ── Shadow ── */
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-gold-glow: 0 0 20px rgba(212, 168, 67, 0.15);
+  --shadow-gold-intense: 0 0 30px rgba(243, 200, 105, 0.25);
+
+  /* ── Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* ── Transition ── */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.4s ease;
+
+  /* ── Layout ── */
+  --h5-max-width: 450px;
+  --header-height: 50px;
+  --tab-bar-height: 64px;
+
+  /* ── ECharts Palette ── */
+  --chart-gold: #d4a843;
+  --chart-blue: #3b82f6;
+  --chart-green: #10b981;
+  --chart-purple: #a78bfa;
+  --chart-red: #ef4444;
+}

@@ -6,8 +6,8 @@
           <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
             <defs>
               <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#6c5ce7"/>
-                <stop offset="100%" style="stop-color:#a855f7"/>
+                <stop offset="0%" style="stop-color:#d4a843"/>
+                <stop offset="100%" style="stop-color:#f3c869"/>
               </linearGradient>
             </defs>
             <path d="M5 32V8L13 24L20 12L27 24L35 8V32" stroke="url(#logoGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -80,8 +80,8 @@ function toggleLocale() {
   justify-content: space-between;
   padding: 0 12px;
   z-index: 100;
-  border-bottom: 1px solid rgba(124, 58, 237, 0.3);
-  box-shadow: 0 2px 20px rgba(124, 58, 237, 0.15);
+  border-bottom: 1px solid rgba(212, 168, 67, 0.15);
+  box-shadow: 0 2px 20px rgba(212, 168, 67, 0.08);
 }
 
 .header-left {
@@ -106,7 +106,7 @@ function toggleLocale() {
 .logo-text-cn {
   font-size: 15px;
   font-weight: 700;
-  background: linear-gradient(135deg, #a855f7, #6c5ce7);
+  background: linear-gradient(135deg, #f3c869, #d4a843);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -126,9 +126,9 @@ function toggleLocale() {
 
 .btn-login {
   padding: 4px 14px;
-  border: 1px solid rgba($accent-purple-light, 0.5);
+  border: 1px solid rgba($accent-gold, 0.5);
   background: transparent;
-  color: $accent-purple-light;
+  color: $accent-gold-light;
   border-radius: 16px;
   font-size: 12px;
   cursor: pointer;
@@ -136,8 +136,9 @@ function toggleLocale() {
 
 .btn-register {
   padding: 5px 14px;
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  color: #fff;
+  background: linear-gradient(135deg, #d4a843, #f3c869);
+  color: #1a0a2e;
+  font-weight: 600;
   border-radius: 16px;
   font-size: 12px;
 }
@@ -182,8 +183,8 @@ function toggleLocale() {
 
 .btn-deposit {
   padding: 5px 16px;
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  color: #fff;
+  background: linear-gradient(135deg, #d4a843, #f3c869);
+  color: #1a0a2e;
   border-radius: 16px;
   font-size: 13px;
   font-weight: 600;

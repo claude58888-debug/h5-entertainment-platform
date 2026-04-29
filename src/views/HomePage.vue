@@ -436,8 +436,9 @@ onUnmounted(() => {
 .vpn-btn {
   padding: 4px 12px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  color: #fff;
+  background: linear-gradient(135deg, $accent-gold, $accent-gold-light);
+  color: #1a0a2e;
+  font-weight: 600;
   border: none;
   font-size: 11px;
   cursor: pointer;
@@ -495,8 +496,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.15), rgba(168, 85, 247, 0.15));
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.08), rgba(243, 200, 105, 0.06));
+  border: 1px solid rgba(212, 168, 67, 0.15);
   border-radius: 12px;
   padding: 12px 16px;
   margin-top: 4px;
@@ -655,8 +656,8 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  color: #fff;
+  background: linear-gradient(135deg, $accent-gold, $accent-gold-light);
+  color: #1a0a2e;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -664,7 +665,7 @@ onUnmounted(() => {
   font-weight: 700;
   letter-spacing: 0.5px;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 4px 15px rgba(212, 168, 67, 0.4);
   z-index: 100;
   transition: transform 0.2s, opacity 0.2s;
 
