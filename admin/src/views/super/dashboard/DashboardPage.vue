@@ -99,10 +99,17 @@
 
     <div class="chart-row">
       <div class="chart-container">
+        <div class="chart-title">分类维度 GGR Top10</div>
+        <v-chart :option="categoryGgrOption" style="height: 300px;" autoresize />
+      </div>
+      <div class="chart-container">
         <div class="chart-title">充值渠道分布</div>
         <v-chart :option="pieOption" style="height: 300px;" autoresize />
       </div>
-      <div class="alerts-panel">
+    </div>
+
+    <div class="chart-row">
+      <div class="alerts-panel" style="flex: 1;">
         <div class="chart-title">实时预警</div>
         <div v-for="alert in alerts" :key="alert.id" class="alert-item">
           <div class="alert-info">
@@ -125,6 +132,7 @@
 import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
 import { getDashboard, getDashboardAlerts } from '@/api/dashboard'
+import api from '@/api/index'
 
 const kpi = ref({})
 const kpiChanges = ref({})
@@ -132,6 +140,7 @@ const alerts = ref([])
 const revenueTrendData = ref([])
 const topGamesData = ref([])
 const depositChannelData = ref([])
+const categoryGgrData = ref([])
 const alertData = ref({ pendingWithdrawals: 0, pendingKyc: 0, suspiciousActivities: 0 })
 const alertsLoaded = ref(false)
 const onlineUsers = ref(0)
@@ -200,6 +209,10 @@ async function fetchDashboard() {
   } catch (e) {
     console.warn('API request failed', e)
   }
+  try {
+    const cRes = await api.get('/api/admin/category-ggr')
+    categoryGgrData.value = cRes.data || []
+  } catch (e) { console.warn('Category GGR fetch failed', e) }
 }
 
 async function fetchAlerts() {
@@ -280,6 +293,24 @@ const barOption = computed(() => {
   return {
     tooltip: { trigger: 'axis', formatter: (params) => { const p = params[0]; const v = p.value || 0; const label = Math.abs(v) >= 10000 ? parseFloat((v / 10000).toFixed(1)) + '万' : parseFloat(v.toFixed(2)); return p.name + ': ¥' + label } },
     grid: { left: 110, right: 30, top: 10, bottom: 30 },
+    backgroundColor: 'transparent',
+    xAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => { if (v === 0) return '0'; if (Math.abs(v) >= 10000) return parseFloat((v / 10000).toFixed(1)) + '万'; return '¥' + parseFloat(v.toFixed(2)) } }, splitLine: { lineStyle: { color: 'rgba(212,168,67,0.06)' } } },
+    yAxis: { type: 'category', data: names, axisLabel: { color: '#e0e0e0' } },
+    series: [{ type: 'bar', data: values.map((v, i) => ({ value: v, itemStyle: { color: colors[i % colors.length] } })), barWidth: 20, itemStyle: { borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', color: '#ccc', formatter: (p) => { const v = p.value || 0; if (Math.abs(v) >= 10000) return '¥' + parseFloat((v / 10000).toFixed(1)) + '万'; return '¥' + parseFloat(v.toFixed(2)) } } }]
+  }
+})
+
+const categoryGgrOption = computed(() => {
+  const source = categoryGgrData.value.filter(c => c.ggr > 0).sort((a, b) => b.ggr - a.ggr).slice(0, 10)
+  if (!source.length) {
+    return { title: { text: '暂无分类GGR数据', left: 'center', top: 'center', textStyle: { color: '#666', fontSize: 14 } }, series: [] }
+  }
+  const names = source.map(i => i.category).reverse()
+  const values = source.map(i => i.ggr).reverse()
+  const colors = ['#d4a843', '#3b82f6', '#10b981', '#a78bfa', '#ef4444', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16']
+  return {
+    tooltip: { trigger: 'axis', formatter: (params) => { const p = params[0]; const v = p.value || 0; const label = Math.abs(v) >= 10000 ? parseFloat((v / 10000).toFixed(1)) + '万' : parseFloat(v.toFixed(2)); return p.name + ': ¥' + label } },
+    grid: { left: 80, right: 30, top: 10, bottom: 30 },
     backgroundColor: 'transparent',
     xAxis: { type: 'value', min: 0, axisLabel: { color: '#888', formatter: v => { if (v === 0) return '0'; if (Math.abs(v) >= 10000) return parseFloat((v / 10000).toFixed(1)) + '万'; return '¥' + parseFloat(v.toFixed(2)) } }, splitLine: { lineStyle: { color: 'rgba(212,168,67,0.06)' } } },
     yAxis: { type: 'category', data: names, axisLabel: { color: '#e0e0e0' } },

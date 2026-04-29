@@ -67,46 +67,40 @@
           <GameCard v-for="game in hotGames" :key="game.id" :game="game" />
         </div>
 
-        <!-- Slots -->
+        <!-- Slots (老虎机) -->
         <SectionHeader :title="$t('home.slots')" icon="🎰" more="/games/slots" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
-          <ProviderCard v-for="p in slotsProviders" :key="p.id" :provider="p" category="slots" />
+          <GameCard v-for="game in slotGames" :key="'slot-'+game.id" :game="game" />
         </div>
 
-        <!-- Live -->
+        <!-- Live (真人) -->
         <SectionHeader :title="$t('home.live')" icon="🎲" more="/games/live" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
-          <ProviderCard v-for="p in liveProviders" :key="p.id" :provider="p" category="live" />
+          <GameCard v-for="game in liveGames" :key="'live-'+game.id" :game="game" />
         </div>
 
-        <!-- Fishing -->
+        <!-- Fishing (捕鱼) -->
         <SectionHeader :title="$t('home.fishing')" icon="🐟" more="/games/fishing" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
-          <ProviderCard v-for="p in fishingProviders" :key="p.id" :provider="p" category="fishing" />
+          <GameCard v-for="game in fishGames" :key="'fish-'+game.id" :game="game" />
         </div>
 
-        <!-- Lottery -->
+        <!-- Lottery (彩票) -->
         <SectionHeader :title="$t('home.lottery')" icon="🎱" more="/games/lottery" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
-          <ProviderCard v-for="p in lotteryProviders" :key="p.id" :provider="p" category="lottery" />
+          <GameCard v-for="game in lotteryGames" :key="'lottery-'+game.id" :game="game" />
         </div>
 
-        <!-- Sports -->
+        <!-- Sports (体育) -->
         <SectionHeader :title="$t('home.sports')" icon="⚽" more="/games/sports" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
-          <ProviderCard v-for="p in sportsProviders" :key="p.id" :provider="p" category="sports" />
+          <GameCard v-for="game in sportsGames" :key="'sports-'+game.id" :game="game" />
         </div>
 
-        <!-- Chess -->
+        <!-- Chess (棋牌) -->
         <SectionHeader :title="$t('home.chess')" icon="♟️" more="/games/chess" :scrollable="true" />
         <div class="scroll-row hide-scrollbar">
-          <ProviderCard v-for="p in chessProviders" :key="p.id" :provider="p" category="chess" />
-        </div>
-
-        <!-- Video -->
-        <SectionHeader :title="$t('home.video')" icon="🎬" />
-        <div class="scroll-row hide-scrollbar">
-          <ProviderCard v-for="p in videoProviders" :key="p.id" :provider="p" category="video" />
+          <GameCard v-for="game in chessGames" :key="'chess-'+game.id" :game="game" />
         </div>
 
         <!-- Purchase Virtual Currency Section -->
@@ -147,25 +141,7 @@
           </div>
         </div>
 
-        <!-- Partners -->
-        <SectionHeader :title="$t('home.gamePartners')" icon="🤝" />
-        <div class="partners-section">
-          <div class="partner-logo">
-            <img src="/img/providers/provider_evo.png" alt="EVO" />
-          </div>
-          <div class="partner-logo">
-            <img src="/img/providers/provider_gfg.png" alt="GFG" />
-          </div>
-          <div class="partner-logo">
-            <img src="/img/providers/provider_pg.png" alt="PG" />
-          </div>
-          <div class="partner-logo">
-            <img src="/img/providers/provider_pp.png" alt="PP" />
-          </div>
-          <div class="partner-logo">
-            <img src="/img/providers/provider_wm.png" alt="WM" />
-          </div>
-        </div>
+        <!-- Partners (provider logos removed for de-branding) -->
 
         <!-- License -->
         <div class="license-section">
@@ -227,7 +203,6 @@ import QuickActions from '@/components/home/QuickActions.vue'
 import GameCategoryTabs from '@/components/home/GameCategoryTabs.vue'
 import SectionHeader from '@/components/home/SectionHeader.vue'
 import GameCard from '@/components/home/GameCard.vue'
-import ProviderCard from '@/components/home/ProviderCard.vue'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -239,17 +214,18 @@ const hotScrollRef = ref(null)
 const hasError = ref(false)
 
 const pageLoading = computed(() => appStore.loading || gameStore.loading)
-const hasData = computed(() => gameStore.games.length > 0)
+const hasData = computed(() => gameStore.games.length > 0 || gameStore.sk7755Games.length > 0)
 
 const recentGames = ref([])
 const hotGames = computed(() => gameStore.hotGames)
-const slotsProviders = computed(() => gameStore.getProvidersByCategory('slots'))
-const liveProviders = computed(() => gameStore.getProvidersByCategory('live'))
-const fishingProviders = computed(() => gameStore.getProvidersByCategory('fishing'))
-const lotteryProviders = computed(() => gameStore.getProvidersByCategory('lottery'))
-const sportsProviders = computed(() => gameStore.getProvidersByCategory('sports'))
-const chessProviders = computed(() => gameStore.getProvidersByCategory('chess'))
-const videoProviders = computed(() => gameStore.getProvidersByCategory('video'))
+
+// Category-based game lists (SK7755 games grouped by category)
+const slotGames = computed(() => gameStore.getGamesByCategory('slots').slice(0, 20))
+const liveGames = computed(() => gameStore.getGamesByCategory('live').slice(0, 20))
+const fishGames = computed(() => gameStore.getGamesByCategory('fishing').slice(0, 20))
+const lotteryGames = computed(() => gameStore.getGamesByCategory('lottery').slice(0, 20))
+const sportsGames = computed(() => gameStore.getGamesByCategory('sports').slice(0, 20))
+const chessGames = computed(() => gameStore.getGamesByCategory('chess').slice(0, 20))
 
 const categoryGames = computed(() => gameStore.getGamesByCategory(activeCategory.value))
 

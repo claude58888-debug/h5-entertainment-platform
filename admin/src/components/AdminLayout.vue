@@ -54,8 +54,8 @@
             <el-menu-item index="/super/games/list">游戏列表</el-menu-item>
             <el-menu-item index="/super/games/bets">投注记录</el-menu-item>
             <el-menu-item index="/super/games/stats">游戏统计</el-menu-item>
-            <el-menu-item index="/super/games/sk7755">SK7755平台</el-menu-item>
-            <el-menu-item index="/super/games/sk7755-bets">SK7755投注</el-menu-item>
+            <el-menu-item index="/super/games/sk7755">聚合平台</el-menu-item>
+            <el-menu-item index="/super/games/sk7755-bets">聚合投注</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="/super/vip">
             <el-icon><Trophy /></el-icon>

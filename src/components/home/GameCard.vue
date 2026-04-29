@@ -7,11 +7,11 @@
         <div class="deco-circle c2"></div>
         <div class="deco-diamond"></div>
       </div>
-      <div v-if="game.source === 'sk7755'" class="sk7755-badge">SK</div>
-      <div v-if="game.hot" class="hot-badge">HOT</div>
+      <div v-if="game.is_hot || game.hot" class="hot-badge">HOT</div>
+      <div v-if="game.is_new || game.isNew" class="new-badge">NEW</div>
     </div>
     <div class="card-name">{{ game.name }}</div>
-    <div v-if="game.provider" class="card-provider">{{ game.provider }}</div>
+    <div v-if="game.category_label" class="card-category">{{ game.category_label }}</div>
   </div>
 </template>
 
@@ -166,26 +166,26 @@ async function handleClick() {
   border: 1.5px solid rgba(212, 168, 67, 0.08);
 }
 
-.sk7755-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: rgba(124, 58, 237, 0.85);
-  color: #fff;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 4px;
-  z-index: 3;
-  letter-spacing: 0.5px;
-}
-
 .hot-badge {
   position: absolute;
   top: 4px;
   left: 4px;
   background: linear-gradient(90deg, #d4a843, #f3c869);
   color: #1a0a2e;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  z-index: 3;
+  letter-spacing: 0.5px;
+}
+
+.new-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  color: #fff;
   font-size: 8px;
   font-weight: 800;
   padding: 1px 5px;
@@ -206,7 +206,7 @@ async function handleClick() {
   font-weight: 500;
 }
 
-.card-provider {
+.card-category {
   font-size: 9px;
   color: var(--color-text-muted, rgba(255, 255, 255, 0.42));
   text-align: center;
