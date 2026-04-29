@@ -15,7 +15,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const dbPath = path.join(__dirname, '..', 'admin-server', 'admin.db')
+const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'admin-server', 'admin.db')
 const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 db.pragma('foreign_keys = ON')
