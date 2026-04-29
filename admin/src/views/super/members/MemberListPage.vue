@@ -61,7 +61,7 @@
         </el-empty>
       </div>
 
-      <el-table v-else ref="tableRef" :data="paginatedMembers" stripe v-loading="loading" @row-click="openDetail" @selection-change="handleSelectionChange">
+      <el-table v-else ref="tableRef" :data="paginatedMembers" stripe v-loading="loading" @row-click="openDetail" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="会员ID" width="90" />
         <el-table-column prop="username" label="用户名" width="130" />
@@ -70,7 +70,7 @@
         <el-table-column label="VIP" width="70">
           <template #default="{ row }"><el-tag size="small" type="warning">V{{ row.vip }}</el-tag></template>
         </el-table-column>
-        <el-table-column label="余额" width="120" sortable sort-by="balance">
+        <el-table-column label="余额" width="120" sortable="custom" prop="balance">
           <template #default="{ row }">¥{{ row.balance.toLocaleString() }}</template>
         </el-table-column>
         <el-table-column label="总充值" width="120">
@@ -384,6 +384,8 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const selectedMembers = ref([])
 const tableRef = ref(null)
+const sortBy = ref('')
+const sortOrder = ref('')
 
 // Detail dialog
 const detailVisible = ref(false)
@@ -412,15 +414,33 @@ const balanceForm = ref({ memberId: '', username: '', currentBalance: 0, type: '
 const statusDialogVisible = ref(false)
 const statusForm = ref({ memberId: '', username: '', currentStatus: '', newStatus: '', reason: '' })
 
-onMounted(async () => {
+async function fetchMembers() {
   try {
     loading.value = true
-    const data = await getMembers()
+    const params = {}
+    if (sortBy.value) {
+      params.sortBy = sortBy.value
+      params.sortOrder = sortOrder.value
+    }
+    const data = await getMembers(params)
     members.value = data || []
   } catch (e) { console.warn('API request failed', e) } finally {
     loading.value = false
   }
-})
+}
+
+function handleSortChange({ prop, order }) {
+  if (order) {
+    sortBy.value = prop
+    sortOrder.value = order === 'descending' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = ''
+    sortOrder.value = ''
+  }
+  fetchMembers()
+}
+
+onMounted(fetchMembers)
 const agents = []
 
 function memberStatusType(status) {

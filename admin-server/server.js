@@ -384,7 +384,31 @@ app.get('/api/admin/dashboard/alerts', authMiddleware, (req, res) => {
 
 // ==================== MEMBERS ====================
 app.get('/api/admin/members', authMiddleware, (req, res) => {
-  const rows = db.prepare('SELECT * FROM members ORDER BY id').all()
+  const { sortBy, sortOrder, page, pageSize } = req.query
+  const allowedSortColumns = ['id', 'username', 'balance', 'vip', 'status', 'registered', 'last_login', 'total_deposit', 'total_withdraw']
+  let orderClause = 'ORDER BY id'
+  if (sortBy && allowedSortColumns.includes(sortBy)) {
+    const dir = sortOrder === 'desc' ? 'DESC' : 'ASC'
+    orderClause = `ORDER BY ${sortBy} ${dir}`
+  }
+
+  if (page && pageSize) {
+    const p = Number(page)
+    const ps = Number(pageSize)
+    const total = db.prepare('SELECT COUNT(*) as c FROM members').get().c
+    const offset = (p - 1) * ps
+    const rows = db.prepare(`SELECT * FROM members ${orderClause} LIMIT ? OFFSET ?`).all(ps, offset)
+    const members = rows.map(r => ({
+      ...r,
+      tags: JSON.parse(r.tags || '[]'),
+      totalDeposit: r.total_deposit,
+      totalWithdraw: r.total_withdraw,
+      lastLogin: r.last_login
+    }))
+    return res.json({ data: members, total, page: p, pageSize: ps })
+  }
+
+  const rows = db.prepare(`SELECT * FROM members ${orderClause}`).all()
   const members = rows.map(r => ({
     ...r,
     tags: JSON.parse(r.tags || '[]'),
@@ -442,20 +466,29 @@ app.get('/api/admin/members/:id/detail', authMiddleware, (req, res) => {
   member.totalWithdraw = member.total_withdraw
   member.lastLogin = member.last_login
 
-  // Aggregate bet stats
-  const betStats = db.prepare('SELECT COUNT(*) as totalBets, COALESCE(SUM(bet_amount), 0) as totalBetAmount, COALESCE(SUM(win_amount), 0) as totalWinAmount FROM bets WHERE member = ?').get(req.params.id)
+  // Aggregate bet stats from sk7755_bets (real data)
+  const sk7755Uid = 'ddyl_' + req.params.id
+  const betStats = db.prepare('SELECT COUNT(*) as totalBets, COALESCE(SUM(bet_amount), 0) as totalBetAmount, COALESCE(SUM(win_amount), 0) as totalWinAmount FROM sk7755_bets WHERE uid = ?').get(sk7755Uid)
 
-  // Recent bets
-  const recentBets = db.prepare('SELECT * FROM bets WHERE member = ? ORDER BY time DESC LIMIT 50').all(req.params.id)
+  // Recent bets from sk7755_bets
+  const recentBets = db.prepare('SELECT * FROM sk7755_bets WHERE uid = ? ORDER BY created_at DESC LIMIT 50').all(sk7755Uid)
   const bets = recentBets.map(r => ({
-    ...r,
+    id: r.id,
+    member: r.uid,
+    game: r.game_name,
+    provider: r.platform,
+    bet_amount: r.bet_amount,
+    win_amount: r.win_amount,
+    time: r.created_at,
+    status: r.status,
+    order_no: r.order_no,
     betAmount: r.bet_amount,
     winAmount: r.win_amount
   }))
 
   // Recent transactions (deposits + withdrawals)
-  const deposits = db.prepare('SELECT id, amount, channel, status, time, "deposit" as type FROM deposits WHERE member = ? ORDER BY time DESC LIMIT 30').all(req.params.id)
-  const withdrawals = db.prepare('SELECT id, amount, channel, status, time, "withdrawal" as type FROM withdrawals WHERE member = ? ORDER BY time DESC LIMIT 30').all(req.params.id)
+  const deposits = db.prepare("SELECT id, amount, channel, status, time, 'deposit' as type FROM deposits WHERE member = ? ORDER BY time DESC LIMIT 30").all(req.params.id)
+  const withdrawals = db.prepare("SELECT id, amount, channel, status, time, 'withdrawal' as type FROM withdrawals WHERE member = ? ORDER BY time DESC LIMIT 30").all(req.params.id)
   const transactions = [...deposits, ...withdrawals].sort((a, b) => (b.time || '').localeCompare(a.time || ''))
 
   // H5 transactions
@@ -1224,18 +1257,18 @@ app.get('/api/admin/bets', authMiddleware, (req, res) => {
   res.json(bets)
 })
 
-// GET /api/games/bets - Bet records with pagination and filters
+// GET /api/games/bets - Bet records with pagination and filters (reads from sk7755_bets)
 app.get('/api/games/bets', authMiddleware, (req, res) => {
   const { page = 1, pageSize = 20, search, provider, category, startDate, endDate } = req.query
   let where = []
   let params = []
 
   if (search) {
-    where.push('(b.member LIKE ? OR b.id LIKE ?)')
-    params.push('%' + search + '%', '%' + search + '%')
+    where.push('(b.uid LIKE ? OR b.order_no LIKE ? OR b.game_name LIKE ?)')
+    params.push('%' + search + '%', '%' + search + '%', '%' + search + '%')
   }
   if (provider) {
-    where.push('b.provider = ?')
+    where.push('b.platform = ?')
     params.push(provider)
   }
   if (category) {
@@ -1243,35 +1276,35 @@ app.get('/api/games/bets', authMiddleware, (req, res) => {
     params.push(category)
   }
   if (startDate) {
-    where.push('b.time >= ?')
+    where.push('b.created_at >= ?')
     params.push(startDate)
   }
   if (endDate) {
-    where.push('b.time <= ?')
-    params.push(endDate)
+    where.push('b.created_at <= ?')
+    params.push(endDate + ' 23:59:59')
   }
 
   const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
-  const countQuery = `SELECT COUNT(*) as total FROM bets b LEFT JOIN games g ON b.game = g.name ${whereClause}`
+  const countQuery = `SELECT COUNT(*) as total FROM sk7755_bets b LEFT JOIN games g ON b.game_name = g.name ${whereClause}`
   const total = db.prepare(countQuery).get(...params).total
 
   const offset = (Number(page) - 1) * Number(pageSize)
-  const dataQuery = `SELECT b.*, g.category as game_category, m.agent as member_agent FROM bets b LEFT JOIN games g ON b.game = g.name LEFT JOIN members m ON b.member = m.id ${whereClause} ORDER BY b.time DESC LIMIT ? OFFSET ?`
+  const dataQuery = `SELECT b.* FROM sk7755_bets b LEFT JOIN games g ON b.game_name = g.name ${whereClause} ORDER BY b.created_at DESC LIMIT ? OFFSET ?`
   const rows = db.prepare(dataQuery).all(...params, Number(pageSize), offset)
 
   res.json({
     data: rows.map(r => ({
       id: r.id,
-      member: r.member,
-      agent: r.member_agent || '',
-      game: r.game,
-      provider: r.provider,
-      category: r.game_category || '',
+      member: r.uid,
+      game: r.game_name,
+      provider: r.platform,
+      category: '',
       betAmount: r.bet_amount,
       payout: r.win_amount,
       profit: r.bet_amount - r.win_amount,
-      time: r.time,
-      status: r.status
+      time: r.created_at,
+      status: r.status,
+      order_no: r.order_no
     })),
     total,
     page: Number(page),
