@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="section-title">聚合游戏投注记录</h2>
+    <h2 class="section-title">游戏投注记录</h2>
     <div class="table-card">
       <div class="filter-bar">
         <el-input v-model="search" placeholder="搜索UID/订单号/游戏" style="width: 220px;" clearable prefix-icon="Search" @keyup.enter="fetchBets" />
