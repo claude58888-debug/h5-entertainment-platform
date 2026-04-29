@@ -84,7 +84,6 @@ const pageSize = 18
 const currentPage = ref(1)
 
 const category = computed(() => route.params.category)
-const sk7755ShowCount = ref(18)
 
 const titleMap = {
   hot: 'games.hot',
@@ -164,9 +163,7 @@ onMounted(async () => {
   } catch (e) {
     hasError.value = true
   }
-  if (route.query.provider) {
-    activeProvider.value = route.query.provider
-  }
+
 })
 </script>
 

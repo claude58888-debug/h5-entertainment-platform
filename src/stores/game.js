@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getGamesApi, getGameDetailApi, getGameCategoriesApi, getSK7755GamesApi } from '@/api/game'
+import { getGamesApi, getSK7755GamesApi } from '@/api/game'
 
 const defaultCategories = [
   { id: 'home', labelKey: 'nav.home', icon: 'home' },
