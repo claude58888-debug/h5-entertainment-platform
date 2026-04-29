@@ -221,7 +221,7 @@ function getCategoryName(catId) {
 
 async function fetchCategories() {
   try {
-    const res = await api.get('/api/admin/categories').then(r => r.data)
+    const res = await api.get('/api/admin/categories')
     categories.value = (res || []).map(c => ({ ...c, is_enabled: !!c.is_enabled }))
   } catch (e) { console.warn('Categories fetch failed', e) }
 }
