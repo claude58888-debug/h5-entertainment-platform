@@ -14,6 +14,7 @@ import ppRoutes from './pp-routes.js'
 import sk7755CallbackRouter from './services/sk7755/callbackRouter.js'
 import { init as initCallback, ensureTable as ensureCallbackTable } from './services/sk7755/callbackHandler.js'
 import { init as initGameSync, startAutoSync, syncAll, getPlatforms, togglePlatform, toggleGame, getGamesByPlatform, getCachedGames } from './services/sk7755/gameSync.js'
+import { registerProviders } from './providers/registry.js'
 import { validateAdminLogin, validateCreateMember, validateCreateAgent, validateUpdateAgent, validateCreateGame, validateUpdateGame, validateCreateAdmin, validateCreateProvider, validateCreateActivity, validateUpdateActivity, validateCreateMessage, validateCreateAnnouncement, validateUpdateAnnouncement, validateCreateRiskRule, validateAddBlacklistIP, validateManualDeposit, validateBatchWithdrawal, validateAutoReviewRule, validateHotScore, validateRecommend, validateVipAdjust, validateTagsUpdate, validateBalanceAdjust, handleValidationErrors } from './validation.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -53,6 +54,7 @@ initCallback(db)
 ensureCallbackTable()
 initGameSync(db)
 startAutoSync()
+registerProviders()
 
 // Trust proxy for correct IP detection behind reverse proxies (needed for rate limiting)
 app.set('trust proxy', 1)
@@ -382,7 +384,31 @@ app.get('/api/admin/dashboard/alerts', authMiddleware, (req, res) => {
 
 // ==================== MEMBERS ====================
 app.get('/api/admin/members', authMiddleware, (req, res) => {
-  const rows = db.prepare('SELECT * FROM members ORDER BY id').all()
+  const { sortBy, sortOrder, page, pageSize } = req.query
+  const allowedSortColumns = ['id', 'username', 'balance', 'vip', 'status', 'registered', 'last_login', 'total_deposit', 'total_withdraw']
+  let orderClause = 'ORDER BY id'
+  if (sortBy && allowedSortColumns.includes(sortBy)) {
+    const dir = sortOrder === 'desc' ? 'DESC' : 'ASC'
+    orderClause = `ORDER BY ${sortBy} ${dir}`
+  }
+
+  if (page && pageSize) {
+    const p = Number(page)
+    const ps = Number(pageSize)
+    const total = db.prepare('SELECT COUNT(*) as c FROM members').get().c
+    const offset = (p - 1) * ps
+    const rows = db.prepare(`SELECT * FROM members ${orderClause} LIMIT ? OFFSET ?`).all(ps, offset)
+    const members = rows.map(r => ({
+      ...r,
+      tags: JSON.parse(r.tags || '[]'),
+      totalDeposit: r.total_deposit,
+      totalWithdraw: r.total_withdraw,
+      lastLogin: r.last_login
+    }))
+    return res.json({ data: members, total, page: p, pageSize: ps })
+  }
+
+  const rows = db.prepare(`SELECT * FROM members ${orderClause}`).all()
   const members = rows.map(r => ({
     ...r,
     tags: JSON.parse(r.tags || '[]'),
@@ -440,20 +466,29 @@ app.get('/api/admin/members/:id/detail', authMiddleware, (req, res) => {
   member.totalWithdraw = member.total_withdraw
   member.lastLogin = member.last_login
 
-  // Aggregate bet stats
-  const betStats = db.prepare('SELECT COUNT(*) as totalBets, COALESCE(SUM(bet_amount), 0) as totalBetAmount, COALESCE(SUM(win_amount), 0) as totalWinAmount FROM bets WHERE member = ?').get(req.params.id)
+  // Aggregate bet stats from sk7755_bets (real data)
+  const sk7755Uid = 'ddyl_' + req.params.id
+  const betStats = db.prepare('SELECT COUNT(*) as totalBets, COALESCE(SUM(bet_amount), 0) as totalBetAmount, COALESCE(SUM(win_amount), 0) as totalWinAmount FROM sk7755_bets WHERE uid = ?').get(sk7755Uid)
 
-  // Recent bets
-  const recentBets = db.prepare('SELECT * FROM bets WHERE member = ? ORDER BY time DESC LIMIT 50').all(req.params.id)
+  // Recent bets from sk7755_bets
+  const recentBets = db.prepare('SELECT * FROM sk7755_bets WHERE uid = ? ORDER BY created_at DESC LIMIT 50').all(sk7755Uid)
   const bets = recentBets.map(r => ({
-    ...r,
+    id: r.id,
+    member: r.uid,
+    game: r.game_name,
+    provider: r.platform,
+    bet_amount: r.bet_amount,
+    win_amount: r.win_amount,
+    time: r.created_at,
+    status: r.status,
+    order_no: r.order_no,
     betAmount: r.bet_amount,
     winAmount: r.win_amount
   }))
 
   // Recent transactions (deposits + withdrawals)
-  const deposits = db.prepare('SELECT id, amount, channel, status, time, "deposit" as type FROM deposits WHERE member = ? ORDER BY time DESC LIMIT 30').all(req.params.id)
-  const withdrawals = db.prepare('SELECT id, amount, channel, status, time, "withdrawal" as type FROM withdrawals WHERE member = ? ORDER BY time DESC LIMIT 30').all(req.params.id)
+  const deposits = db.prepare("SELECT id, amount, channel, status, time, 'deposit' as type FROM deposits WHERE member = ? ORDER BY time DESC LIMIT 30").all(req.params.id)
+  const withdrawals = db.prepare("SELECT id, amount, channel, status, time, 'withdrawal' as type FROM withdrawals WHERE member = ? ORDER BY time DESC LIMIT 30").all(req.params.id)
   const transactions = [...deposits, ...withdrawals].sort((a, b) => (b.time || '').localeCompare(a.time || ''))
 
   // H5 transactions
@@ -1222,18 +1257,18 @@ app.get('/api/admin/bets', authMiddleware, (req, res) => {
   res.json(bets)
 })
 
-// GET /api/games/bets - Bet records with pagination and filters
+// GET /api/games/bets - Bet records with pagination and filters (reads from sk7755_bets)
 app.get('/api/games/bets', authMiddleware, (req, res) => {
   const { page = 1, pageSize = 20, search, provider, category, startDate, endDate } = req.query
   let where = []
   let params = []
 
   if (search) {
-    where.push('(b.member LIKE ? OR b.id LIKE ?)')
-    params.push('%' + search + '%', '%' + search + '%')
+    where.push('(b.uid LIKE ? OR b.order_no LIKE ? OR b.game_name LIKE ?)')
+    params.push('%' + search + '%', '%' + search + '%', '%' + search + '%')
   }
   if (provider) {
-    where.push('b.provider = ?')
+    where.push('b.platform = ?')
     params.push(provider)
   }
   if (category) {
@@ -1241,35 +1276,35 @@ app.get('/api/games/bets', authMiddleware, (req, res) => {
     params.push(category)
   }
   if (startDate) {
-    where.push('b.time >= ?')
+    where.push('b.created_at >= ?')
     params.push(startDate)
   }
   if (endDate) {
-    where.push('b.time <= ?')
-    params.push(endDate)
+    where.push('b.created_at <= ?')
+    params.push(endDate + ' 23:59:59')
   }
 
   const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
-  const countQuery = `SELECT COUNT(*) as total FROM bets b LEFT JOIN games g ON b.game = g.name ${whereClause}`
+  const countQuery = `SELECT COUNT(*) as total FROM sk7755_bets b LEFT JOIN games g ON b.game_name = g.name ${whereClause}`
   const total = db.prepare(countQuery).get(...params).total
 
   const offset = (Number(page) - 1) * Number(pageSize)
-  const dataQuery = `SELECT b.*, g.category as game_category, m.agent as member_agent FROM bets b LEFT JOIN games g ON b.game = g.name LEFT JOIN members m ON b.member = m.id ${whereClause} ORDER BY b.time DESC LIMIT ? OFFSET ?`
+  const dataQuery = `SELECT b.* FROM sk7755_bets b LEFT JOIN games g ON b.game_name = g.name ${whereClause} ORDER BY b.created_at DESC LIMIT ? OFFSET ?`
   const rows = db.prepare(dataQuery).all(...params, Number(pageSize), offset)
 
   res.json({
     data: rows.map(r => ({
       id: r.id,
-      member: r.member,
-      agent: r.member_agent || '',
-      game: r.game,
-      provider: r.provider,
-      category: r.game_category || '',
+      member: r.uid,
+      game: r.game_name,
+      provider: r.platform,
+      category: '',
       betAmount: r.bet_amount,
       payout: r.win_amount,
       profit: r.bet_amount - r.win_amount,
-      time: r.time,
-      status: r.status
+      time: r.created_at,
+      status: r.status,
+      order_no: r.order_no
     })),
     total,
     page: Number(page),
@@ -1410,6 +1445,163 @@ app.get('/api/admin/sk7755/bets', authMiddleware, (req, res) => {
       page: Number(page),
       pageSize: Number(pageSize),
     })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ==================== GAME CATEGORIES (SK Productization) ====================
+
+// GET /api/admin/categories — all categories with game counts
+app.get('/api/admin/categories', authMiddleware, (req, res) => {
+  try {
+    const cats = db.prepare('SELECT * FROM game_categories ORDER BY sort_order').all()
+    const result = cats.map(c => {
+      const sk = db.prepare('SELECT COUNT(*) as c FROM sk7755_games WHERE category_id = ?').get(c.id).c
+      const legacy = db.prepare('SELECT COUNT(*) as c FROM games WHERE category_id = ?').get(c.id).c
+      return { ...c, is_enabled: !!c.is_enabled, game_count: sk + legacy, sk_count: sk, legacy_count: legacy }
+    })
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/admin/categories — create category
+app.post('/api/admin/categories', authMiddleware, (req, res) => {
+  const { code, name_zh, name_en, icon, sort_order } = req.body
+  if (!code || !name_zh || !name_en) return res.status(400).json({ error: 'code, name_zh, name_en required' })
+  try {
+    const result = db.prepare('INSERT INTO game_categories (code, name_zh, name_en, icon, sort_order) VALUES (?,?,?,?,?)').run(code, name_zh, name_en, icon || '', sort_order || 0)
+    auditLog(req.user.username, '创建分类', code, name_zh, req.ip || '0.0.0.0')
+    res.json({ success: true, id: result.lastInsertRowid })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// PUT /api/admin/categories/:id — update category
+app.put('/api/admin/categories/:id', authMiddleware, (req, res) => {
+  const { name_zh, name_en, icon, sort_order, is_enabled } = req.body
+  try {
+    db.prepare(`UPDATE game_categories SET
+      name_zh = COALESCE(?, name_zh), name_en = COALESCE(?, name_en),
+      icon = COALESCE(?, icon), sort_order = COALESCE(?, sort_order),
+      is_enabled = COALESCE(?, is_enabled) WHERE id = ?`
+    ).run(name_zh, name_en, icon, sort_order, is_enabled !== undefined ? (is_enabled ? 1 : 0) : null, req.params.id)
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// DELETE /api/admin/categories/:id
+app.delete('/api/admin/categories/:id', authMiddleware, (req, res) => {
+  try {
+    db.prepare('DELETE FROM game_categories WHERE id = ?').run(req.params.id)
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET /api/admin/sub-categories — sub-categories for a category
+app.get('/api/admin/sub-categories', authMiddleware, (req, res) => {
+  const { category_id } = req.query
+  try {
+    const rows = category_id
+      ? db.prepare('SELECT * FROM game_sub_categories WHERE category_id = ? ORDER BY sort_order').all(category_id)
+      : db.prepare('SELECT * FROM game_sub_categories ORDER BY category_id, sort_order').all()
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/admin/sub-categories
+app.post('/api/admin/sub-categories', authMiddleware, (req, res) => {
+  const { category_id, code, name_zh, name_en, icon, sort_order } = req.body
+  if (!category_id || !code || !name_zh || !name_en) return res.status(400).json({ error: 'category_id, code, name_zh, name_en required' })
+  try {
+    const result = db.prepare('INSERT INTO game_sub_categories (category_id, code, name_zh, name_en, icon, sort_order) VALUES (?,?,?,?,?,?)').run(category_id, code, name_zh, name_en, icon || '', sort_order || 0)
+    res.json({ success: true, id: result.lastInsertRowid })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/admin/games/batch-categorize — batch assign category to games
+app.post('/api/admin/games/batch-categorize', authMiddleware, (req, res) => {
+  const { game_ids, category_id, table } = req.body
+  if (!game_ids?.length || !category_id) return res.status(400).json({ error: 'game_ids and category_id required' })
+  try {
+    const targetTable = table === 'sk7755' ? 'sk7755_games' : 'games'
+    const stmt = db.prepare(`UPDATE ${targetTable} SET category_id = ? WHERE id = ?`)
+    const tx = db.transaction(() => {
+      for (const id of game_ids) stmt.run(category_id, id)
+    })
+    tx()
+    cacheInvalidate('admin:games')
+    cacheInvalidate('h5:games')
+    res.json({ success: true, count: game_ids.length })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/admin/games/batch-update — batch set hot/new/visible
+app.post('/api/admin/games/batch-update', authMiddleware, (req, res) => {
+  const { game_ids, table, updates } = req.body
+  if (!game_ids?.length || !updates) return res.status(400).json({ error: 'game_ids and updates required' })
+  try {
+    const targetTable = table === 'sk7755' ? 'sk7755_games' : 'games'
+    const sets = []
+    const vals = []
+    if (updates.is_visible !== undefined) { sets.push('is_visible = ?'); vals.push(updates.is_visible ? 1 : 0) }
+    if (updates.is_hot !== undefined && targetTable === 'games') { sets.push('is_hot = ?'); vals.push(updates.is_hot ? 1 : 0) }
+    if (updates.is_new !== undefined && targetTable === 'games') { sets.push('is_new = ?'); vals.push(updates.is_new ? 1 : 0) }
+    if (updates.display_order !== undefined) { sets.push('display_order = ?'); vals.push(updates.display_order) }
+    if (!sets.length) return res.status(400).json({ error: 'No valid updates' })
+
+    const stmt = db.prepare(`UPDATE ${targetTable} SET ${sets.join(', ')} WHERE id = ?`)
+    const tx = db.transaction(() => {
+      for (const id of game_ids) stmt.run(...vals, id)
+    })
+    tx()
+    cacheInvalidate('admin:games')
+    res.json({ success: true, count: game_ids.length })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET /api/admin/category-ggr — GGR by category for dashboard
+app.get('/api/admin/category-ggr', authMiddleware, (req, res) => {
+  try {
+    const cats = db.prepare('SELECT id, code, name_zh FROM game_categories ORDER BY sort_order').all()
+    const catCodeMap = {}
+    for (const c of cats) catCodeMap[c.code] = c
+
+    // Map SK7755 platform types to category codes
+    const platformCatMap = { 'SLOT': 'slot', 'LIVE': 'live', 'SPORT': 'sports', 'FH': 'fish', 'LOTTERY': 'lottery' }
+
+    const rows = db.prepare(`
+      SELECT p.type as platform_type,
+             SUM(CASE WHEN b.action = 'bet' THEN b.bet_amount ELSE 0 END) as total_bet,
+             SUM(CASE WHEN b.action IN ('settle','betNSettle') THEN b.win_amount ELSE 0 END) as total_win
+      FROM sk7755_bets b
+      LEFT JOIN sk7755_platforms p ON b.platform = p.code
+      GROUP BY p.type
+    `).all()
+
+    const result = cats.map(c => {
+      const matchRow = rows.find(r => platformCatMap[r.platform_type] === c.code)
+      const bet = matchRow?.total_bet || 0
+      const win = matchRow?.total_win || 0
+      return { category: c.name_zh, code: c.code, ggr: parseFloat((bet - win).toFixed(2)) }
+    }).filter(r => r.ggr !== 0).sort((a, b) => b.ggr - a.ggr).slice(0, 10)
+
+    res.json(result)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

@@ -1,0 +1,10 @@
+{
+  "defaultCategory": "slot",
+  "gameIdPrefixToCategory": {
+    "vs": "slot",
+    "vsways": "slot",
+    "bj": "live",
+    "roulette": "live",
+    "baccarat": "live"
+  }
+}

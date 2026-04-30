@@ -25,9 +25,9 @@
       </div>
 
       <el-table v-else :data="bets" stripe>
-        <el-table-column prop="id" label="注单号" width="160" />
-        <el-table-column prop="member" label="会员" width="110" />
-        <el-table-column prop="agent" label="代理" width="100" />
+        <el-table-column prop="id" label="ID" width="60" />
+        <el-table-column prop="order_no" label="订单号" width="200" />
+        <el-table-column prop="member" label="会员" width="130" />
         <el-table-column prop="game" label="游戏" width="140" />
         <el-table-column prop="provider" label="厂商" width="70" />
         <el-table-column prop="category" label="分类" width="80" />

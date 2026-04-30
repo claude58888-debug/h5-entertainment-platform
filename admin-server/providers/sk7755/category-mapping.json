@@ -1,0 +1,28 @@
+{
+  "platformTypeToCategory": {
+    "SLOT": "slot",
+    "LIVE": "live",
+    "SPORT": "sports",
+    "FH": "fish",
+    "LOTTERY": "lottery"
+  },
+  "gameTypeToCategory": {
+    "slot": "slot",
+    "slots": "slot",
+    "live": "live",
+    "livecasino": "live",
+    "table": "live",
+    "fish": "fish",
+    "fishing": "fish",
+    "sport": "sports",
+    "sports": "sports",
+    "lottery": "lottery",
+    "egame": "egame",
+    "card": "card",
+    "chess": "card",
+    "arcade": "egame",
+    "crash": "egame",
+    "instant": "egame"
+  },
+  "defaultCategory": "slot"
+}

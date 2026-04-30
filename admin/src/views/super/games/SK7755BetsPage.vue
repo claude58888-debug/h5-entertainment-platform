@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="section-title">SK7755 投注记录</h2>
+    <h2 class="section-title">游戏投注记录</h2>
     <div class="table-card">
       <div class="filter-bar">
         <el-input v-model="search" placeholder="搜索UID/订单号/游戏" style="width: 220px;" clearable prefix-icon="Search" @keyup.enter="fetchBets" />
@@ -18,7 +18,7 @@
 
       <!-- Empty -->
       <div v-else-if="!bets.length" class="empty-state">
-        <el-empty description="暂无SK7755投注记录" />
+        <el-empty description="暂无投注记录" />
       </div>
 
       <!-- Table -->

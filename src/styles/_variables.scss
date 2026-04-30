@@ -1,32 +1,35 @@
-// Colors - Enriched Dark Luxury Theme
-$bg-primary: #0e0b1f;           // Deepest dark purple-black (page background)
-$bg-secondary: #150f2e;         // Slightly lighter, for sections
-$bg-card: #1c1640;              // Card background - rich dark purple
-$bg-card-hover: #231b50;        // Card hover state
-$bg-header: #110d28;            // Header - deep dark
-$bg-sidebar: #160f35;           // Sidebar panels
-$bg-input: #1a1540;             // Input fields
+// Colors - Claude Design V3 Black Gold Theme
+$bg-primary: #1a0a2e;           // Deep dark purple (page background)
+$bg-secondary: #0d0d0d;         // Pure black secondary
+$bg-card: #1e1040;              // Card background
+$bg-card-hover: #281850;        // Card hover state
+$bg-header: #140a24;            // Header
+$bg-sidebar: #120a20;           // Sidebar panels
+$bg-input: #1a1040;             // Input fields
 
-$accent-purple: #7c3aed;        // Primary purple
+$accent-gold: #d4a843;          // Primary gold
+$accent-gold-light: #f3c869;    // Highlight gold
+$accent-gold-dim: rgba(212, 168, 67, 0.25);
+$accent-purple: #7c3aed;        // Purple accent
 $accent-purple-light: #a78bfa;  // Light purple
 $accent-purple-glow: #9333ea;   // Glow purple
-$accent-blue: #3b82f6;          // Electric blue accent
+$accent-blue: #3b82f6;          // Electric blue
 $accent-cyan: #06b6d4;          // Cyan highlight
-$accent-gold: #f59e0b;          // Gold
-$accent-gold-light: #fbbf24;    // Light gold
 $accent-red: #ef4444;           // Alert red
 $accent-green: #10b981;         // Success green
 
 $text-primary: #ffffff;
-$text-secondary: rgba(255, 255, 255, 0.75);
-$text-muted: rgba(255, 255, 255, 0.45);
-$border-color: rgba(124, 58, 237, 0.25);  // Purple-tinted border
-$border-glow: rgba(167, 139, 250, 0.3);   // Glow border
+$text-secondary: rgba(255, 255, 255, 0.72);
+$text-muted: rgba(255, 255, 255, 0.42);
+$text-gold: #f3c869;
+$border-color: rgba(212, 168, 67, 0.15);
+$border-gold: rgba(212, 168, 67, 0.3);
+$border-glow: rgba(243, 200, 105, 0.2);
 
 // Layout
 $max-width: 450px;
 $header-height: 50px;
-$tab-bar-height: 60px;
+$tab-bar-height: 64px;
 $banner-height: 180px;
 $game-card-width: 105px;
 $game-card-height: 140px;

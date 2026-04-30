@@ -84,10 +84,11 @@ onMounted(() => {
   white-space: nowrap;
 
   &.active {
-    background: linear-gradient(90deg, $accent-purple, $accent-purple-glow);
-    color: #fff;
-    border: 1px solid rgba($accent-purple-light, 0.3);
-    box-shadow: 0 0 12px rgba(124, 58, 237, 0.5);
+    background: linear-gradient(90deg, $accent-gold, $accent-gold-light);
+    color: #1a0a2e;
+    font-weight: 600;
+    border: 1px solid rgba($accent-gold, 0.3);
+    box-shadow: 0 0 12px rgba(212, 168, 67, 0.35);
   }
 
   &:not(.active) {

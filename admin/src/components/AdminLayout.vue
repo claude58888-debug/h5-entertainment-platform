@@ -8,9 +8,9 @@
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapsed"
-        background-color="#1a1a2e"
+        background-color="#0a0618"
         text-color="#a0a0b0"
-        active-text-color="#e6a23c"
+        active-text-color="#f3c869"
         router
       >
         <template v-if="isSuperAdmin">
@@ -54,8 +54,8 @@
             <el-menu-item index="/super/games/list">游戏列表</el-menu-item>
             <el-menu-item index="/super/games/bets">投注记录</el-menu-item>
             <el-menu-item index="/super/games/stats">游戏统计</el-menu-item>
-            <el-menu-item index="/super/games/sk7755">SK7755平台</el-menu-item>
-            <el-menu-item index="/super/games/sk7755-bets">SK7755投注</el-menu-item>
+            <el-menu-item index="/super/games/sk7755">平台管理</el-menu-item>
+            <el-menu-item index="/super/games/sk7755-bets">投注记录</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="/super/vip">
             <el-icon><Trophy /></el-icon>

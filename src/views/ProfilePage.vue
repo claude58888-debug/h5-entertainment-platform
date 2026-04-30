@@ -516,13 +516,13 @@ onMounted(() => {
 }
 
 .profile-header {
-  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
+  background: linear-gradient(135deg, $bg-card 0%, #281850 50%, $bg-card 100%);
   padding: 24px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.3);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  border-bottom: 1px solid $border-gold;
+  box-shadow: 0 8px 32px rgba(212, 168, 67, 0.08);
 }
 
 .avatar {
@@ -770,11 +770,11 @@ onMounted(() => {
 }
 
 .balance-card {
-  background: linear-gradient(135deg, #1c1640 0%, #2d1b69 50%, #1c1640 100%);
+  background: linear-gradient(135deg, $bg-card 0%, #281850 50%, $bg-card 100%);
   border-radius: 12px;
   padding: 16px;
-  border: 1px solid rgba(167, 139, 250, 0.3);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  border: 1px solid $border-gold;
+  box-shadow: 0 8px 32px rgba(212, 168, 67, 0.08);
 }
 
 .balance-label {
@@ -788,8 +788,8 @@ onMounted(() => {
   font-weight: 700;
   display: block;
   margin: 4px 0 12px;
-  color: #fbbf24;
-  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+  color: $accent-gold-light;
+  text-shadow: 0 0 10px rgba(212, 168, 67, 0.35);
 }
 
 .balance-actions {
@@ -799,8 +799,8 @@ onMounted(() => {
 
 .outline-btn {
   background: transparent !important;
-  border-color: $accent-purple !important;
-  color: $accent-purple-light !important;
+  border-color: $accent-gold !important;
+  color: $accent-gold-light !important;
 }
 
 /* 2b: Quick Menu Grid */
@@ -840,7 +840,7 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(108, 92, 231, 0.15);
+  background: rgba(212, 168, 67, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -848,7 +848,7 @@ onMounted(() => {
 
   .van-icon {
     font-size: 20px;
-    color: $accent-purple-light;
+    color: $accent-gold-light;
   }
 }
 
@@ -878,8 +878,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(168, 85, 247, 0.2));
-  border: 1px solid rgba(108, 92, 231, 0.3);
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.12), rgba(243, 200, 105, 0.08));
+  border: 1px solid $border-gold;
   border-radius: 12px;
   padding: 14px 16px;
   cursor: pointer;

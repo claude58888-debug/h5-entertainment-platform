@@ -1,9 +1,29 @@
+/* ═══════════════════════════════════════════════════════
+   Admin — Claude Design V3 Black Gold Theme
+   ═══════════════════════════════════════════════════════ */
+
+// V3 Token Variables (Admin scope)
+$bg-primary: #0d0d0d;
+$bg-secondary: #1a0a2e;
+$bg-card: #141022;
+$bg-card-hover: #1e1040;
+$bg-header: #110a1e;
+$bg-sidebar: #0a0618;
+$border-color: rgba(212, 168, 67, 0.12);
+$border-gold: rgba(212, 168, 67, 0.25);
+$gold: #d4a843;
+$gold-light: #f3c869;
+$gold-dim: rgba(212, 168, 67, 0.03);
+$text-primary: #e8e8e8;
+$text-secondary: #a0a0b0;
+$text-muted: #666;
+
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: #141414;
-  color: #e0e0e0;
+  background: $bg-primary;
+  color: $text-primary;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -15,20 +35,41 @@ html.dark {
   height: 100%;
 }
 
-// Element Plus dark overrides
-.el-menu--dark {
-  background-color: #1a1a2e !important;
+// ── Element Plus Dark + Gold Overrides ──
+:root {
+  --el-color-primary: #{$gold};
+  --el-color-primary-light-3: #{$gold-light};
+  --el-color-primary-light-5: rgba(212, 168, 67, 0.5);
+  --el-color-primary-light-7: rgba(212, 168, 67, 0.3);
+  --el-color-primary-light-9: rgba(212, 168, 67, 0.1);
+  --el-color-primary-dark-2: #b8922e;
+  --el-bg-color: #{$bg-primary};
+  --el-bg-color-overlay: #{$bg-card};
+  --el-text-color-primary: #{$text-primary};
+  --el-text-color-regular: #{$text-secondary};
+  --el-text-color-secondary: #{$text-muted};
+  --el-border-color: #{$border-color};
+  --el-border-color-light: rgba(212, 168, 67, 0.08);
+  --el-fill-color-blank: #{$bg-card};
+  --el-fill-color-light: #{$bg-card-hover};
+  --el-menu-bg-color: #{$bg-sidebar};
+  --el-menu-text-color: #{$text-secondary};
+  --el-menu-active-color: #{$gold-light};
+  --el-menu-hover-bg-color: rgba(212, 168, 67, 0.06);
 }
 
+// ── Admin Layout ──
 .admin-layout {
   height: 100vh;
   display: flex;
 
   .sidebar {
     height: 100vh;
-    transition: width 0.3s;
-    background: #1a1a2e;
-    border-right: 1px solid #2a2a3e;
+    transition: width 0.3s ease;
+    background: linear-gradient(180deg, $bg-sidebar 0%, darken($bg-sidebar, 2%) 100%);
+    border-right: 1px solid $border-color;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     .logo-container {
       height: 60px;
@@ -36,18 +77,19 @@ html.dark {
       align-items: center;
       justify-content: center;
       padding: 0 16px;
-      border-bottom: 1px solid #2a2a3e;
+      border-bottom: 1px solid $border-color;
 
       .logo-text {
-        color: #e6a23c;
+        color: $gold-light;
         font-size: 18px;
         font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
+        text-shadow: 0 0 12px rgba(243, 200, 105, 0.2);
       }
 
       .logo-icon {
-        color: #e6a23c;
+        color: $gold-light;
         font-size: 24px;
       }
     }
@@ -55,6 +97,31 @@ html.dark {
     .el-menu {
       border-right: none;
       background: transparent;
+
+      .el-menu-item {
+        color: $text-secondary;
+        transition: all 0.2s;
+
+        &:hover {
+          background: rgba(212, 168, 67, 0.06);
+          color: $gold-light;
+        }
+
+        &.is-active {
+          color: $gold-light;
+          background: rgba(212, 168, 67, 0.1);
+          border-right: 3px solid $gold;
+        }
+      }
+
+      .el-sub-menu__title {
+        color: $text-secondary;
+
+        &:hover {
+          background: rgba(212, 168, 67, 0.06);
+          color: $gold-light;
+        }
+      }
     }
   }
 
@@ -63,13 +130,13 @@ html.dark {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #141414;
+    background: $bg-primary;
   }
 
   .header {
     height: 60px;
-    background: #1e1e2e;
-    border-bottom: 1px solid #2a2a3e;
+    background: $bg-header;
+    border-bottom: 1px solid $border-color;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -89,7 +156,7 @@ html.dark {
 
     .breadcrumb-area {
       .el-breadcrumb__inner {
-        color: #a0a0b0;
+        color: $text-secondary;
       }
     }
   }
@@ -98,38 +165,39 @@ html.dark {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    background: #141414;
+    background: $bg-primary;
   }
 }
 
-// Login page
+// ── Login Page ──
 .login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background: linear-gradient(135deg, #0d0d0d, #1a0a2e, #0d0d0d);
 
   .login-card {
     width: 420px;
-    background: #1e1e2e;
+    background: $bg-card;
     border-radius: 16px;
     padding: 40px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    border: 1px solid #2a2a3e;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212, 168, 67, 0.05);
+    border: 1px solid $border-gold;
 
     .login-title {
       text-align: center;
       margin-bottom: 8px;
-      color: #e6a23c;
+      color: $gold-light;
       font-size: 28px;
       font-weight: 700;
+      text-shadow: 0 0 15px rgba(243, 200, 105, 0.2);
     }
 
     .login-subtitle {
       text-align: center;
       margin-bottom: 32px;
-      color: #888;
+      color: $text-muted;
       font-size: 14px;
     }
 
@@ -148,7 +216,7 @@ html.dark {
   }
 }
 
-// KPI cards
+// ── KPI Cards ──
 .kpi-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -157,57 +225,63 @@ html.dark {
 }
 
 .kpi-card {
-  background: #1e1e2e;
+  background: $bg-card;
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #2a2a3e;
+  border: 1px solid $border-color;
+  transition: border-color 0.25s, box-shadow 0.25s;
+
+  &:hover {
+    border-color: $border-gold;
+    box-shadow: 0 0 20px rgba(212, 168, 67, 0.08);
+  }
 
   .kpi-label {
     font-size: 13px;
-    color: #888;
+    color: $text-muted;
     margin-bottom: 8px;
   }
 
   .kpi-value {
     font-size: 28px;
     font-weight: 700;
-    color: #e0e0e0;
+    color: $text-primary;
   }
 
   .kpi-change {
     font-size: 12px;
     margin-top: 4px;
 
-    &.up { color: #67c23a; }
-    &.down { color: #f56c6c; }
+    &.up { color: #10b981; }
+    &.down { color: #ef4444; }
   }
 }
 
-// Chart containers
+// ── Chart Containers ──
 .chart-container {
-  background: #1e1e2e;
+  background: $bg-card;
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #2a2a3e;
+  border: 1px solid $border-color;
   margin-bottom: 20px;
 
   .chart-title {
     font-size: 16px;
     font-weight: 600;
-    color: #e0e0e0;
+    color: $text-primary;
     margin-bottom: 16px;
   }
 }
 
-// Section title
+// ── Section Title ──
 .section-title {
   font-size: 18px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: $gold-light;
   margin-bottom: 16px;
 }
 
-// Page header
+// ── Page Header ──
 .page-header {
   display: flex;
   align-items: center;
@@ -215,26 +289,37 @@ html.dark {
   margin-bottom: 20px;
 }
 
-// Table card
+// ── Table Card — V3 Gold Striping ──
 .table-card {
-  background: #1e1e2e;
+  background: $bg-card;
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #2a2a3e;
+  border: 1px solid $border-color;
   margin-bottom: 20px;
 
   .el-table {
-    --el-table-bg-color: #1e1e2e;
-    --el-table-tr-bg-color: #1e1e2e;
-    --el-table-header-bg-color: #252538;
-    --el-table-row-hover-bg-color: #252538;
-    --el-table-border-color: #2a2a3e;
-    --el-table-text-color: #e0e0e0;
-    --el-table-header-text-color: #a0a0b0;
+    --el-table-bg-color: #{$bg-card};
+    --el-table-tr-bg-color: #{$bg-card};
+    --el-table-header-bg-color: #{darken($bg-card, 3%)};
+    --el-table-row-hover-bg-color: rgba(212, 168, 67, 0.06);
+    --el-table-border-color: #{$border-color};
+    --el-table-text-color: #{$text-primary};
+    --el-table-header-text-color: #{$text-secondary};
+
+    // V3: Alternating rows with ultra-faint gold
+    .el-table__row--striped td.el-table__cell {
+      background: rgba(212, 168, 67, 0.03) !important;
+    }
+  }
+
+  // Force row height to 48px per V3 spec
+  .el-table td.el-table__cell {
+    height: 48px;
+    padding: 0 12px;
   }
 }
 
-// Filter bar
+// ── Filter Bar ──
 .filter-bar {
   display: flex;
   gap: 12px;
@@ -243,7 +328,7 @@ html.dark {
   align-items: center;
 }
 
-// Two column chart layout
+// ── Chart Row (2-column) ──
 .chart-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -251,52 +336,73 @@ html.dark {
   margin-bottom: 20px;
 }
 
-// Alerts panel
+// ── Alerts Panel ──
 .alerts-panel {
-  background: #1e1e2e;
+  background: $bg-card;
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #2a2a3e;
+  border: 1px solid $border-color;
 
   .alert-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 12px 0;
-    border-bottom: 1px solid #2a2a3e;
+    border-bottom: 1px solid $border-color;
 
     &:last-child { border-bottom: none; }
 
     .alert-info {
-      .alert-text { color: #e0e0e0; font-size: 14px; }
-      .alert-time { color: #888; font-size: 12px; margin-top: 4px; }
+      .alert-text { color: $text-primary; font-size: 14px; }
+      .alert-time { color: $text-muted; font-size: 12px; margin-top: 4px; }
     }
   }
 }
 
-// Detail tabs
+// ── Detail Tabs ──
 .detail-tabs {
-  background: #1e1e2e;
+  background: $bg-card;
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #2a2a3e;
+  border: 1px solid $border-color;
 }
 
-// Form card
+// ── Form Card ──
 .form-card {
-  background: #1e1e2e;
+  background: $bg-card;
   border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #2a2a3e;
-  max-width: 800px;
+  padding: 20px;
+  border: 1px solid $border-color;
+  margin-bottom: 20px;
 }
 
-// Responsive
-@media (max-width: 1280px) {
-  .chart-row {
-    grid-template-columns: 1fr;
-  }
-  .kpi-row {
-    grid-template-columns: repeat(3, 1fr);
+// ── Date Filter Bar ──
+.date-filter-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+// ── Alert Notification Bar ──
+.alert-notification-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: rgba(212, 168, 67, 0.05);
+  border-radius: 8px;
+  border: 1px solid $border-color;
+
+  .alert-notification-item {
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover { opacity: 0.8; }
+
+    .alert-notification-label {
+      font-size: 13px;
+      color: $text-secondary;
+    }
   }
 }

@@ -12,6 +12,7 @@ import { GridComponent, TooltipComponent, LegendComponent, TitleComponent } from
 import VChart from 'vue-echarts'
 import App from './App.vue'
 import router from './router'
+import './styles/tokens.css'
 import './styles/admin.scss'
 
 use([CanvasRenderer, LineChart, BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent, TitleComponent])

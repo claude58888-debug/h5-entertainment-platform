@@ -605,6 +605,87 @@ export function initDB() {
     CREATE INDEX IF NOT EXISTS idx_pp_tx_round ON pp_transactions(round_id);
   `)
 
+  // ==================== Game Categories (SK Productization) ====================
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS game_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT UNIQUE NOT NULL,
+      name_zh TEXT NOT NULL,
+      name_en TEXT NOT NULL,
+      icon TEXT DEFAULT '',
+      sort_order INTEGER DEFAULT 0,
+      is_enabled INTEGER DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS game_sub_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL,
+      code TEXT NOT NULL,
+      name_zh TEXT NOT NULL,
+      name_en TEXT NOT NULL,
+      icon TEXT DEFAULT '',
+      sort_order INTEGER DEFAULT 0,
+      is_enabled INTEGER DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (category_id) REFERENCES game_categories(id),
+      UNIQUE(category_id, code)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sub_categories_cat ON game_sub_categories(category_id);
+  `)
+
+  // Migrate sk7755_games: add category_id, sub_category_id, display_name, is_visible, display_order
+  const sk7755Cols = (() => {
+    try { return db.prepare("PRAGMA table_info(sk7755_games)").all().map(c => c.name) } catch { return [] }
+  })()
+  const sk7755Migrations = [
+    { col: 'category_id', sql: 'ALTER TABLE sk7755_games ADD COLUMN category_id INTEGER' },
+    { col: 'sub_category_id', sql: 'ALTER TABLE sk7755_games ADD COLUMN sub_category_id INTEGER' },
+    { col: 'display_name', sql: "ALTER TABLE sk7755_games ADD COLUMN display_name TEXT DEFAULT ''" },
+    { col: 'is_visible', sql: 'ALTER TABLE sk7755_games ADD COLUMN is_visible INTEGER DEFAULT 1' },
+    { col: 'display_order', sql: 'ALTER TABLE sk7755_games ADD COLUMN display_order INTEGER DEFAULT 0' },
+  ]
+  for (const m of sk7755Migrations) {
+    if (sk7755Cols.length && !sk7755Cols.includes(m.col)) {
+      try { db.prepare(m.sql).run() } catch {}
+    }
+  }
+
+  // Migrate games table: add category_id, sub_category_id, display_name, is_visible, display_order
+  const gamesCols = db.prepare("PRAGMA table_info(games)").all().map(c => c.name)
+  const gamesMigrations = [
+    { col: 'category_id', sql: 'ALTER TABLE games ADD COLUMN category_id INTEGER' },
+    { col: 'sub_category_id', sql: 'ALTER TABLE games ADD COLUMN sub_category_id INTEGER' },
+    { col: 'display_name', sql: "ALTER TABLE games ADD COLUMN display_name TEXT DEFAULT ''" },
+    { col: 'is_visible', sql: 'ALTER TABLE games ADD COLUMN is_visible INTEGER DEFAULT 1' },
+    { col: 'display_order', sql: 'ALTER TABLE games ADD COLUMN display_order INTEGER DEFAULT 0' },
+    { col: 'image_url', sql: "ALTER TABLE games ADD COLUMN image_url TEXT DEFAULT ''" },
+  ]
+  for (const m of gamesMigrations) {
+    if (!gamesCols.includes(m.col)) {
+      try { db.prepare(m.sql).run() } catch {}
+    }
+  }
+
+  // Seed game_categories (7 standard categories)
+  const catCount = db.prepare('SELECT COUNT(*) as c FROM game_categories').get().c
+  if (catCount === 0) {
+    const catSeed = db.prepare('INSERT INTO game_categories (code, name_zh, name_en, icon, sort_order) VALUES (?,?,?,?,?)')
+    const categories = [
+      ['slot', '老虎机', 'Slots', '🎰', 1],
+      ['live', '真人', 'Live Casino', '🎲', 2],
+      ['fish', '捕鱼', 'Fishing', '🐟', 3],
+      ['egame', '电子游戏', 'E-Games', '🎮', 4],
+      ['card', '棋牌', 'Card Games', '♟️', 5],
+      ['sports', '体育', 'Sports', '⚽', 6],
+      ['lottery', '彩票', 'Lottery', '🎱', 7],
+    ]
+    for (const c of categories) {
+      catSeed.run(...c)
+    }
+  }
+
   // Clean up any fake seed data from revenue_trend (values like 800000+ per day are unrealistic)
   const maxRevTrend = db.prepare('SELECT MAX(ABS(deposit)) as m FROM revenue_trend').get().m || 0
   if (maxRevTrend > 100000) {

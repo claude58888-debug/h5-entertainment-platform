@@ -5,6 +5,24 @@ import db from './db.js'
 import { getGameUrl } from './pp-integration.js'
 import { getCachedGames, CATEGORY_MAP } from './services/sk7755/gameSync.js'
 import { login as sk7755Login } from './services/sk7755/client.js'
+import { launchGame as providerLaunchGame } from './providers/registry.js'
+
+// Helper: get category label for a game
+function getCategoryLabel(categoryId) {
+  if (!categoryId) return ''
+  try {
+    const cat = db.prepare('SELECT name_zh FROM game_categories WHERE id = ?').get(categoryId)
+    return cat ? cat.name_zh : ''
+  } catch { return '' }
+}
+
+// Helper: get all categories as a map
+function getCategoryMap() {
+  try {
+    const cats = db.prepare('SELECT id, code, name_zh, name_en, icon FROM game_categories WHERE is_enabled = 1 ORDER BY sort_order').all()
+    return Object.fromEntries(cats.map(c => [c.id, c]))
+  } catch { return {} }
+}
 
 const router = Router()
 
@@ -335,41 +353,44 @@ router.get('/wallet/transactions', h5Auth, (req, res) => {
 
 // ==================== GAMES ====================
 
-// GET /api/h5/games
+// GET /api/h5/games — unified game list, provider names stripped
 router.get('/games', (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1)
   const limit = 50
   const offset = (page - 1) * limit
   const category = req.query.category
   const search = req.query.search
-  const provider = req.query.provider
+  const catMap = getCategoryMap()
+
+  // Category code → category_id lookup
+  let categoryId = null
+  if (category) {
+    const legacyCategoryMap = {
+      'slots': '电子游戏', 'live': '真人视讯', 'fishing': '捕鱼游戏',
+      'lottery': '彩票', 'sports': '体育竞猜', 'chess': '棋牌游戏'
+    }
+    // Try matching by category_id first
+    const catEntry = Object.values(catMap).find(c => c.code === category)
+    if (catEntry) categoryId = catEntry.id
+    var dbCategory = legacyCategoryMap[category] || category
+  }
 
   let query = "SELECT * FROM games WHERE status = 'active'"
   const params = []
 
   if (category) {
-    // Map H5 category names to DB category names
-    const categoryMap = {
-      'slots': '电子游戏',
-      'live': '真人视讯',
-      'fishing': '捕鱼游戏',
-      'lottery': '彩票',
-      'sports': '体育竞猜',
-      'chess': '棋牌游戏'
+    if (categoryId) {
+      query += ' AND (category_id = ? OR category = ?)'
+      params.push(categoryId, dbCategory)
+    } else {
+      query += ' AND category = ?'
+      params.push(dbCategory)
     }
-    const dbCategory = categoryMap[category] || category
-    query += ' AND category = ?'
-    params.push(dbCategory)
-  }
-
-  if (provider) {
-    query += ' AND provider = ?'
-    params.push(provider)
   }
 
   if (search) {
-    query += ' AND (name LIKE ? OR provider LIKE ?)'
-    params.push(`%${search}%`, `%${search}%`)
+    query += ' AND name LIKE ?'
+    params.push(`%${search}%`)
   }
 
   const total = db.prepare(query.replace('SELECT *', 'SELECT COUNT(*) as count')).get(...params).count
@@ -378,67 +399,67 @@ router.get('/games', (req, res) => {
 
   const rows = db.prepare(query).all(...params)
   res.json({
-    list: rows.map(r => ({
-      id: r.id,
-      name: r.name,
-      provider: r.provider,
-      category: r.category,
-      rtp: r.rtp,
-      hot: !!r.is_hot,
-      isNew: !!r.is_new,
-      image: ''
-    })),
+    list: rows.map(r => {
+      const cat = catMap[r.category_id]
+      return {
+        id: r.id,
+        name: r.display_name || r.name,
+        category: cat ? cat.code : r.category,
+        category_label: cat ? cat.name_zh : r.category,
+        rtp: r.rtp,
+        hot: !!r.is_hot,
+        isNew: !!r.is_new,
+        is_hot: !!r.is_hot,
+        is_new: !!r.is_new,
+        image: r.image_url || '',
+      }
+    }),
     total,
     page,
     pageSize: limit
   })
 })
 
-// GET /api/h5/games/:id
+// GET /api/h5/games/:id — provider stripped
 router.get('/games/:id', (req, res) => {
   const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id)
   if (!game) return res.status(404).json({ error: 'Game not found' })
 
+  const catLabel = getCategoryLabel(game.category_id)
   res.json({
     id: game.id,
-    name: game.name,
-    provider: game.provider,
-    category: game.category,
+    name: game.display_name || game.name,
+    category: catLabel || game.category,
+    category_label: catLabel || game.category,
     rtp: game.rtp,
     hot: !!game.is_hot,
     isNew: !!game.is_new,
     bets: game.bets,
     revenue: game.revenue,
-    image: ''
+    image: game.image_url || ''
   })
 })
 
-// POST /api/h5/games/:id/launch
+// POST /api/h5/games/:id/launch — provider hidden from response
 router.post('/games/:id/launch', h5Auth, async (req, res) => {
   const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id)
   if (!game) return res.status(404).json({ error: 'Game not found' })
 
-    // Check if game has PP integration
   if (!game.pp_game_id) {
     return res.status(400).json({ error: 'This game does not support online launch yet', success: false })
   }
 
-    // Launch game via Pragmatic Play API
-    try {
-      const result = await getGameUrl({ symbol: game.pp_game_id || game.name, token: req.h5user.memberId, externalPlayerId: req.h5user.memberId })
-      res.json({
-        success: true,
-        launchUrl: result.gameURL,
-        game: {
-          id: game.id,
-          name: game.name,
-          provider: game.provider
-        }
-      })
-    } catch (err) {
-      console.error('PP game launch error:', err.message)
-      res.status(500).json({ error: 'Failed to launch game', details: err.message })
-    }
+  try {
+    const result = await getGameUrl({ symbol: game.pp_game_id || game.name, token: req.h5user.memberId, externalPlayerId: req.h5user.memberId })
+    res.json({
+      success: true,
+      launchUrl: result.gameURL,
+      game: { id: game.id, name: game.display_name || game.name }
+    })
+  } catch (err) {
+    console.error('Game launch error:', err.message)
+    res.status(500).json({ error: 'Failed to launch game', details: err.message })
+  }
 })
 
 // POST /api/h5/games/:id/demo - Demo mode (no auth required)
@@ -460,7 +481,7 @@ router.post('/games/:id/demo', async (req, res) => {
     res.json({
       success: true,
       launchUrl: result.gameURL,
-      game: { id: game.id, name: game.name, provider: game.provider }
+      game: { id: game.id, name: game.display_name || game.name }
     })
   } catch (err) {
     res.status(500).json({ error: 'Failed to launch demo', success: false })
@@ -469,7 +490,7 @@ router.post('/games/:id/demo', async (req, res) => {
 
 // ==================== SK7755 GAMES ====================
 
-// GET /api/h5/sk7755/games — returns SK7755 games, optionally filtered by H5 category
+// GET /api/h5/sk7755/games — returns SK7755 games with category labels, provider stripped
 router.get('/sk7755/games', (req, res) => {
   const { category } = req.query
   const cacheKey = `h5:sk7755:games:${category || 'all'}`
@@ -478,20 +499,26 @@ router.get('/sk7755/games', (req, res) => {
 
   try {
     const games = getCachedGames(category || null)
+    const catMap = getCategoryMap()
     const result = {
-      list: games.map(g => ({
-        id: `sk7755_${g.platform}_${g.game_code}`,
-        name: g.game_name || g.game_code,
-        provider: g.platform_name || g.platform,
-        platform: g.platform,
-        game_code: g.game_code,
-        category: g.h5_category || g.category,
-        image: g.image_url || '',
-        source: 'sk7755',
-      })),
+      list: games.map(g => {
+        const cat = catMap[g.category_id]
+        return {
+          id: `sk7755_${g.platform}_${g.game_code}`,
+          name: g.display_name || g.game_name || g.game_code,
+          platform: g.platform,
+          game_code: g.game_code,
+          category: cat ? cat.code : (g.h5_category || g.category),
+          category_label: cat ? cat.name_zh : (g.h5_category || g.category),
+          image: g.image_url || '',
+          source: 'sk7755',
+          is_hot: false,
+          is_new: false,
+        }
+      }),
       total: games.length,
     }
-    h5CacheSet(cacheKey, result, 5 * 60 * 1000) // 5 min cache
+    h5CacheSet(cacheKey, result, 5 * 60 * 1000)
     res.json(result)
   } catch (err) {
     console.error('[SK7755] Games list error:', err.message)
@@ -499,7 +526,7 @@ router.get('/sk7755/games', (req, res) => {
   }
 })
 
-// POST /api/h5/sk7755/launch — launch a SK7755 game
+// POST /api/h5/sk7755/launch — launch a SK7755 game (provider hidden)
 router.post('/sk7755/launch', h5Auth, async (req, res) => {
   const { platform, game_code } = req.body
   if (!platform || !game_code) {
@@ -513,14 +540,64 @@ router.post('/sk7755/launch', h5Auth, async (req, res) => {
       res.json({
         success: true,
         launchUrl: result.result.url,
-        game: { platform, game_code },
+        game: { game_code },
       })
     } else {
       res.json({ success: false, error: result.message || 'Launch failed', code: result.code })
     }
   } catch (err) {
-    console.error('[SK7755] Game launch error:', err.message)
+    console.error('Game launch error:', err.message)
     res.status(500).json({ error: 'Failed to launch game', success: false })
+  }
+})
+
+// ==================== UNIFIED GAME LAUNCH ====================
+
+// POST /api/h5/game/launch — unified launch endpoint, frontend no longer needs to know provider
+router.post('/game/launch', h5Auth, async (req, res) => {
+  const { game_id, platform, game_code } = req.body
+  if (!game_id && !game_code) {
+    return res.status(400).json({ error: 'game_id or game_code required', success: false })
+  }
+
+  try {
+    // SK7755 game (has platform + game_code)
+    if (platform && game_code) {
+      const userAccount = `ddyl_${req.h5user.memberId}`
+      const result = await sk7755Login(userAccount, { platform, game_code })
+      if (result.code === '0000' && result.result?.url) {
+        return res.json({ success: true, launchUrl: result.result.url })
+      }
+      return res.json({ success: false, error: result.message || 'Launch failed' })
+    }
+
+    // Legacy game (by id, PP integration)
+    if (game_id) {
+      const game = db.prepare('SELECT * FROM games WHERE id = ?').get(game_id)
+      if (!game) return res.status(404).json({ error: 'Game not found', success: false })
+      if (!game.pp_game_id) {
+        return res.status(400).json({ error: 'Game not launchable', success: false })
+      }
+      const result = await getGameUrl({ symbol: game.pp_game_id, token: req.h5user.memberId, externalPlayerId: req.h5user.memberId })
+      return res.json({ success: true, launchUrl: result.gameURL })
+    }
+  } catch (err) {
+    console.error('Unified game launch error:', err.message)
+    res.status(500).json({ error: 'Failed to launch game', success: false })
+  }
+})
+
+// GET /api/h5/categories — returns all enabled game categories
+router.get('/categories', (req, res) => {
+  const cached = h5CacheGet('h5:categories')
+  if (cached) return res.json(cached)
+
+  try {
+    const cats = db.prepare('SELECT id, code, name_zh, name_en, icon, sort_order FROM game_categories WHERE is_enabled = 1 ORDER BY sort_order').all()
+    h5CacheSet('h5:categories', cats, 5 * 60 * 1000)
+    res.json(cats)
+  } catch (err) {
+    res.json([])
   }
 })
 

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="section-title">SK7755 平台管理</h2>
+    <h2 class="section-title">平台管理</h2>
 
     <div class="action-bar">
       <el-button type="primary" :loading="syncing" @click="handleSync">
