@@ -1398,10 +1398,14 @@ app.post('/api/admin/sk7755/sync', authMiddleware, async (req, res) => {
 // GET /api/admin/sk7755/bets — SK7755 bet records with pagination
 app.get('/api/admin/sk7755/bets', authMiddleware, (req, res) => {
   try {
-    const { page = 1, pageSize = 20, search, platform, startDate, endDate } = req.query
+    const { page = 1, pageSize = 20, search, platform, startDate, endDate, memberId } = req.query
     let where = []
     let params = []
 
+    if (memberId) {
+      where.push('uid = ?')
+      params.push('ddyl_' + memberId)
+    }
     if (search) {
       where.push('(uid LIKE ? OR order_no LIKE ? OR game_name LIKE ?)')
       params.push('%' + search + '%', '%' + search + '%', '%' + search + '%')

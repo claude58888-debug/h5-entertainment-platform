@@ -138,7 +138,7 @@
         </div>
 
         <!-- Tabs: profile / transactions / login history -->
-        <el-tabs v-model="detailTab" style="margin-top: 16px;">
+        <el-tabs v-model="detailTab" style="margin-top: 16px;" @tab-change="handleDetailTabChange">
           <el-tab-pane label="个人资料" name="profile">
             <div class="detail-summary">
               <div class="detail-summary-item">
@@ -259,20 +259,43 @@
               </el-table-column>
             </el-table>
 
-            <h4 style="margin: 16px 0 8px; color: #e0e0e0;">投注记录</h4>
-            <el-table :data="detailData.bets || []" stripe max-height="400" size="small">
-              <el-table-column prop="id" label="注单ID" width="100" />
-              <el-table-column prop="game" label="游戏" width="120" />
-              <el-table-column prop="provider" label="供应商" width="100" />
+          </el-tab-pane>
+
+          <el-tab-pane label="投注记录" name="bets">
+            <el-table :data="memberBets" stripe max-height="500" size="small" v-loading="betsLoading">
+              <el-table-column prop="orderNo" label="订单号" width="140" />
+              <el-table-column prop="gameName" label="游戏" width="120" />
+              <el-table-column prop="platform" label="厂商" width="100" />
+              <el-table-column prop="action" label="分类" width="80">
+                <template #default="{ row }">
+                  <el-tag size="small" :type="row.action === 'bet' ? 'warning' : 'success'">{{ row.action === 'bet' ? '投注' : '结算' }}</el-tag>
+                </template>
+              </el-table-column>
               <el-table-column label="投注额" width="100">
                 <template #default="{ row }">¥{{ (row.betAmount || 0).toLocaleString() }}</template>
               </el-table-column>
-              <el-table-column label="中奖额" width="100">
+              <el-table-column label="派彩" width="100">
                 <template #default="{ row }">¥{{ (row.winAmount || 0).toLocaleString() }}</template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="80" />
-              <el-table-column prop="time" label="时间" width="160" />
+              <el-table-column label="盈亏" width="100">
+                <template #default="{ row }">
+                  <span :style="{ color: (row.winAmount - row.betAmount) >= 0 ? '#67c23a' : '#f56c6c' }">¥{{ ((row.winAmount || 0) - (row.betAmount || 0)).toLocaleString() }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="createdAt" label="时间" width="160" />
             </el-table>
+            <div v-if="!betsLoading && !memberBets.length" style="color: #999; text-align: center; padding: 40px 0;">暂无投注记录</div>
+            <div style="margin-top: 12px; text-align: right;">
+              <el-pagination
+                v-model:current-page="betsPage"
+                v-model:page-size="betsPageSize"
+                :page-sizes="[10, 20, 50]"
+                layout="total, sizes, prev, pager, next"
+                :total="betsTotal"
+                @current-change="fetchMemberBets"
+                @size-change="handleBetsPageSizeChange"
+              />
+            </div>
           </el-tab-pane>
 
           <el-tab-pane label="登录历史" name="loginHistory">
@@ -369,6 +392,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { getMembers, getMemberDetail, memberAction, updateMemberVip, updateMemberTags, forceLogoutMember, adjustMemberBalance } from '@/api/members'
+import { getSK7755Bets } from '@/api/games'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const search = ref('')
@@ -399,6 +423,13 @@ const detailTags = ref([])
 const tagInputVisible = ref(false)
 const tagInputValue = ref('')
 const tagInputRef = ref(null)
+
+// Betting records tab
+const memberBets = ref([])
+const betsLoading = ref(false)
+const betsPage = ref(1)
+const betsPageSize = ref(10)
+const betsTotal = ref(0)
 
 // VIP change
 const vipReasonVisible = ref(false)
@@ -589,6 +620,9 @@ async function openDetail(row) {
   detailVisible.value = true
   detailLoading.value = true
   detailTab.value = 'profile'
+  memberBets.value = []
+  betsPage.value = 1
+  betsTotal.value = 0
   try {
     const data = await getMemberDetail(row.id)
     detailData.value = data
@@ -599,6 +633,32 @@ async function openDetail(row) {
     console.warn(e)
   } finally {
     detailLoading.value = false
+  }
+}
+
+async function fetchMemberBets() {
+  if (!detailData.value.id) return
+  betsLoading.value = true
+  try {
+    const res = await getSK7755Bets({ memberId: detailData.value.id, page: betsPage.value, pageSize: betsPageSize.value })
+    memberBets.value = res.data || []
+    betsTotal.value = res.total || 0
+  } catch (e) {
+    console.warn('获取投注记录失败', e)
+    memberBets.value = []
+  } finally {
+    betsLoading.value = false
+  }
+}
+
+function handleBetsPageSizeChange() {
+  betsPage.value = 1
+  fetchMemberBets()
+}
+
+function handleDetailTabChange(tab) {
+  if (tab === 'bets') {
+    fetchMemberBets()
   }
 }
 
